@@ -1,0 +1,95 @@
+from django.urls import path
+
+from .views import (
+    ExerciseCreateView,
+    ExerciseListView,
+    ExercisePoolAddExerciseView,
+    ExercisePoolCreateView,
+    ExercisePoolDetailView,
+    ExercisePoolListView,
+    HtmxWorkoutSessionAddExerciseView,
+    HtmxWorkoutSessionDeleteExerciseView,
+    HtmxWorkoutSetCreateView,
+    HtmxWorkoutSetDeleteView,
+    WorkoutSessionAddExerciseView,
+    WorkoutSessionCreateView,
+    WorkoutSessionDetailView,
+    WorkoutSessionListView,
+    WorkoutSetCreateView,
+    HtmxWorkoutSessionMoveExerciseView,
+    HtmxWorkoutSessionResequenceView,
+    HtmxWorkoutSetUpdateView,
+    HtmxWorkoutSessionUpdateView,
+    HtmxWorkoutSetMoveView,
+    HtmxWorkoutSetResequenceView,
+)
+
+app_name = "fitness"
+
+urlpatterns = [
+    path("exercises/", ExerciseListView.as_view(), name="exercise-list"),
+    path("exercises/create/", ExerciseCreateView.as_view(), name="exercise-create"),
+    path("pools/", ExercisePoolListView.as_view(), name="pool-list"),
+    path("pools/create/", ExercisePoolCreateView.as_view(), name="pool-create"),
+    path("pools/<int:pk>/", ExercisePoolDetailView.as_view(), name="pool-detail"),
+    path("pools/<int:pk>/add-exercise/", ExercisePoolAddExerciseView.as_view(), name="pool-add-exercise"),
+    path("sessions/", WorkoutSessionListView.as_view(), name="session-list"),
+    path("sessions/create/", WorkoutSessionCreateView.as_view(), name="session-create"),
+    path("sessions/<int:pk>/", WorkoutSessionDetailView.as_view(), name="session-detail"),
+    path("sessions/<int:pk>/add-exercise/", WorkoutSessionAddExerciseView.as_view(), name="session-add-exercise"),
+    path(
+        "sessions/<int:session_pk>/session-exercises/<int:session_exercise_pk>/add-set/",
+        WorkoutSetCreateView.as_view(),
+        name="set-create",
+    ),
+    path(
+        "sessions/<int:pk>/htmx/add-exercise/",
+        HtmxWorkoutSessionAddExerciseView.as_view(),
+        name="htmx-session-add-exercise",
+    ),
+    path(
+        "sessions/<int:pk>/htmx/delete-exercise/<int:session_exercise_pk>/",
+        HtmxWorkoutSessionDeleteExerciseView.as_view(),
+        name="htmx-session-delete-exercise",
+    ),
+    path(
+        "sessions/<int:session_pk>/htmx/add-set/<int:session_exercise_pk>/",
+        HtmxWorkoutSetCreateView.as_view(),
+        name="htmx-set-create",
+    ),
+    path(
+        "sessions/<int:session_pk>/htmx/delete-set/<int:workout_set_pk>/",
+        HtmxWorkoutSetDeleteView.as_view(),
+        name="htmx-set-delete",
+    ),
+    path(
+        "sessions/<int:pk>/htmx/move-exercise/<int:session_exercise_pk>/<str:direction>/",
+        HtmxWorkoutSessionMoveExerciseView.as_view(),
+        name="htmx-session-move-exercise",
+    ),
+    path(
+        "sessions/<int:pk>/htmx/resequence/",
+        HtmxWorkoutSessionResequenceView.as_view(),
+        name="htmx-session-resequence",
+    ),
+    path(
+        "sessions/<int:session_pk>/htmx/update-set/<int:workout_set_pk>/",
+        HtmxWorkoutSetUpdateView.as_view(),
+        name="htmx-set-update",
+    ),
+    path(
+        "sessions/<int:pk>/htmx/update-header/",
+        HtmxWorkoutSessionUpdateView.as_view(),
+        name="htmx-session-update-header",
+    ),
+    path(
+        "sessions/<int:session_pk>/htmx/move-set/<int:workout_set_pk>/<str:direction>/",
+        HtmxWorkoutSetMoveView.as_view(),
+        name="htmx-set-move",
+    ),
+    path(
+        "sessions/<int:session_pk>/htmx/resequence-sets/<int:session_exercise_pk>/",
+        HtmxWorkoutSetResequenceView.as_view(),
+        name="htmx-set-resequence",
+    ),
+]

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Sessions | LYFE{% endblock %}
+
+{% block content %}
+<h1>Workout Sessions</h1>
+
+<div class="actions">
+    <a href="{% url 'fitness:session-create' %}">Create workout session</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Focus</th>
+            <th>Status</th>
+            <th>Source pool</th>
+            <th>Scheduled date</th>
+            <th>Started</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for session in sessions %}
+            <tr>
+                <td><a href="{% url 'fitness:session-detail' session.pk %}">{{ session.id }}</a></td>
+                <td>{{ session.get_focus_display }}</td>
+                <td>{{ session.get_status_display }}</td>
+                <td>{{ session.source_pool|default:"-" }}</td>
+                <td>{{ session.scheduled_date|default:"-" }}</td>
+                <td>{{ session.started_at|default:"-" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6">No workout sessions yet.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

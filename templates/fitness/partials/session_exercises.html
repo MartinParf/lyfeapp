@@ -1,0 +1,39 @@
+<div id="session-exercises">
+    <h2>Exercises</h2>
+
+    <div class="card">
+        <h3>Add Exercise</h3>
+        <form
+            method="post"
+            hx-post="{% url 'fitness:htmx-session-add-exercise' session.pk %}"
+            hx-target="#session-exercises"
+            hx-swap="outerHTML"
+            class="preserve-scroll"
+        >
+            {% csrf_token %}
+            {% for field in session.add_exercise_form %}
+                <div class="form-row">
+                    <div>{{ field.label_tag }}</div>
+                    <div>{{ field }}</div>
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <button type="submit">Add exercise to session</button>
+        </form>
+        <form
+            method="post"
+            hx-post="{% url 'fitness:htmx-session-resequence' session.pk %}"
+            hx-target="#session-exercises"
+            hx-swap="outerHTML"
+        >
+            {% csrf_token %}
+            <button type="submit">Normalize order</button>
+        </form>
+    </div>
+
+    {% for entry in session.session_exercises.all %}
+        {% include "fitness/partials/session_exercise_card.html" with entry=entry session=session %}
+    {% empty %}
+        <p>No exercises in this session yet.</p>
+    {% endfor %}
+</div>

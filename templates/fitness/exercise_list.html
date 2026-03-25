@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Exercises | LYFE{% endblock %}
+
+{% block content %}
+<h1>Exercise Library</h1>
+
+<div class="actions">
+    <a href="{% url 'fitness:exercise-create' %}">Create custom exercise</a>
+</div>
+
+<form method="get">
+    <label for="pattern">Pattern:</label>
+    <select name="pattern" id="pattern">
+        <option value="">All</option>
+        {% for value, label in pattern_choices %}
+            <option value="{{ value }}" {% if current_pattern == value %}selected{% endif %}>
+                {{ label }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filter</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Pattern</th>
+            <th>Type</th>
+            <th>Created by</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for exercise in exercises %}
+            <tr>
+                <td>{{ exercise.name }}</td>
+                <td>{{ exercise.get_primary_pattern_display|default:"-" }}</td>
+                <td>
+                    {% if exercise.is_custom %}Custom{% else %}Global{% endif %}
+                </td>
+                <td>{{ exercise.created_by|default:"System" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">No exercises found.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

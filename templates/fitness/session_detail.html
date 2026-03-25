@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Session {{ session.id }} | LYFE{% endblock %}
+
+{% block content %}
+<h1>Workout Session #{{ session.id }}</h1>
+
+<div id="session-header">
+    {% include "fitness/partials/session_header.html" %}
+</div>
+
+{% include "fitness/partials/session_exercises.html" %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Create Exercise | LYFE{% endblock %}
+
+{% block content %}
+<h1>Create Custom Exercise</h1>
+
+<p class="muted">
+    This creates a user-owned custom exercise. It will be available in pools and workout sessions.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="form-row">
+            <div>{{ field.label_tag }}</div>
+            <div>{{ field }}</div>
+            {% if field.help_text %}
+                <div class="muted">{{ field.help_text }}</div>
+            {% endif %}
+            {{ field.errors }}
+        </div>
+    {% endfor %}
+    <button type="submit">Save custom exercise</button>
+</form>
+{% endblock %}

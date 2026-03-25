@@ -1,0 +1,74 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lyfeapp_db
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    networks:
+      - lyfeapp_internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  web:
+    build: .
+    image: lyfeapp_image:latest
+    container_name: lyfeapp_web
+    restart: always
+    command: gunicorn lyfeapp_core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+      - static_volume:/code/staticfiles
+      - media_volume:/code/media
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    networks:
+      - lyfeapp_internal
+      - web_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    image: lyfeapp_image:latest
+    container_name: lyfeapp_huey
+    restart: always
+    command: python manage.py run_huey -w 1
+    volumes:
+      - .:/code
+      - media_volume:/code/media
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      PYTHONUNBUFFERED: "1"
+    networks:
+      - lyfeapp_internal
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 1024m
+    memswap_limit: 1024m
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  lyfeapp_internal:
+    internal: true
+  web_network:
+    external: true

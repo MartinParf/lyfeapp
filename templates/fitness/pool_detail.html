@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pool.name }} | LYFE{% endblock %}
+
+{% block content %}
+<h1>{{ pool.name }}</h1>
+
+<p><strong>Focus:</strong> {{ pool.get_focus_display }}</p>
+<p><strong>Active:</strong> {{ pool.is_active|yesno:"Yes,No" }}</p>
+
+{% if pool.description %}
+    <p><strong>Description:</strong> {{ pool.description }}</p>
+{% endif %}
+
+<div class="actions">
+    <a href="{% url 'fitness:pool-add-exercise' pool.pk %}">Add exercise to this pool</a>
+</div>
+
+<h2>Exercises in Pool</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Sequence</th>
+            <th>Exercise</th>
+            <th>Pattern</th>
+            <th>Active</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in pool.items.all %}
+            <tr>
+                <td>{{ item.sequence }}</td>
+                <td>{{ item.exercise.name }}</td>
+                <td>{{ item.exercise.get_primary_pattern_display|default:"-" }}</td>
+                <td>{{ item.is_active|yesno:"Yes,No" }}</td>
+                <td>{{ item.notes|default:"-" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">This pool has no exercises yet.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

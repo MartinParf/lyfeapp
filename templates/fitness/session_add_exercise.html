@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Add Exercise to Session | LYFE{% endblock %}
+
+{% block content %}
+<h1>Add Exercise to Session #{{ session.id }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="form-row">
+            <div>{{ field.label_tag }}</div>
+            <div>{{ field }}</div>
+            {% if field.help_text %}
+                <div class="muted">{{ field.help_text }}</div>
+            {% endif %}
+            {{ field.errors }}
+        </div>
+    {% endfor %}
+    <button type="submit">Add exercise</button>
+</form>
+{% endblock %}
