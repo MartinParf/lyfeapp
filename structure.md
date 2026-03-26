@@ -1,50 +1,81 @@
 # File Tree: lyfeapp
 
-**Generated:** 3/23/2026, 5:30:53 PM
+**Generated:** 3/26/2026, 7:28:50 PM
 **Root Path:** `/home/parf/DEV/lyfeapp`
 
 ```
-├── bio
-│   ├── migrations
-│   │   └── __init__.py
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── tests.py
-│   └── views.py
-├── core
-│   ├── migrations
-│   │   └── __init__.py
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── huey.py
-│   ├── models.py
-│   ├── tests.py
-│   └── views.py
-├── fitness
-│   ├── migrations
-│   │   └── __init__.py
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── tests.py
-│   └── views.py
-├── lyfeapp_core
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── templates
-├── .gitignore
-├── Dockerfile
-├── docker-compose.yml
-├── manage.py
-├── requirements.txt
-└── structure.md
+├── 📁 bio
+│   ├── 📁 migrations
+│   │   ├── 🐍 0001_initial.py
+│   │   └── 🐍 __init__.py
+│   ├── 🐍 __init__.py
+│   ├── 🐍 admin.py
+│   ├── 🐍 apps.py
+│   ├── 🐍 models.py
+│   ├── 🐍 signals.py
+│   ├── 🐍 tests.py
+│   └── 🐍 views.py
+├── 📁 core
+│   ├── 📁 migrations
+│   │   └── 🐍 __init__.py
+│   ├── 🐍 __init__.py
+│   ├── 🐍 admin.py
+│   ├── 🐍 apps.py
+│   ├── 🐍 huey.py
+│   ├── 🐍 models.py
+│   ├── 🐍 tests.py
+│   └── 🐍 views.py
+├── 📁 fitness
+│   ├── 📁 management
+│   │   ├── 📁 commands
+│   │   │   ├── 🐍 __init__.py
+│   │   │   └── 🐍 seed_exercises.py
+│   │   └── 🐍 __init__.py
+│   ├── 📁 migrations
+│   │   ├── 🐍 0001_initial.py
+│   │   ├── 🐍 0002_remove_exercise_uniq_exercise_created_by_slug.py
+│   │   └── 🐍 __init__.py
+│   ├── 🐍 __init__.py
+│   ├── 🐍 admin.py
+│   ├── 🐍 apps.py
+│   ├── 🐍 forms.py
+│   ├── 🐍 models.py
+│   ├── 🐍 tests.py
+│   ├── 🐍 urls.py
+│   └── 🐍 views.py
+├── 📁 lyfeapp_core
+│   ├── 🐍 __init__.py
+│   ├── 🐍 asgi.py
+│   ├── 🐍 settings.py
+│   ├── 🐍 urls.py
+│   └── 🐍 wsgi.py
+├── 📁 templates
+│   ├── 📁 fitness
+│   │   ├── 📁 partials
+│   │   │   ├── 🌐 session_exercise_card.html
+│   │   │   ├── 🌐 session_exercises.html
+│   │   │   └── 🌐 session_header.html
+│   │   ├── 🌐 exercise_form.html
+│   │   ├── 🌐 exercise_list.html
+│   │   ├── 🌐 pool_add_exercise.html
+│   │   ├── 🌐 pool_detail.html
+│   │   ├── 🌐 pool_edit_form.html
+│   │   ├── 🌐 pool_form.html
+│   │   ├── 🌐 pool_list.html
+│   │   ├── 🌐 session_add_exercise.html
+│   │   ├── 🌐 session_detail.html
+│   │   ├── 🌐 session_form.html
+│   │   ├── 🌐 session_list.html
+│   │   └── 🌐 set_form.html
+│   └── 🌐 base.html
+├── ⚙️ .gitignore
+├── 🐳 Dockerfile
+├── 📝 README.md
+├── ⚙️ docker-compose.yml
+├── 📄 gunicorn.ctl
+├── 🐍 manage.py
+├── 📄 requirements.txt
+└── 📝 structure.md
 ```
 
 ---

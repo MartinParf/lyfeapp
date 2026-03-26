@@ -22,6 +22,11 @@ from .views import (
     HtmxWorkoutSessionUpdateView,
     HtmxWorkoutSetMoveView,
     HtmxWorkoutSetResequenceView,
+    WorkoutSessionDeleteView,
+    ExercisePoolDeleteView,
+    ExercisePoolUpdateView,
+    ExerciseDeactivateView,
+    ExerciseUpdateView,
 )
 
 app_name = "fitness"
@@ -29,13 +34,18 @@ app_name = "fitness"
 urlpatterns = [
     path("exercises/", ExerciseListView.as_view(), name="exercise-list"),
     path("exercises/create/", ExerciseCreateView.as_view(), name="exercise-create"),
+    path("exercises/<int:pk>/edit/", ExerciseUpdateView.as_view(), name="exercise-edit"),
+    path("exercises/<int:pk>/deactivate/", ExerciseDeactivateView.as_view(), name="exercise-deactivate"),    
     path("pools/", ExercisePoolListView.as_view(), name="pool-list"),
     path("pools/create/", ExercisePoolCreateView.as_view(), name="pool-create"),
     path("pools/<int:pk>/", ExercisePoolDetailView.as_view(), name="pool-detail"),
+    path("pools/<int:pk>/edit/", ExercisePoolUpdateView.as_view(), name="pool-edit"),
+    path("pools/<int:pk>/delete/", ExercisePoolDeleteView.as_view(), name="pool-delete"),
     path("pools/<int:pk>/add-exercise/", ExercisePoolAddExerciseView.as_view(), name="pool-add-exercise"),
     path("sessions/", WorkoutSessionListView.as_view(), name="session-list"),
     path("sessions/create/", WorkoutSessionCreateView.as_view(), name="session-create"),
     path("sessions/<int:pk>/", WorkoutSessionDetailView.as_view(), name="session-detail"),
+    path("sessions/<int:pk>/delete/", WorkoutSessionDeleteView.as_view(), name="session-delete"),
     path("sessions/<int:pk>/add-exercise/", WorkoutSessionAddExerciseView.as_view(), name="session-add-exercise"),
     path(
         "sessions/<int:session_pk>/session-exercises/<int:session_exercise_pk>/add-set/",

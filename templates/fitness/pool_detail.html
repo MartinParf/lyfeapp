@@ -14,6 +14,17 @@
 
 <div class="actions">
     <a href="{% url 'fitness:pool-add-exercise' pool.pk %}">Add exercise to this pool</a>
+    <a href="{% url 'fitness:pool-edit' pool.pk %}" style="margin-left: 12px;">Edit pool</a>
+
+    <form
+        method="post"
+        action="{% url 'fitness:pool-delete' pool.pk %}"
+        style="display: inline; margin-left: 12px;"
+        onsubmit="return confirm('Delete this pool?');"
+    >
+        {% csrf_token %}
+        <button type="submit" class="danger">Delete pool</button>
+    </form>
 </div>
 
 <h2>Exercises in Pool</h2>

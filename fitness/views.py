@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
-from django.db.models import Prefetch, Q
+from django.db.models import Max, Prefetch, Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -74,7 +74,6 @@ def attach_session_forms(session):
 
         entry.previous_entry = previous_entry
 
-        # BEST SET (PR) + LAST SET
         best_set = (
             WorkoutSet.objects.filter(
                 session_exercise__exercise=entry.exercise,
@@ -85,10 +84,7 @@ def attach_session_forms(session):
             .first()
         )
 
-        last_set = (
-            previous_entry.sets.order_by("-set_order").first()
-            if previous_entry else None
-        )
+        last_set = previous_entry.sets.order_by("-set_order").first() if previous_entry else None
 
         entry.best_set = best_set
         entry.last_set = last_set
@@ -156,6 +152,45 @@ class ExerciseCreateView(LoginRequiredMixin, View):
             return redirect("fitness:exercise-list")
         return render(request, self.template_name, {"form": form})
 
+class ExerciseUpdateView(LoginRequiredMixin, View):
+    template_name = "fitness/exercise_edit_form.html"
+
+    def get_exercise(self, request, pk):
+        return get_object_or_404(
+            Exercise,
+            pk=pk,
+            created_by=request.user,
+        )
+
+    def get(self, request, pk):
+        exercise = self.get_exercise(request, pk)
+        form = ExerciseForm(instance=exercise)
+        return render(request, self.template_name, {"exercise": exercise, "form": form})
+
+    def post(self, request, pk):
+        exercise = self.get_exercise(request, pk)
+        form = ExerciseForm(request.POST, instance=exercise)
+
+        if form.is_valid():
+            updated_exercise = form.save(commit=False)
+            updated_exercise.created_by = request.user
+            updated_exercise.save()
+            return redirect("fitness:exercise-list")
+
+        return render(request, self.template_name, {"exercise": exercise, "form": form})
+
+
+class ExerciseDeactivateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        exercise = get_object_or_404(
+            Exercise,
+            pk=pk,
+            created_by=request.user,
+        )
+        exercise.is_active = False
+        exercise.save(update_fields=["is_active", "updated_at"])
+        return redirect("fitness:exercise-list")
+
 
 class ExercisePoolListView(LoginRequiredMixin, ListView):
     model = ExercisePool
@@ -191,6 +226,33 @@ class ExercisePoolCreateView(LoginRequiredMixin, View):
             return redirect("fitness:pool-detail", pk=pool.pk)
         return render(request, self.template_name, {"form": form})
 
+class ExercisePoolUpdateView(LoginRequiredMixin, View):
+    template_name = "fitness/pool_edit_form.html"
+
+    def get_pool(self, request, pk):
+        return get_object_or_404(ExercisePool, pk=pk, user=request.user)
+
+    def get(self, request, pk):
+        pool = self.get_pool(request, pk)
+        form = ExercisePoolForm(instance=pool)
+        return render(request, self.template_name, {"pool": pool, "form": form})
+
+    def post(self, request, pk):
+        pool = self.get_pool(request, pk)
+        form = ExercisePoolForm(request.POST, instance=pool)
+
+        if form.is_valid():
+            form.save()
+            return redirect("fitness:pool-detail", pk=pool.pk)
+
+        return render(request, self.template_name, {"pool": pool, "form": form})
+
+
+class ExercisePoolDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        pool = get_object_or_404(ExercisePool, pk=pk, user=request.user)
+        pool.delete()
+        return redirect("fitness:pool-list")
 
 class ExercisePoolDetailView(LoginRequiredMixin, View):
     template_name = "fitness/pool_detail.html"
@@ -314,13 +376,23 @@ class WorkoutSessionAddExerciseView(LoginRequiredMixin, View):
         form = WorkoutSessionExerciseForm(request.POST, session=session)
 
         if form.is_valid():
+            next_sequence = (
+                session.session_exercises.order_by("-sequence").values_list("sequence", flat=True).first() or 0
+            ) + 1
+
             session_exercise = form.save(commit=False)
             session_exercise.session = session
+            session_exercise.sequence = next_sequence
             session_exercise.save()
             return redirect("fitness:session-detail", pk=session.pk)
 
         return render(request, self.template_name, {"session": session, "form": form})
 
+class WorkoutSessionDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        session = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+        session.delete()
+        return redirect("fitness:session-list")
 
 class WorkoutSetCreateView(LoginRequiredMixin, View):
     template_name = "fitness/set_form.html"
@@ -365,8 +437,13 @@ class HtmxWorkoutSessionAddExerciseView(LoginRequiredMixin, View):
         form = WorkoutSessionExerciseForm(request.POST, session=session)
 
         if form.is_valid():
+            next_sequence = (
+                session.session_exercises.order_by("-sequence").values_list("sequence", flat=True).first() or 0
+            ) + 1
+
             session_exercise = form.save(commit=False)
             session_exercise.session = session
+            session_exercise.sequence = next_sequence
             session_exercise.save()
 
         session = get_object_or_404(get_session_queryset(request.user), pk=pk)
@@ -410,8 +487,13 @@ class HtmxWorkoutSetCreateView(LoginRequiredMixin, View):
         )
 
         if form.is_valid():
+            next_order = (
+                session_exercise.sets.order_by("-set_order").values_list("set_order", flat=True).first() or 0
+            ) + 1
+
             workout_set = form.save(commit=False)
             workout_set.session_exercise = session_exercise
+            workout_set.set_order = next_order
             workout_set.save()
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
@@ -524,6 +606,7 @@ class HtmxWorkoutSetUpdateView(LoginRequiredMixin, View):
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         return render_session_exercises_partial(request, session)
+
 
 class MethodNotAllowedView(View):
     def dispatch(self, request, *args, **kwargs):

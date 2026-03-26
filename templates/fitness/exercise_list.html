@@ -29,6 +29,8 @@
             <th>Pattern</th>
             <th>Type</th>
             <th>Created by</th>
+            <th>Active</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -40,10 +42,32 @@
                     {% if exercise.is_custom %}Custom{% else %}Global{% endif %}
                 </td>
                 <td>{{ exercise.created_by|default:"System" }}</td>
+                <td>{{ exercise.is_active|yesno:"Yes,No" }}</td>
+                <td>
+                    {% if exercise.created_by == request.user %}
+                        <a href="{% url 'fitness:exercise-edit' exercise.pk %}">Edit</a>
+
+                        {% if exercise.is_active %}
+                            <form
+                                method="post"
+                                action="{% url 'fitness:exercise-deactivate' exercise.pk %}"
+                                style="display: inline; margin-left: 8px;"
+                                onsubmit="return confirm('Deactivate this custom exercise?');"
+                            >
+                                {% csrf_token %}
+                                <button type="submit" class="danger">Deactivate</button>
+                            </form>
+                        {% else %}
+                            <span class="muted">Inactive</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="muted">Read only</span>
+                    {% endif %}
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="4">No exercises found.</td>
+                <td colspan="6">No exercises found.</td>
             </tr>
         {% endfor %}
     </tbody>

@@ -18,21 +18,37 @@
             <th>Source pool</th>
             <th>Scheduled date</th>
             <th>Started</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for session in sessions %}
             <tr>
-                <td><a href="{% url 'fitness:session-detail' session.pk %}">{{ session.id }}</a></td>
+                <td>
+                    <a href="{% url 'fitness:session-detail' session.pk %}">{{ session.id }}</a>
+                </td>
                 <td>{{ session.get_focus_display }}</td>
                 <td>{{ session.get_status_display }}</td>
                 <td>{{ session.source_pool|default:"-" }}</td>
                 <td>{{ session.scheduled_date|default:"-" }}</td>
                 <td>{{ session.started_at|default:"-" }}</td>
+                <td>
+                    <a href="{% url 'fitness:session-detail' session.pk %}">Open</a>
+
+                    <form
+                        method="post"
+                        action="{% url 'fitness:session-delete' session.pk %}"
+                        style="display: inline; margin-left: 8px;"
+                        onsubmit="return confirm('Delete this workout session?');"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="danger">Delete</button>
+                    </form>
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="6">No workout sessions yet.</td>
+                <td colspan="7">No workout sessions yet.</td>
             </tr>
         {% endfor %}
     </tbody>

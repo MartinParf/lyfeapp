@@ -77,33 +77,19 @@ class WorkoutSessionForm(forms.ModelForm):
 class WorkoutSessionExerciseForm(forms.ModelForm):
     class Meta:
         model = WorkoutSessionExercise
-        fields = ["exercise", "sequence", "notes"]
+        fields = ["exercise", "notes"]
 
     def __init__(self, *args, **kwargs):
-        session = kwargs.pop("session", None)
+        kwargs.pop("session", None)
         super().__init__(*args, **kwargs)
-
         self.fields["exercise"].queryset = Exercise.objects.filter(is_active=True).order_by("name")
-
-        if session is not None and not self.instance.pk:
-            next_sequence = (
-                session.session_exercises.order_by("-sequence").values_list("sequence", flat=True).first() or 0
-            ) + 1
-            self.fields["sequence"].initial = next_sequence
-            self.fields["sequence"].widget.attrs["readonly"] = True
 
 
 class WorkoutSetForm(forms.ModelForm):
     class Meta:
         model = WorkoutSet
-        fields = ["set_order", "set_type", "weight_kg", "reps", "rpe", "notes"]
+        fields = ["set_type", "weight_kg", "reps", "rpe", "notes"]
 
     def __init__(self, *args, **kwargs):
-        session_exercise = kwargs.pop("session_exercise", None)
+        kwargs.pop("session_exercise", None)
         super().__init__(*args, **kwargs)
-
-        if session_exercise is not None and not self.instance.pk:
-            next_order = (
-                session_exercise.sets.order_by("-set_order").values_list("set_order", flat=True).first() or 0
-            ) + 1
-            self.fields["set_order"].widget.attrs["readonly"] = True
