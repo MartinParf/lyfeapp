@@ -1,0 +1,79 @@
+<div id="pool-items">
+    <h2>Exercises in Pool</h2>
+
+    {% for item in pool.items.all %}
+        <div class="list-card">
+            <div class="meta-grid two-col">
+                <div>
+                    <div class="meta-item-label">Sequence</div>
+                    <div class="meta-item-value">{{ item.sequence }}</div>
+                </div>
+
+                <div>
+                    <div class="meta-item-label">Exercise</div>
+                    <div class="meta-item-value">{{ item.exercise.name }}</div>
+                </div>
+
+                <div>
+                    <div class="meta-item-label">Pattern</div>
+                    <div class="meta-item-value">{{ item.exercise.get_primary_pattern_display|default:"-" }}</div>
+                </div>
+
+                <div>
+                    <div class="meta-item-label">Active</div>
+                    <div class="meta-item-value">{{ item.is_active|yesno:"Yes,No" }}</div>
+                </div>
+
+                {% if item.notes %}
+                    <div style="grid-column: 1 / -1;">
+                        <div class="meta-item-label">Notes</div>
+                        <div class="meta-item-value" style="font-weight: normal;">{{ item.notes }}</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="action-group">
+                <form
+                    method="post"
+                    hx-post="{% url 'fitness:htmx-pool-item-move' pool.pk item.pk 'up' %}"
+                    hx-target="#pool-items"
+                    hx-swap="outerHTML"
+                    class="preserve-scroll"
+                    style="display: inline;"
+                >
+                    {% csrf_token %}
+                    <button type="submit">↑</button>
+                </form>
+
+                <form
+                    method="post"
+                    hx-post="{% url 'fitness:htmx-pool-item-move' pool.pk item.pk 'down' %}"
+                    hx-target="#pool-items"
+                    hx-swap="outerHTML"
+                    class="preserve-scroll"
+                    style="display: inline;"
+                >
+                    {% csrf_token %}
+                    <button type="submit">↓</button>
+                </form>
+
+                <form
+                    method="post"
+                    hx-post="{% url 'fitness:htmx-pool-item-delete' pool.pk item.pk %}"
+                    hx-target="#pool-items"
+                    hx-swap="outerHTML"
+                    class="preserve-scroll"
+                    style="display: inline;"
+                    onsubmit="return confirm('Remove this exercise from the pool?');"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="danger">Remove</button>
+                </form>
+            </div>
+        </div>
+    {% empty %}
+        <div class="list-card">
+            <div class="muted">This pool has no exercises yet.</div>
+        </div>
+    {% endfor %}
+</div>

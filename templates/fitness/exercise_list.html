@@ -6,70 +6,76 @@
 <h1>Exercise Library</h1>
 
 <div class="actions">
-    <a href="{% url 'fitness:exercise-create' %}">Create custom exercise</a>
+    <a href="{% url 'fitness:exercise-create' %}" class="link-button primary-button">
+        Create custom exercise
+    </a>
 </div>
 
-<form method="get">
-    <label for="pattern">Pattern:</label>
-    <select name="pattern" id="pattern">
-        <option value="">All</option>
-        {% for value, label in pattern_choices %}
-            <option value="{{ value }}" {% if current_pattern == value %}selected{% endif %}>
-                {{ label }}
-            </option>
-        {% endfor %}
-    </select>
+<form method="get" class="list-card">
+    <div class="form-row">
+        <label for="pattern">Pattern</label>
+        <select name="pattern" id="pattern">
+            <option value="">All</option>
+            {% for value, label in pattern_choices %}
+                <option value="{{ value }}" {% if current_pattern == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
     <button type="submit">Filter</button>
 </form>
 
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Pattern</th>
-            <th>Type</th>
-            <th>Created by</th>
-            <th>Active</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for exercise in exercises %}
-            <tr>
-                <td>{{ exercise.name }}</td>
-                <td>{{ exercise.get_primary_pattern_display|default:"-" }}</td>
-                <td>
-                    {% if exercise.is_custom %}Custom{% else %}Global{% endif %}
-                </td>
-                <td>{{ exercise.created_by|default:"System" }}</td>
-                <td>{{ exercise.is_active|yesno:"Yes,No" }}</td>
-                <td>
-                    {% if exercise.created_by == request.user %}
-                        <a href="{% url 'fitness:exercise-edit' exercise.pk %}">Edit</a>
+{% for exercise in exercises %}
+    <div class="list-card">
+        <h3 class="list-card-title">{{ exercise.name }}</h3>
 
-                        {% if exercise.is_active %}
-                            <form
-                                method="post"
-                                action="{% url 'fitness:exercise-deactivate' exercise.pk %}"
-                                style="display: inline; margin-left: 8px;"
-                                onsubmit="return confirm('Deactivate this custom exercise?');"
-                            >
-                                {% csrf_token %}
-                                <button type="submit" class="danger">Deactivate</button>
-                            </form>
-                        {% else %}
-                            <span class="muted">Inactive</span>
-                        {% endif %}
+        <div class="meta-grid two-col">
+            <div>
+                <div class="meta-item-label">Pattern</div>
+                <div class="meta-item-value">{{ exercise.get_primary_pattern_display|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Source</div>
+                <div class="meta-item-value">
+                    {% if exercise.created_by == request.user %}
+                        Custom
                     {% else %}
-                        <span class="muted">Read only</span>
+                        System
                     {% endif %}
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="6">No exercises found.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-group">
+            {% if exercise.created_by == request.user %}
+                <a href="{% url 'fitness:exercise-edit' exercise.pk %}" class="link-button">
+                    Edit
+                </a>
+
+                {% if exercise.is_active %}
+                    <form
+                        method="post"
+                        action="{% url 'fitness:exercise-deactivate' exercise.pk %}"
+                        style="display: inline;"
+                        onsubmit="return confirm('Deactivate this custom exercise?');"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="danger">Deactivate</button>
+                    </form>
+                {% else %}
+                    <span class="muted">Inactive</span>
+                {% endif %}
+            {% else %}
+                <span class="muted">System exercise</span>
+            {% endif %}
+        </div>
+    </div>
+{% empty %}
+    <div class="list-card">
+        <div class="muted">No exercises found.</div>
+    </div>
+{% endfor %}
 {% endblock %}

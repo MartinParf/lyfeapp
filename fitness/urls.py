@@ -29,6 +29,8 @@ from .views import (
     ExerciseUpdateView,
     HtmxWorkoutSetRepeatView,
     HtmxWorkoutSetApplySuggestionView,
+    HtmxPoolItemDeleteView,
+    HtmxPoolItemMoveView,
     WorkoutSessionCloneView,
 )
 
@@ -115,5 +117,15 @@ urlpatterns = [
         "sessions/<int:session_pk>/exercise/<int:session_exercise_pk>/apply-suggestion/",
         HtmxWorkoutSetApplySuggestionView.as_view(),
         name="htmx-set-apply-suggestion",
+    ),
+    path(
+        "pools/<int:pk>/htmx/items/<int:item_pk>/move/<str:direction>/",
+        HtmxPoolItemMoveView.as_view(),
+        name="htmx-pool-item-move",
+    ),
+path(
+        "pools/<int:pk>/htmx/items/<int:item_pk>/delete/",
+        HtmxPoolItemDeleteView.as_view(),
+        name="htmx-pool-item-delete",
     ),
 ]

@@ -716,6 +716,88 @@ class HtmxWorkoutSetApplySuggestionView(LoginRequiredMixin, View):
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         return render_session_exercises_partial(request, session)
 
+class HtmxPoolItemMoveView(LoginRequiredMixin, View):
+    @transaction.atomic
+    def post(self, request, pk, item_pk, direction):
+        pool = get_object_or_404(ExercisePool, pk=pk, user=request.user)
+
+        current = get_object_or_404(
+            ExercisePoolItem,
+            pk=item_pk,
+            pool=pool,
+        )
+
+        siblings = pool.items.all()
+
+        if direction == "up":
+            swap_with = (
+                siblings.filter(sequence__lt=current.sequence)
+                .order_by("-sequence")
+                .first()
+            )
+        elif direction == "down":
+            swap_with = (
+                siblings.filter(sequence__gt=current.sequence)
+                .order_by("sequence")
+                .first()
+            )
+        else:
+            return HttpResponseNotAllowed(["POST"])
+
+        if swap_with:
+            original_current_sequence = current.sequence
+            original_swap_sequence = swap_with.sequence
+
+            current.sequence = 0
+            current.save(update_fields=["sequence"])
+
+            swap_with.sequence = original_current_sequence
+            swap_with.save(update_fields=["sequence"])
+
+            current.sequence = original_swap_sequence
+            current.save(update_fields=["sequence"])
+
+        pool = get_object_or_404(
+            ExercisePool.objects.filter(user=request.user).prefetch_related(
+                Prefetch(
+                    "items",
+                    queryset=ExercisePoolItem.objects.select_related("exercise").order_by("sequence", "id"),
+                )
+            ),
+            pk=pk,
+        )
+        return render(request, "fitness/partials/pool_items.html", {"pool": pool})
+
+
+class HtmxPoolItemDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk, item_pk):
+        pool = get_object_or_404(ExercisePool, pk=pk, user=request.user)
+
+        item = get_object_or_404(
+            ExercisePoolItem,
+            pk=item_pk,
+            pool=pool,
+        )
+        item.delete()
+
+        items = pool.items.order_by("sequence", "id")
+        for idx, pool_item in enumerate(items, start=1):
+            if pool_item.sequence != idx:
+                pool_item.sequence = idx
+                pool_item.save(update_fields=["sequence"])
+
+        pool = get_object_or_404(
+            ExercisePool.objects.filter(user=request.user).prefetch_related(
+                Prefetch(
+                    "items",
+                    queryset=ExercisePoolItem.objects.select_related("exercise").order_by("sequence", "id"),
+                )
+            ),
+            pk=pk,
+        )
+        return render(request, "fitness/partials/pool_items.html", {"pool": pool})
+
+
 class MethodNotAllowedView(View):
     def dispatch(self, request, *args, **kwargs):
         return HttpResponseNotAllowed(permitted_methods=["GET", "POST"])

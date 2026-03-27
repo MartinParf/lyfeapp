@@ -6,63 +6,72 @@
 <h1>Workout Sessions</h1>
 
 <div class="actions">
-    <a href="{% url 'fitness:session-create' %}">Create workout session</a>
+    <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
+        Create workout session
+    </a>
 </div>
 
+{% for session in sessions %}
+    <div class="list-card">
+        <h3 class="list-card-title">
+            Session #{{ session.id }}
+        </h3>
 
+        <div class="meta-grid two-col">
+            <div>
+                <div class="meta-item-label">Focus</div>
+                <div class="meta-item-value">{{ session.get_focus_display }}</div>
+            </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Focus</th>
-            <th>Status</th>
-            <th>Source pool</th>
-            <th>Scheduled date</th>
-            <th>Started</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for session in sessions %}
-            <tr>
-                <td>
-                    <a href="{% url 'fitness:session-detail' session.pk %}">{{ session.id }}</a>
-                </td>
-                <td>{{ session.get_focus_display }}</td>
-                <td>{{ session.get_status_display }}</td>
-                <td>{{ session.source_pool|default:"-" }}</td>
-                <td>{{ session.scheduled_date|default:"-" }}</td>
-                <td>{{ session.started_at|default:"-" }}</td>
-                <td>
-                    <a href="{% url 'fitness:session-detail' session.pk %}">Open</a>
+            <div>
+                <div class="meta-item-label">Status</div>
+                <div class="meta-item-value">{{ session.get_status_display }}</div>
+            </div>
 
-                    <form
-                        method="post"
-                        action="{% url 'fitness:session-delete' session.pk %}"
-                        style="display: inline; margin-left: 8px;"
-                        onsubmit="return confirm('Delete this workout session?');"
-                    >
-                        {% csrf_token %}
-                        <button type="submit" class="danger">Delete</button>
-                    </form>
+            <div>
+                <div class="meta-item-label">Source pool</div>
+                <div class="meta-item-value">{{ session.source_pool|default:"-" }}</div>
+            </div>
 
-                    <form
-                        method="post"
-                        action="{% url 'fitness:session-clone' session.pk %}"
-                        style="display: inline; margin-left: 8px;"
-                    >
-                        {% csrf_token %}
-                        <button type="submit">Clone</button>
-                    </form>
+            <div>
+                <div class="meta-item-label">Scheduled date</div>
+                <div class="meta-item-value">{{ session.scheduled_date|default:"-" }}</div>
+            </div>
 
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="7">No workout sessions yet.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            <div>
+                <div class="meta-item-label">Started</div>
+                <div class="meta-item-value">{{ session.started_at|default:"-" }}</div>
+            </div>
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:session-detail' session.pk %}" class="link-button primary-button">
+                Open
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'fitness:session-clone' session.pk %}"
+                style="display: inline;"
+            >
+                {% csrf_token %}
+                <button type="submit">Clone</button>
+            </form>
+
+            <form
+                method="post"
+                action="{% url 'fitness:session-delete' session.pk %}"
+                style="display: inline;"
+                onsubmit="return confirm('Delete this workout session?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete</button>
+            </form>
+        </div>
+    </div>
+{% empty %}
+    <div class="list-card">
+        <div class="muted">No workout sessions yet.</div>
+    </div>
+{% endfor %}
 {% endblock %}

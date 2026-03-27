@@ -26,16 +26,20 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1100px;
+            max-width: 920px;
             margin: 0 auto;
-            padding: 24px;
-            line-height: 1.5;
+            padding: 12px;
+            line-height: 1.4;
+            font-size: 15px;
         }
         nav {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         nav a {
-            margin-right: 16px;
+            text-decoration: none;
         }
         table {
             width: 100%;
@@ -56,25 +60,40 @@
         }
         .errorlist {
             color: #b00020;
+            margin: 4px 0;
         }
         .muted {
             color: #666;
         }
         .card {
             border: 1px solid #ccc;
-            padding: 16px;
-            margin: 16px 0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .card h3, .card h4 {
+            margin-top: 0;
         }
         ul {
             padding-left: 20px;
         }
         button {
             cursor: pointer;
+            min-height: 36px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid #bbb;
+            background: #f7f7f7;
+            font-size: 14px;
+            line-height: 1.2;
         }
         .inline-form {
-            margin-top: 12px;
-            padding: 12px;
+            margin-top: 8px;
+            padding: 8px;
             border: 1px dashed #bbb;
+            border-radius: 10px;
+            background: #fcfcfc;
         }
         .danger {
             color: #b00020;
@@ -82,14 +101,216 @@
         input, select, textarea {
             width: 100%;
             box-sizing: border-box;
+            min-height: 40px;
+            padding: 8px 10px;
+            border: 1px solid #bbb;
+            border-radius: 8px;
+        }
+        textarea {
+            height: 44px;
+            min-height: 44px;
+            resize: none;
         }
         .errorlist {
             color: #b00020;
             margin: 4px 0;
         }
+        .action-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .stack-mobile {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .set-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .section-title {
+            margin: 0 0 10px 0;
+        }
+        .divider-space {
+            margin-bottom: 16px;
+        }
+        .link-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid #bbb;
+            background: #f7f7f7;
+            text-decoration: none;
+            color: inherit;
+            box-sizing: border-box;
+            font-size: 14px;
+            line-height: 1.2;
+        }
 
+        .link-button:hover {
+            background: #efefef;
+        }
+
+        .primary-button {
+            background: #eaf3ff;
+            border-color: #9fc2f7;
+        }
+
+        .list-card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 8px;
+            margin: 8px 0;
+            background: #fff;
+        }
+
+        .list-card-title {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+        }
+
+        .meta-grid {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .meta-grid.two-col {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            column-gap: 12px;
+            row-gap: 6px;
+        }
+
+        .meta-item-label {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.2;
+        }
+
+        .meta-item-value {
+            font-weight: 600;
+            font-size: 13px;
+            line-height: 1.15;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .action-group form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .action-group .link-button,
+        .action-group button {
+            min-width: 82px;
+            justify-content: center;
+        }
+        .compact-card {
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .compact-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .compact-input {
+            max-width: 90px;
+        }
+
+        .compact-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .compact-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .compact-set {
+            border-bottom: 1px solid #eee;
+            padding: 6px 0;
+        }
+
+        .compact-set:last-child {
+            border-bottom: none;
+        }
         input:invalid, select:invalid {
-        border: 1px solid #b00020;
+            border: 1px solid #b00020;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .card,
+            .list-card {
+                padding: 8px;
+                margin: 8px 0;
+            }
+
+            .list-card-title {
+                font-size: 16px;
+                margin-bottom: 4px;
+            }
+
+            .meta-item-label {
+                font-size: 11px;
+            }
+
+            .meta-item-value {
+                font-size: 13px;
+            }
+
+            .stack-mobile {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-row button,
+            .set-actions button,
+            .action-group button,
+            .link-button {
+                width: auto;
+                min-width: 44px;
+                min-height: 34px;
+                padding: 6px 8px;
+                font-size: 13px;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .action-row button,
+            .set-actions button,
+            .action-group button {
+                width: auto;
+            }
+
+            .action-group .link-button,
+            .action-group button {
+                min-width: 82px;
+            }
+
+            .mobile-tight {
+                margin-bottom: 6px;
+            }
         }
     </style>
 </head>
@@ -106,5 +327,16 @@
     {% endif %}
 
     {% block content %}{% endblock %}
+    <script>
+        let scrollPosition = 0;
+    
+        document.body.addEventListener('htmx:beforeRequest', function () {
+            scrollPosition = window.scrollY;
+        });
+    
+        document.body.addEventListener('htmx:afterSwap', function () {
+            window.scrollTo(0, scrollPosition);
+        });
+    </script>
 </body>
 </html>

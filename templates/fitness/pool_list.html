@@ -1,53 +1,66 @@
 {% extends "base.html" %}
 
-{% block title %}Pools | LYFE{% endblock %}
+{% block title %}Exercise Pools | LYFE{% endblock %}
 
 {% block content %}
 <h1>Exercise Pools</h1>
 
 <div class="actions">
-    <a href="{% url 'fitness:pool-create' %}">Create new pool</a>
+    <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
+        Create pool
+    </a>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Focus</th>
-            <th>Active</th>
-            <th>Exercises</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for pool in pools %}
-            <tr>
-                <td>
-                    <a href="{% url 'fitness:pool-detail' pool.pk %}">{{ pool.name }}</a>
-                </td>
-                <td>{{ pool.get_focus_display }}</td>
-                <td>{{ pool.is_active|yesno:"Yes,No" }}</td>
-                <td>{{ pool.items.count }}</td>
-                <td>
-                    <a href="{% url 'fitness:pool-detail' pool.pk %}">Open</a>
-                    <a href="{% url 'fitness:pool-edit' pool.pk %}" style="margin-left: 8px;">Edit</a>
+{% for pool in pools %}
+    <div class="list-card">
+        <h3 class="list-card-title">
+            {{ pool.name }}
+        </h3>
 
-                    <form
-                        method="post"
-                        action="{% url 'fitness:pool-delete' pool.pk %}"
-                        style="display: inline; margin-left: 8px;"
-                        onsubmit="return confirm('Delete this pool?');"
-                    >
-                        {% csrf_token %}
-                        <button type="submit" class="danger">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="5">No pools yet.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <div class="meta-grid two-col">
+            <div>
+                <div class="meta-item-label">Focus</div>
+                <div class="meta-item-value">{{ pool.get_focus_display }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Active</div>
+                <div class="meta-item-value">
+                    {% if pool.is_active %}Yes{% else %}No{% endif %}
+                </div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Exercises</div>
+                <div class="meta-item-value">
+                    {{ pool.items.count }}
+                </div>
+            </div>
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:pool-detail' pool.pk %}" class="link-button primary-button">
+                Open
+            </a>
+
+            <a href="{% url 'fitness:pool-edit' pool.pk %}" class="link-button">
+                Edit
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'fitness:pool-delete' pool.pk %}"
+                style="display: inline;"
+                onsubmit="return confirm('Delete this pool?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete</button>
+            </form>
+        </div>
+    </div>
+{% empty %}
+    <div class="list-card">
+        <div class="muted">No exercise pools yet.</div>
+    </div>
+{% endfor %}
 {% endblock %}
