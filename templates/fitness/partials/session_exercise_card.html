@@ -35,20 +35,38 @@
         <p><strong>Notes:</strong> {{ entry.notes }}</p>
     {% endif %}
 
-    {% if entry.previous_entry or entry.best_set %}
+    {% if entry.last_set or entry.best_set or entry.try_weight_kg %}
         <div class="card" style="background: #f8f8f8;">
             <strong>Performance hint</strong>
 
             {% if entry.last_set %}
                 <p class="muted">
-                    Last: {{ entry.last_set.weight_kg }} kg × {{ entry.last_set.reps }}
+                    Last: {{ entry.last_set.weight_kg|default:"-" }} kg × {{ entry.last_set.reps|default:"-" }}
                 </p>
             {% endif %}
 
             {% if entry.best_set %}
                 <p class="muted">
-                    PR: {{ entry.best_set.weight_kg }} kg × {{ entry.best_set.reps }}
+                    PR: {{ entry.best_set.weight_kg|default:"-" }} kg × {{ entry.best_set.reps|default:"-" }}
                 </p>
+            {% endif %}
+
+            {% if entry.try_weight_kg %}
+                <p class="muted">
+                    Try: {{ entry.try_weight_kg }} kg × {{ entry.try_reps|default:"-" }}
+                </p>
+
+                <form
+                    method="post"
+                    hx-post="{% url 'fitness:htmx-set-apply-suggestion' session.pk entry.pk %}"
+                    hx-target="#session-exercises"
+                    hx-swap="outerHTML"
+                    class="preserve-scroll"
+                    style="margin-top: 8px;"
+                >
+                    {% csrf_token %}
+                    <button type="submit">Apply suggested set</button>
+                </form>
             {% endif %}
         </div>
     {% endif %}
@@ -158,6 +176,17 @@
 
     <div class="inline-form">
         <h4>Add Set</h4>
+        <form
+            method="post"
+            hx-post="{% url 'fitness:htmx-set-repeat' session.pk entry.pk %}"
+            hx-target="#session-exercises"
+            hx-swap="outerHTML"
+            class="preserve-scroll"
+            style="margin-bottom: 12px;"
+        >
+            {% csrf_token %}
+            <button type="submit">Repeat last set</button>
+        </form>
         <form
             method="post"
             hx-post="{% url 'fitness:htmx-set-create' session.pk entry.pk %}"

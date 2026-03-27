@@ -27,6 +27,9 @@ from .views import (
     ExercisePoolUpdateView,
     ExerciseDeactivateView,
     ExerciseUpdateView,
+    HtmxWorkoutSetRepeatView,
+    HtmxWorkoutSetApplySuggestionView,
+    WorkoutSessionCloneView,
 )
 
 app_name = "fitness"
@@ -46,6 +49,7 @@ urlpatterns = [
     path("sessions/create/", WorkoutSessionCreateView.as_view(), name="session-create"),
     path("sessions/<int:pk>/", WorkoutSessionDetailView.as_view(), name="session-detail"),
     path("sessions/<int:pk>/delete/", WorkoutSessionDeleteView.as_view(), name="session-delete"),
+    path("sessions/<int:pk>/clone/", WorkoutSessionCloneView.as_view(), name="session-clone"),
     path("sessions/<int:pk>/add-exercise/", WorkoutSessionAddExerciseView.as_view(), name="session-add-exercise"),
     path(
         "sessions/<int:session_pk>/session-exercises/<int:session_exercise_pk>/add-set/",
@@ -101,5 +105,15 @@ urlpatterns = [
         "sessions/<int:session_pk>/htmx/resequence-sets/<int:session_exercise_pk>/",
         HtmxWorkoutSetResequenceView.as_view(),
         name="htmx-set-resequence",
+    ),
+    path(
+        "sessions/<int:session_pk>/exercise/<int:session_exercise_pk>/repeat-set/",
+        HtmxWorkoutSetRepeatView.as_view(),
+        name="htmx-set-repeat",
+    ),
+    path(
+        "sessions/<int:session_pk>/exercise/<int:session_exercise_pk>/apply-suggestion/",
+        HtmxWorkoutSetApplySuggestionView.as_view(),
+        name="htmx-set-apply-suggestion",
     ),
 ]

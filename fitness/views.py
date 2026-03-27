@@ -5,6 +5,7 @@ from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import ListView
+from decimal import Decimal
 
 from .forms import (
     ExerciseForm,
@@ -46,17 +47,6 @@ def attach_session_forms(session):
     session.add_exercise_form = WorkoutSessionExerciseForm(session=session)
 
     for entry in session.session_exercises.all():
-        entry.add_set_form = WorkoutSetForm(
-            session_exercise=entry,
-            prefix=f"set-{entry.pk}",
-        )
-
-        for workout_set in entry.sets.all():
-            workout_set.edit_form = WorkoutSetForm(
-                instance=workout_set,
-                prefix=f"edit-set-{workout_set.pk}",
-            )
-
         previous_entry = (
             WorkoutSessionExercise.objects.select_related("session", "exercise")
             .prefetch_related(
@@ -73,8 +63,12 @@ def attach_session_forms(session):
         )
 
         entry.previous_entry = previous_entry
+        entry.last_set = (
+            previous_entry.sets.order_by("-set_order").first()
+            if previous_entry else None
+        )
 
-        best_set = (
+        entry.best_set = (
             WorkoutSet.objects.filter(
                 session_exercise__exercise=entry.exercise,
                 session_exercise__session__user=session.user,
@@ -84,10 +78,46 @@ def attach_session_forms(session):
             .first()
         )
 
-        last_set = previous_entry.sets.order_by("-set_order").first() if previous_entry else None
+        entry.try_weight_kg = None
+        entry.try_reps = None
 
-        entry.best_set = best_set
-        entry.last_set = last_set
+        if entry.last_set and entry.last_set.weight_kg is not None:
+            entry.try_weight_kg = entry.last_set.weight_kg + Decimal("2.5")
+            entry.try_reps = entry.last_set.reps
+
+        # Smart assist prefill for add-set form
+        initial_data = {}
+
+        # 1. poslední set v aktuální session
+        last_current_set = entry.sets.order_by("-set_order").first()
+        if last_current_set:
+            initial_data = {
+                "set_type": last_current_set.set_type,
+                "weight_kg": last_current_set.weight_kg,
+                "reps": last_current_set.reps,
+                "rpe": last_current_set.rpe,
+            }
+
+        # 2. fallback: poslední set z minulé completed session
+        elif entry.last_set:
+            initial_data = {
+                "set_type": entry.last_set.set_type,
+                "weight_kg": entry.last_set.weight_kg,
+                "reps": entry.last_set.reps,
+                "rpe": entry.last_set.rpe,
+            }
+
+        entry.add_set_form = WorkoutSetForm(
+            initial=initial_data,
+            session_exercise=entry,
+            prefix=f"set-{entry.pk}",
+        )
+
+        for workout_set in entry.sets.all():
+            workout_set.edit_form = WorkoutSetForm(
+                instance=workout_set,
+                prefix=f"edit-set-{workout_set.pk}",
+            )
 
     return session
 
@@ -607,6 +637,84 @@ class HtmxWorkoutSetUpdateView(LoginRequiredMixin, View):
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         return render_session_exercises_partial(request, session)
 
+class HtmxWorkoutSetRepeatView(LoginRequiredMixin, View):
+    def post(self, request, session_pk, session_exercise_pk):
+        session_exercise = get_object_or_404(
+            WorkoutSessionExercise.objects.select_related("session"),
+            pk=session_exercise_pk,
+            session__pk=session_pk,
+            session__user=request.user,
+        )
+
+        last_set = session_exercise.sets.order_by("-set_order").first()
+
+        if last_set:
+            next_order = (
+                session_exercise.sets.order_by("-set_order")
+                .values_list("set_order", flat=True)
+                .first() or 0
+            ) + 1
+
+            WorkoutSet.objects.create(
+                session_exercise=session_exercise,
+                set_order=next_order,
+                set_type=last_set.set_type,
+                weight_kg=last_set.weight_kg,
+                reps=last_set.reps,
+                rpe=last_set.rpe,
+                notes=last_set.notes,
+            )
+
+        session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
+        return render_session_exercises_partial(request, session)
+
+class HtmxWorkoutSetApplySuggestionView(LoginRequiredMixin, View):
+    def post(self, request, session_pk, session_exercise_pk):
+        session_exercise = get_object_or_404(
+            WorkoutSessionExercise.objects.select_related("session"),
+            pk=session_exercise_pk,
+            session__pk=session_pk,
+            session__user=request.user,
+        )
+
+        session = session_exercise.session
+
+        previous_entry = (
+            WorkoutSessionExercise.objects.select_related("session", "exercise")
+            .prefetch_related(
+                Prefetch("sets", queryset=WorkoutSet.objects.order_by("set_order", "id"))
+            )
+            .filter(
+                exercise=session_exercise.exercise,
+                session__user=session.user,
+                session__status=WorkoutSessionStatus.COMPLETED,
+            )
+            .exclude(session=session)
+            .order_by("-session__started_at", "-session__created_at", "-id")
+            .first()
+        )
+
+        last_set = previous_entry.sets.order_by("-set_order").first() if previous_entry else None
+
+        if last_set and last_set.weight_kg is not None:
+            next_order = (
+                session_exercise.sets.order_by("-set_order")
+                .values_list("set_order", flat=True)
+                .first() or 0
+            ) + 1
+
+            WorkoutSet.objects.create(
+                session_exercise=session_exercise,
+                set_order=next_order,
+                set_type=last_set.set_type,
+                weight_kg=last_set.weight_kg + Decimal("2.5"),
+                reps=last_set.reps,
+                rpe=last_set.rpe,
+                notes="",
+            )
+
+        session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
+        return render_session_exercises_partial(request, session)
 
 class MethodNotAllowedView(View):
     def dispatch(self, request, *args, **kwargs):
@@ -682,3 +790,34 @@ class HtmxWorkoutSessionUpdateView(LoginRequiredMixin, View):
 
         session = get_object_or_404(get_session_queryset(request.user), pk=pk)
         return render_session_header_partial(request, session)
+
+class WorkoutSessionCloneView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        original = get_object_or_404(
+            WorkoutSession.objects.prefetch_related("session_exercises"),
+            pk=pk,
+            user=request.user,
+        )
+
+        # vytvoření nové session
+        new_session = WorkoutSession.objects.create(
+            user=request.user,
+            focus=original.focus,
+            source_pool=original.source_pool,
+            status=WorkoutSessionStatus.PLANNED,
+            notes=f"Cloned from session {original.id}",
+        )
+
+        # kopie cviků (bez setů)
+        exercises = original.session_exercises.all().order_by("sequence")
+
+        for entry in exercises:
+            WorkoutSessionExercise.objects.create(
+                session=new_session,
+                exercise=entry.exercise,
+                sequence=entry.sequence,
+                notes=entry.notes,
+                source_pool_item=entry.source_pool_item,
+            )
+
+        return redirect("fitness:session-detail", pk=new_session.pk)

@@ -9,6 +9,8 @@
     <a href="{% url 'fitness:session-create' %}">Create workout session</a>
 </div>
 
+
+
 <table>
     <thead>
         <tr>
@@ -44,6 +46,16 @@
                         {% csrf_token %}
                         <button type="submit" class="danger">Delete</button>
                     </form>
+
+                    <form
+                        method="post"
+                        action="{% url 'fitness:session-clone' session.pk %}"
+                        style="display: inline; margin-left: 8px;"
+                    >
+                        {% csrf_token %}
+                        <button type="submit">Clone</button>
+                    </form>
+
                 </td>
             </tr>
         {% empty %}
