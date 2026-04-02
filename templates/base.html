@@ -29,13 +29,15 @@
             max-width: 920px;
             margin: 0 auto;
             padding: 12px;
-            line-height: 1.4;
+            line-height: 1.45;
             font-size: 15px;
+            color: #222;
+            background: #fcfcfc;
         }
         nav {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         nav a {
@@ -56,7 +58,7 @@
             margin: 16px 0;
         }
         .form-row {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .errorlist {
             color: #b00020;
@@ -66,11 +68,11 @@
             color: #666;
         }
         .card {
-            border: 1px solid #ccc;
+            border: 1px solid #dddddd;
             padding: 10px;
-            margin: 10px 0;
+            margin: 8px 0;
             border-radius: 10px;
-            background: #fff;
+            background: #ffffff;
         }
         .card h3, .card h4 {
             margin-top: 0;
@@ -83,20 +85,26 @@
             min-height: 36px;
             padding: 7px 10px;
             border-radius: 8px;
-            border: 1px solid #bbb;
+            border: 1px solid #cfcfcf;
             background: #f7f7f7;
+            color: #222;
             font-size: 14px;
             line-height: 1.2;
         }
         .inline-form {
             margin-top: 8px;
             padding: 8px;
-            border: 1px dashed #bbb;
+            border: 1px dashed #cfcfcf;
             border-radius: 10px;
-            background: #fcfcfc;
+            background: #fafafa;
         }
         .danger {
             color: #b00020;
+            border-color: #d7a8b1;
+            background: #fff5f6;
+        }
+        .danger:hover {
+            background: #ffecee;
         }
         input, select, textarea {
             width: 100%;
@@ -132,7 +140,9 @@
             flex-wrap: wrap;
         }
         .section-title {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            line-height: 1.2;
         }
         .divider-space {
             margin-bottom: 16px;
@@ -144,35 +154,38 @@
             min-height: 36px;
             padding: 7px 10px;
             border-radius: 8px;
-            border: 1px solid #bbb;
+            border: 1px solid #cfcfcf;
             background: #f7f7f7;
             text-decoration: none;
-            color: inherit;
+            color: #222;
             box-sizing: border-box;
             font-size: 14px;
             line-height: 1.2;
         }
 
         .link-button:hover {
-            background: #efefef;
+            background: #eeeeee;
         }
 
         .primary-button {
-            background: #eaf3ff;
+            background: #e8f2ff;
             border-color: #9fc2f7;
+            color: #123a66;
+            font-weight: 600;
         }
 
         .list-card {
-            border: 1px solid #ccc;
+            border: 1px solid #dddddd;
             border-radius: 10px;
             padding: 8px;
             margin: 8px 0;
-            background: #fff;
+            background: #ffffff;
         }
 
         .list-card-title {
             margin: 0 0 6px 0;
-            font-size: 18px;
+            font-size: 17px;
+            line-height: 1.2;
         }
 
         .meta-grid {
@@ -188,14 +201,15 @@
 
         .meta-item-label {
             font-size: 12px;
-            color: #666;
+            color: #777;
             line-height: 1.2;
+            margin-bottom: 2px;
         }
 
         .meta-item-value {
             font-weight: 600;
             font-size: 13px;
-            line-height: 1.15;
+            line-height: 1.2;
         }
 
         .action-group {
@@ -249,6 +263,87 @@
         .compact-set:last-child {
             border-bottom: none;
         }
+        .form-shell {
+            display: grid;
+            gap: 10px;
+        }
+
+        .form-section {
+            border: 1px solid #dddddd;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .form-section-title {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            line-height: 1.2;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #777;
+            margin-top: 4px;
+        }
+        .top-nav {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-group-label {
+            font-size: 12px;
+            color: #777;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            min-width: 60px;
+        }
+
+        .nav-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid #d6d6d6;
+            background: #f6f6f6;
+            text-decoration: none;
+            color: #222;
+            font-size: 13px;
+            line-height: 1.2;
+        }
+
+        .nav-pill:hover {
+            background: #eeeeee;
+        }
+
+        .nav-pill-active {
+            background: #e8f2ff;
+            border-color: #9fc2f7;
+            color: #123a66;
+            font-weight: 600;
+        }
+
+        .nav-admin {
+            background: #fafafa;
+        }
         input:invalid, select:invalid {
             border: 1px solid #b00020;
         }
@@ -261,7 +356,7 @@
             .card,
             .list-card {
                 padding: 8px;
-                margin: 8px 0;
+                margin: 6px 0;
             }
 
             .list-card-title {
@@ -311,15 +406,83 @@
             .mobile-tight {
                 margin-bottom: 6px;
             }
+            .top-nav {
+                gap: 8px;
+            }
+
+            .nav-group {
+                gap: 6px;
+            }
+
+            .nav-group-label {
+                width: 100%;
+                min-width: 0;
+                margin-bottom: 2px;
+            }
+
+            .nav-pill {
+                min-height: 32px;
+                padding: 6px 9px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="{% url 'fitness:exercise-list' %}">Exercises</a>
-        <a href="{% url 'fitness:pool-list' %}">Pools</a>
-        <a href="{% url 'fitness:session-list' %}">Sessions</a>
-        <a href="{% url 'admin:index' %}">Admin</a>
+    <nav class="top-nav">
+        <div class="nav-group">
+            <div class="nav-group-label">BIO</div>
+    
+            <a
+                href="{% url 'bio:dailymetric-list' %}"
+                class="nav-pill {% if '/bio/daily-metrics/' in request.path %}nav-pill-active{% endif %}"
+            >
+                Daily Metrics
+            </a>
+    
+            <a
+                href="{% url 'bio:activity-list' %}"
+                class="nav-pill {% if '/bio/activities/' in request.path %}nav-pill-active{% endif %}"
+            >
+                Activities
+            </a>
+        </div>
+    
+        <div class="nav-group">
+            <div class="nav-group-label">FITNESS</div>
+    
+            <a
+                href="{% url 'fitness:exercise-list' %}"
+                class="nav-pill {% if '/fitness/exercises/' in request.path %}nav-pill-active{% endif %}"
+            >
+                Exercises
+            </a>
+    
+            <a
+                href="{% url 'fitness:pool-list' %}"
+                class="nav-pill {% if '/fitness/pools/' in request.path %}nav-pill-active{% endif %}"
+            >
+                Pools
+            </a>
+    
+            <a
+                href="{% url 'fitness:session-list' %}"
+                class="nav-pill {% if '/fitness/sessions/' in request.path %}nav-pill-active{% endif %}"
+            >
+                Sessions
+            </a>
+        </div>
+    
+        <div class="nav-group">
+            <div class="nav-group-label">SYSTEM</div>
+    
+            <a
+                href="{% url 'admin:index' %}"
+                class="nav-pill nav-admin {% if '/admin/' in request.path %}nav-pill-active{% endif %}"
+            >
+                Admin
+            </a>
+        </div>
     </nav>
 
     {% if request.user.is_authenticated %}

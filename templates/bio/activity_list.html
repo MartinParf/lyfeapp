@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}BIO Activities | LYFE{% endblock %}
+
+{% block content %}
+<h1>Activities</h1>
+
+<div class="actions action-group">
+    <a href="{% url 'bio:dailymetric-list' %}" class="link-button">
+        Daily Metrics
+    </a>
+    <a href="{% url 'bio:activity-list' %}" class="link-button primary-button">
+        Activities
+    </a>
+    <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+        Create activity
+    </a>
+</div>
+
+{% for activity in activities %}
+    <div class="list-card">
+        <h3 class="list-card-title">{{ activity.date }}</h3>
+
+        <div class="meta-grid two-col">
+            <div>
+                <div class="meta-item-label">Activity type</div>
+                <div class="meta-item-value">{{ activity.get_activity_type_display }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Duration</div>
+                <div class="meta-item-value">{{ activity.duration_minutes }} min</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Distance</div>
+                <div class="meta-item-value">{{ activity.distance_km|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Calories burned</div>
+                <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
+            </div>
+
+            {% if activity.notes %}
+                <div style="grid-column: 1 / -1;">
+                    <div class="meta-item-label">Notes</div>
+                    <div class="meta-item-value" style="font-weight: normal;">{{ activity.notes }}</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
+                Edit
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'bio:activity-delete' activity.pk %}"
+                onsubmit="return confirm('Delete this activity?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete</button>
+            </form>
+        </div>
+    </div>
+{% empty %}
+    <div class="list-card">
+        <div class="muted">No activities yet.</div>
+    </div>
+{% endfor %}
+{% endblock %}

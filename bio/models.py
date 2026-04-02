@@ -20,6 +20,29 @@ class DietMode(models.TextChoices):
     CUSTOM = "CUSTOM", "Custom"
 
 
+class SleepQualityLevel(models.IntegerChoices):
+    VERY_POOR = 1, "Very poor"
+    POOR = 2, "Poor"
+    AVERAGE = 3, "Average"
+    GOOD = 4, "Good"
+    EXCELLENT = 5, "Excellent"
+
+
+ALCOHOL_LEVEL_CHOICES = [
+    (0, "0 — None"),
+    (1, "1 — Very low"),
+    (2, "2 — Low"),
+    (3, "3 — Mild"),
+    (4, "4 — Moderate"),
+    (5, "5 — Moderately high"),
+    (6, "6 — High"),
+    (7, "7 — Very high"),
+    (8, "8 — Heavy"),
+    (9, "9 — Very heavy"),
+    (10, "10 — Extreme"),
+]
+
+
 class ActivityType(models.TextChoices):
     RUNNING = "RUNNING", "Running"
     CYCLING = "CYCLING", "Cycling"
@@ -62,10 +85,16 @@ class DailyMetric(TimeStampedModel):
     sleep_quality = models.PositiveSmallIntegerField(
         null=True,
         blank=True,
+        choices=SleepQualityLevel.choices,
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Sleep quality on a 1-5 scale.",
     )
-    alcohol_consumed = models.BooleanField(default=False)
+    alcohol_units = models.PositiveSmallIntegerField(
+        default=0,
+        choices=ALCOHOL_LEVEL_CHOICES,
+        validators=[MinValueValidator(0), MaxValueValidator(10)],
+        help_text="Approximate alcohol intake on a 0-10 scale.",
+    )
     calories_planned = models.PositiveIntegerField(null=True, blank=True)
     calories_actual = models.PositiveIntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)

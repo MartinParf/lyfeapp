@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | LYFE{% endblock %}
+
+{% block content %}
+<h1>{{ page_title }}</h1>
+
+<form method="post" class="form-shell">
+    {% csrf_token %}
+
+    <div class="form-section">
+        <h3 class="form-section-title">Activity Basics</h3>
+
+        <div class="meta-grid two-col">
+            <div class="form-row">
+                <div>{{ form.date.label_tag }}</div>
+                <div>{{ form.date }}</div>
+                {% if form.date.help_text %}<div class="form-help">{{ form.date.help_text }}</div>{% endif %}
+                {{ form.date.errors }}
+            </div>
+
+            <div class="form-row">
+                <div>{{ form.activity_type.label_tag }}</div>
+                <div>{{ form.activity_type }}</div>
+                {% if form.activity_type.help_text %}<div class="form-help">{{ form.activity_type.help_text }}</div>{% endif %}
+                {{ form.activity_type.errors }}
+            </div>
+
+            <div class="form-row">
+                <div>{{ form.duration_minutes.label_tag }}</div>
+                <div>{{ form.duration_minutes }}</div>
+                {% if form.duration_minutes.help_text %}<div class="form-help">{{ form.duration_minutes.help_text }}</div>{% endif %}
+                {{ form.duration_minutes.errors }}
+            </div>
+
+            <div class="form-row">
+                <div>{{ form.distance_km.label_tag }}</div>
+                <div>{{ form.distance_km }}</div>
+                {% if form.distance_km.help_text %}<div class="form-help">{{ form.distance_km.help_text }}</div>{% endif %}
+                {{ form.distance_km.errors }}
+            </div>
+
+            <div class="form-row">
+                <div>{{ form.calories_burned_est.label_tag }}</div>
+                <div>{{ form.calories_burned_est }}</div>
+                {% if form.calories_burned_est.help_text %}<div class="form-help">{{ form.calories_burned_est.help_text }}</div>{% endif %}
+                {{ form.calories_burned_est.errors }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3 class="form-section-title">Notes</h3>
+
+        <div class="form-row" style="margin-bottom: 0;">
+            <div>{{ form.notes.label_tag }}</div>
+            <div>{{ form.notes }}</div>
+            {% if form.notes.help_text %}<div class="form-help">{{ form.notes.help_text }}</div>{% endif %}
+            {{ form.notes.errors }}
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit">{{ submit_label }}</button>
+        <a href="{% url 'bio:activity-list' %}" class="link-button">Back</a>
+    </div>
+</form>
+{% endblock %}

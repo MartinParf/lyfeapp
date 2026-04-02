@@ -5,22 +5,29 @@
 {% block content %}
 <h1>Edit Custom Exercise</h1>
 
-<p class="muted">
-    Editing your custom exercise: {{ exercise.name }}
-</p>
+<p class="muted">Editing your custom exercise: {{ exercise.name }}</p>
 
-<form method="post">
+<form method="post" class="form-shell">
     {% csrf_token %}
-    {% for field in form %}
-        <div class="form-row">
-            <div>{{ field.label_tag }}</div>
-            <div>{{ field }}</div>
-            {% if field.help_text %}
-                <div class="muted">{{ field.help_text }}</div>
-            {% endif %}
-            {{ field.errors }}
-        </div>
-    {% endfor %}
-    <button type="submit">Save changes</button>
+
+    <div class="form-section">
+        <h3 class="form-section-title">Exercise Details</h3>
+
+        {% for field in form %}
+            <div class="form-row">
+                <div>{{ field.label_tag }}</div>
+                <div>{{ field }}</div>
+                {% if field.help_text %}
+                    <div class="form-help">{{ field.help_text }}</div>
+                {% endif %}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit">Save changes</button>
+        <a href="{% url 'fitness:exercise-list' %}" class="link-button">Back</a>
+    </div>
 </form>
 {% endblock %}

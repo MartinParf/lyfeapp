@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}BIO Daily Metrics | LYFE{% endblock %}
+
+{% block content %}
+<h1>Daily Metrics</h1>
+
+<div class="actions action-group">
+    <a href="{% url 'bio:dailymetric-list' %}" class="link-button primary-button">
+        Daily Metrics
+    </a>
+    <a href="{% url 'bio:activity-list' %}" class="link-button">
+        Activities
+    </a>
+    <a href="{% url 'bio:dailymetric-create' %}" class="link-button primary-button">
+        Create daily metric
+    </a>
+</div>
+
+{% for metric in metrics %}
+    <div class="list-card">
+        <h3 class="list-card-title">{{ metric.date }}</h3>
+
+        <div class="meta-grid two-col">
+            <div>
+                <div class="meta-item-label">Weight (kg)</div>
+                <div class="meta-item-value">{{ metric.weight_kg|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Diet mode</div>
+                <div class="meta-item-value">{{ metric.get_diet_mode_display|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Sleep quality</div>
+                <div class="meta-item-value">{{ metric.get_sleep_quality_display|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Alcohol intake</div>
+                <div class="meta-item-value">{{ metric.get_alcohol_units_display }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Calories planned</div>
+                <div class="meta-item-value">{{ metric.calories_planned|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Calories actual</div>
+                <div class="meta-item-value">{{ metric.calories_actual|default:"-" }}</div>
+            </div>
+
+            {% if metric.notes %}
+                <div style="grid-column: 1 / -1;">
+                    <div class="meta-item-label">Notes</div>
+                    <div class="meta-item-value" style="font-weight: normal;">{{ metric.notes }}</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
+                Edit
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'bio:dailymetric-delete' metric.pk %}"
+                onsubmit="return confirm('Delete this daily metric?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete</button>
+            </form>
+        </div>
+    </div>
+{% empty %}
+    <div class="list-card">
+        <div class="muted">No daily metrics yet.</div>
+    </div>
+{% endfor %}
+{% endblock %}

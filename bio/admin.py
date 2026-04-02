@@ -5,45 +5,47 @@ from .models import Activity, DailyMetric, Profile
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "full_name", "target_calories_base", "created_at", "updated_at")
-    search_fields = ("user__username", "user__email", "full_name")
-    list_select_related = ("user",)
-    ordering = ("user_id",)
+    list_display = ("user", "full_name", "target_calories_base", "created_at", "updated_at")
+    search_fields = ("user__username", "full_name")
+    ordering = ("user__username",)
 
 
 @admin.register(DailyMetric)
 class DailyMetricAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
         "user",
         "date",
         "weight_kg",
         "diet_mode",
         "sleep_quality",
-        "alcohol_consumed",
+        "alcohol_units",
         "calories_planned",
         "calories_actual",
+        "updated_at",
     )
-    list_filter = ("diet_mode", "alcohol_consumed", "date")
-    search_fields = ("user__username", "user__email", "notes")
-    list_select_related = ("user",)
-    ordering = ("-date", "-id")
+    list_filter = (
+        "diet_mode",
+        "sleep_quality",
+        "alcohol_units",
+        "date",
+    )
+    search_fields = ("user__username", "notes")
     date_hierarchy = "date"
+    ordering = ("-date", "-id")
 
 
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
         "user",
         "date",
         "activity_type",
         "duration_minutes",
-        "distance_km",
         "calories_burned_est",
+        "distance_km",
+        "updated_at",
     )
     list_filter = ("activity_type", "date")
-    search_fields = ("user__username", "user__email", "notes")
-    list_select_related = ("user",)
-    ordering = ("-date", "-id")
+    search_fields = ("user__username", "notes")
     date_hierarchy = "date"
+    ordering = ("-date", "-id")
