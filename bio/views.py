@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import ListView
 from django.utils import timezone
+from django.urls import reverse
 
 from .forms import ActivityForm, DailyMetricForm
 from .models import Activity, DailyMetric
@@ -37,7 +38,12 @@ class DailyMetricCreateView(LoginRequiredMixin, View):
     template_name = "bio/dailymetric_form.html"
 
     def get(self, request):
-        form = DailyMetricForm()
+        initial = {}
+
+        if request.GET.get("date"):
+            initial["date"] = request.GET.get("date")
+
+        form = DailyMetricForm(initial=initial)
         return render(
             request,
             self.template_name,
@@ -118,12 +124,17 @@ class DailyMetricTodayView(LoginRequiredMixin, View):
     def get(self, request):
         today = timezone.localdate()
 
-        metric, _created = DailyMetric.objects.get_or_create(
-            user=request.user,
-            date=today,
+        metric = (
+            DailyMetric.objects
+            .filter(user=request.user, date=today)
+            .first()
         )
 
-        return redirect("bio:dailymetric-edit", pk=metric.pk)
+        if metric:
+            return redirect("bio:dailymetric-edit", pk=metric.pk)
+
+        create_url = f"{reverse('bio:dailymetric-create')}?date={today.isoformat()}"
+        return redirect(create_url)
 
 class ActivityListView(LoginRequiredMixin, ListView):
     model = Activity
@@ -214,3 +225,40 @@ class ActivityDeleteView(LoginRequiredMixin, View):
         activity = get_object_or_404(Activity, pk=pk, user=request.user)
         activity.delete()
         return redirect("bio:activity-list")
+
+class BioOverviewView(LoginRequiredMixin, View):
+    template_name = "bio/overview.html"
+
+    def get(self, request):
+        from django.utils import timezone
+
+        today = timezone.localdate()
+
+        today_metric = (
+            DailyMetric.objects
+            .filter(user=request.user, date=today)
+            .first()
+        )
+
+        today_activities = (
+            Activity.objects
+            .filter(user=request.user, date=today)
+            .order_by("-id")
+        )
+        is_metric_complete = bool(today_metric)
+        activities_count = today_activities.count()
+        has_activities = activities_count > 0
+        day_started = bool(today_metric) or has_activities
+        day_complete = bool(today_metric) and has_activities
+        context = {
+            "today": today,
+            "today_metric": today_metric,
+            "today_activities": today_activities,
+            "is_metric_complete": is_metric_complete,
+            "activities_count": activities_count,
+            "has_activities": has_activities,
+            "day_started": day_started,
+            "day_complete": day_complete,
+        }
+
+        return render(request, self.template_name, context)

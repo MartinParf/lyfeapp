@@ -5,13 +5,9 @@
 {% block content %}
 <h1>Activities</h1>
 
+{% include "bio/partials/subnav.html" %}
+
 <div class="actions action-group">
-    <a href="{% url 'bio:dailymetric-list' %}" class="link-button">
-        Daily Metrics
-    </a>
-    <a href="{% url 'bio:activity-list' %}" class="link-button primary-button">
-        Activities
-    </a>
     <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
         Log activity today
     </a>
@@ -30,16 +26,35 @@
     </div>
 </div>
 
+<h2 style="margin: 14px 0 8px 0;">History</h2>
+
 {% for activity in activities %}
     <div class="list-card">
-        <h3 class="list-card-title">{{ activity.date }}</h3>
-
-        <div class="meta-grid two-col">
+        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
             <div>
-                <div class="meta-item-label">Activity type</div>
-                <div class="meta-item-value">{{ activity.get_activity_type_display }}</div>
+                <div class="list-card-title" style="margin-bottom: 2px;">{{ activity.date }}</div>
+                <div class="muted" style="font-size: 12px;">
+                    {{ activity.get_activity_type_display }}
+                </div>
             </div>
 
+            <div class="action-group">
+                <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
+                    Edit
+                </a>
+
+                <form
+                    method="post"
+                    action="{% url 'bio:activity-delete' activity.pk %}"
+                    onsubmit="return confirm('Delete this activity?');"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="danger">Delete</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="meta-grid two-col">
             <div>
                 <div class="meta-item-label">Duration</div>
                 <div class="meta-item-value">{{ activity.duration_minutes }} min</div>
@@ -54,29 +69,14 @@
                 <div class="meta-item-label">Calories burned</div>
                 <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
             </div>
-
-            {% if activity.notes %}
-                <div style="grid-column: 1 / -1;">
-                    <div class="meta-item-label">Notes</div>
-                    <div class="meta-item-value" style="font-weight: normal;">{{ activity.notes }}</div>
-                </div>
-            {% endif %}
         </div>
 
-        <div class="action-group">
-            <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
-                Edit
-            </a>
-
-            <form
-                method="post"
-                action="{% url 'bio:activity-delete' activity.pk %}"
-                onsubmit="return confirm('Delete this activity?');"
-            >
-                {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
-            </form>
-        </div>
+        {% if activity.notes %}
+            <div style="margin-top: 6px;">
+                <div class="meta-item-label">Notes</div>
+                <div class="muted">{{ activity.notes }}</div>
+            </div>
+        {% endif %}
     </div>
 {% empty %}
     <div class="list-card">

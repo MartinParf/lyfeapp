@@ -1,0 +1,22 @@
+<div class="sub-nav">
+    <a
+        href="{% url 'bio:overview' %}"
+        class="sub-nav-link {% if request.path == '/bio/' %}sub-nav-link-active{% endif %}"
+    >
+        Overview
+    </a>
+
+    <a
+        href="{% url 'bio:dailymetric-list' %}"
+        class="sub-nav-link {% if '/bio/daily-metrics/' in request.path %}sub-nav-link-active{% endif %}"
+    >
+        Daily Metrics
+    </a>
+
+    <a
+        href="{% url 'bio:activity-list' %}"
+        class="sub-nav-link {% if '/bio/activities/' in request.path %}sub-nav-link-active{% endif %}"
+    >
+        Activities
+    </a>
+</div>

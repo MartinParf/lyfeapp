@@ -5,19 +5,14 @@
 {% block content %}
 <h1>Daily Metrics</h1>
 
+{% include "bio/partials/subnav.html" %}
+
 <div class="actions action-group">
-    <a href="{% url 'bio:dailymetric-list' %}" class="link-button primary-button">
-        Daily Metrics
-    </a>
-    <a href="{% url 'bio:activity-list' %}" class="link-button">
-        Activities
-    </a>
     <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
         Go to today
     </a>
 </div>
 
-<!-- TODAY CARD -->
 <div class="list-card" style="border-color: #9fc2f7; background: #f5f9ff;">
     <h3 class="list-card-title">Today — {{ today }}</h3>
 
@@ -49,7 +44,6 @@
                 Edit today
             </a>
         </div>
-
     {% else %}
         <div class="muted" style="margin-bottom: 8px;">
             No entry for today yet.
@@ -63,12 +57,34 @@
     {% endif %}
 </div>
 
-<h2 style="margin-top: 14px;">History</h2>
+<h2 style="margin: 14px 0 8px 0;">History</h2>
 
 {% for metric in metrics %}
     {% if metric.date != today %}
         <div class="list-card">
-            <h3 class="list-card-title">{{ metric.date }}</h3>
+            <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                <div>
+                    <div class="list-card-title" style="margin-bottom: 2px;">{{ metric.date }}</div>
+                    <div class="muted" style="font-size: 12px;">
+                        Updated {{ metric.updated_at|date:"d.m.Y H:i" }}
+                    </div>
+                </div>
+
+                <div class="action-group">
+                    <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
+                        Edit
+                    </a>
+
+                    <form
+                        method="post"
+                        action="{% url 'bio:dailymetric-delete' metric.pk %}"
+                        onsubmit="return confirm('Delete this daily metric?');"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="danger">Delete</button>
+                    </form>
+                </div>
+            </div>
 
             <div class="meta-grid two-col">
                 <div>
@@ -92,20 +108,12 @@
                 </div>
             </div>
 
-            <div class="action-group">
-                <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
-                    Edit
-                </a>
-
-                <form
-                    method="post"
-                    action="{% url 'bio:dailymetric-delete' metric.pk %}"
-                    onsubmit="return confirm('Delete this daily metric?');"
-                >
-                    {% csrf_token %}
-                    <button type="submit" class="danger">Delete</button>
-                </form>
-            </div>
+            {% if metric.notes %}
+                <div style="margin-top: 6px;">
+                    <div class="meta-item-label">Notes</div>
+                    <div class="muted">{{ metric.notes }}</div>
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 {% empty %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}BIO Overview | LYFE{% endblock %}
+
+{% block content %}
+<h2>Today — {{ today }}</h2>
+
+{% include "bio/partials/subnav.html" %}
+
+<div class="actions action-group" style="margin-bottom: 10px;">
+    <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
+        Go to today
+    </a>
+    <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+        Log activity
+    </a>
+</div>
+
+<div class="muted" style="margin-bottom: 10px;">
+    {% if day_complete %}
+        Day status: <strong style="color: #2e7d32;">✓ complete</strong>
+    {% elif day_started %}
+        Day status: <strong style="color: #b26a00;">in progress</strong>
+    {% else %}
+        Day status: <strong style="color: #b00020;">not started</strong>
+    {% endif %}
+    • Activities today: {{ activities_count }}
+</div>
+
+<div class="list-card" style="border-color: #9fc2f7; background: #f5f9ff;">
+    <h3 class="list-card-title">Daily Status</h3>
+
+    {% if today_metric %}
+        <div class="meta-grid two-col">
+            <div>
+                <div class="meta-item-label">Weight (kg)</div>
+                <div class="meta-item-value">{{ today_metric.weight_kg|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Sleep quality</div>
+                <div class="meta-item-value">{{ today_metric.get_sleep_quality_display|default:"-" }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Alcohol intake</div>
+                <div class="meta-item-value">{{ today_metric.get_alcohol_units_display }}</div>
+            </div>
+
+            <div>
+                <div class="meta-item-label">Calories (actual)</div>
+                <div class="meta-item-value">{{ today_metric.calories_actual|default:"-" }}</div>
+            </div>
+        </div>
+
+        <div style="height: 6px;"></div>
+
+        <div class="action-group">
+            <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
+                Edit today
+            </a>
+        </div>
+    {% else %}
+        <div class="muted" style="margin-bottom: 8px;">No daily entry yet.</div>
+
+        <div class="action-group">
+            <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
+                Create today
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% if today_metric %}
+    <div class="list-card" style="background: #fffdf5;">
+        <h3 class="list-card-title">Next Step</h3>
+
+        {% if not has_activities %}
+            <div class="muted" style="margin-bottom: 8px;">
+                Your daily metric is done. You can still log an activity for today.
+            </div>
+            <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+                Log today’s activity
+            </a>
+        {% else %}
+            <div class="muted">
+                Today looks good. You have both a daily metric and at least one activity logged.
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+
+<div class="list-card">
+    <h3 class="list-card-title">Today's Activities ({{ activities_count }})</h3>
+
+    <div class="action-group" style="margin-bottom: 8px;">
+        <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+            Log activity
+        </a>
+    </div>
+
+    {% for activity in today_activities %}
+        <div class="card compact-card" style="margin-bottom: 6px;">
+            <div class="meta-grid two-col">
+                <div>
+                    <div class="meta-item-label">Type</div>
+                    <div class="meta-item-value">{{ activity.get_activity_type_display }}</div>
+                </div>
+
+                <div>
+                    <div class="meta-item-label">Duration</div>
+                    <div class="meta-item-value">{{ activity.duration_minutes }} min</div>
+                </div>
+
+                <div>
+                    <div class="meta-item-label">Distance</div>
+                    <div class="meta-item-value">{{ activity.distance_km|default:"-" }}</div>
+                </div>
+
+                <div>
+                    <div class="meta-item-label">Calories</div>
+                    <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
+                    Edit
+                </a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="muted">No activities logged today.</div>
+    {% endfor %}
+</div>
+{% endblock %}

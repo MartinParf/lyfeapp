@@ -10,11 +10,13 @@ from .views import (
     DailyMetricListView,
     DailyMetricUpdateView,
     DailyMetricTodayView,
+    BioOverviewView,
 )
 
 app_name = "bio"
 
 urlpatterns = [
+    path("", BioOverviewView.as_view(), name="overview"),
     path("daily-metrics/", DailyMetricListView.as_view(), name="dailymetric-list"),
     path("daily-metrics/create/", DailyMetricCreateView.as_view(), name="dailymetric-create"),
     path("daily-metrics/today/", DailyMetricTodayView.as_view(), name="dailymetric-today"),

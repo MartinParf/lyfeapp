@@ -344,6 +344,39 @@
             color: #123a66;
             font-weight: 600;
         }
+        .sub-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            margin: 0 0 12px 0;
+        }
+
+        .sub-nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 30px;
+            padding: 5px 9px;
+            border-radius: 8px;
+            border: 1px solid #d8d8d8;
+            background: #f7f7f7;
+            text-decoration: none;
+            color: #333;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        .sub-nav-link:hover {
+            background: #efefef;
+        }
+
+        .sub-nav-link-active {
+            background: #e8f2ff;
+            border-color: #c5dcfb;
+            color: #123a66;
+            font-weight: 600;
+        }
 
         .nav-admin {
             color: #666;
@@ -443,6 +476,16 @@
                 padding: 4px 7px;
                 font-size: 11px;
             }
+            .sub-nav {
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+
+            .sub-nav-link {
+                min-height: 28px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
         }
     </style>
 </head>
@@ -452,17 +495,10 @@
             <div class="nav-group-label">BIO</div>
     
             <a
-                href="{% url 'bio:dailymetric-list' %}"
-                class="nav-pill {% if '/bio/daily-metrics/' in request.path %}nav-pill-active{% endif %}"
+                href="{% url 'bio:overview' %}"
+                class="nav-pill {% if request.path == '/bio/' or '/bio/daily-metrics/' in request.path or '/bio/activities/' in request.path %}nav-pill-active{% endif %}"
             >
-                Daily Metrics
-            </a>
-    
-            <a
-                href="{% url 'bio:activity-list' %}"
-                class="nav-pill {% if '/bio/activities/' in request.path %}nav-pill-active{% endif %}"
-            >
-                Activities
+                Overview
             </a>
         </div>
     
