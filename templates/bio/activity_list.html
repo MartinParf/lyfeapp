@@ -13,8 +13,21 @@
         Activities
     </a>
     <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
-        Create activity
+        Log activity today
     </a>
+</div>
+
+<div class="list-card" style="border-color: #9fc2f7; background: #f5f9ff;">
+    <h3 class="list-card-title">Today</h3>
+    <div class="muted" style="margin-bottom: 8px;">
+        Quickly log a walk, run, cycling session, or another activity for today.
+    </div>
+
+    <div class="action-group">
+        <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+            Create activity
+        </a>
+    </div>
 </div>
 
 {% for activity in activities %}

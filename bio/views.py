@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import ListView
+from django.utils import timezone
 
 from .forms import ActivityForm, DailyMetricForm
 from .models import Activity, DailyMetric
@@ -14,6 +15,22 @@ class DailyMetricListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return DailyMetric.objects.filter(user=self.request.user).order_by("-date", "-id")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        today = timezone.localdate()
+
+        today_metric = (
+            DailyMetric.objects
+            .filter(user=self.request.user, date=today)
+            .first()
+        )
+
+        context["today"] = today
+        context["today_metric"] = today_metric
+
+        return context
 
 
 class DailyMetricCreateView(LoginRequiredMixin, View):
@@ -97,6 +114,16 @@ class DailyMetricDeleteView(LoginRequiredMixin, View):
         metric.delete()
         return redirect("bio:dailymetric-list")
 
+class DailyMetricTodayView(LoginRequiredMixin, View):
+    def get(self, request):
+        today = timezone.localdate()
+
+        metric, _created = DailyMetric.objects.get_or_create(
+            user=request.user,
+            date=today,
+        )
+
+        return redirect("bio:dailymetric-edit", pk=metric.pk)
 
 class ActivityListView(LoginRequiredMixin, ListView):
     model = Activity

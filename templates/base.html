@@ -296,56 +296,71 @@
         }
         .top-nav {
             display: grid;
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 6px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e6e6e6;
         }
 
         .nav-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
         }
 
         .nav-group-label {
-            font-size: 12px;
-            color: #777;
+            font-size: 11px;
+            color: #888;
             font-weight: 700;
-            letter-spacing: 0.04em;
-            min-width: 60px;
+            letter-spacing: 0.05em;
+            min-width: 52px;
+            text-transform: uppercase;
         }
 
         .nav-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 34px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid #d6d6d6;
-            background: #f6f6f6;
+            min-height: 28px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
             text-decoration: none;
-            color: #222;
-            font-size: 13px;
+            color: #444;
+            font-size: 12px;
             line-height: 1.2;
         }
 
         .nav-pill:hover {
-            background: #eeeeee;
+            background: #f1f1f1;
+            color: #222;
         }
 
         .nav-pill-active {
             background: #e8f2ff;
-            border-color: #9fc2f7;
+            border-color: #c5dcfb;
             color: #123a66;
             font-weight: 600;
         }
 
         .nav-admin {
-            background: #fafafa;
+            color: #666;
         }
         input:invalid, select:invalid {
             border: 1px solid #b00020;
+        }
+        .form-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 8px;
+        }
+        .form-top-bar .link-button {
+            min-height: 32px;
+            padding: 5px 10px;
+            font-size: 13px;
         }
         @media (max-width: 768px) {
             body {
@@ -407,23 +422,26 @@
                 margin-bottom: 6px;
             }
             .top-nav {
-                gap: 8px;
+                gap: 6px;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
             }
 
             .nav-group {
-                gap: 6px;
+                gap: 4px;
             }
 
             .nav-group-label {
                 width: 100%;
                 min-width: 0;
-                margin-bottom: 2px;
+                margin-bottom: 1px;
+                font-size: 10px;
             }
 
             .nav-pill {
-                min-height: 32px;
-                padding: 6px 9px;
-                font-size: 12px;
+                min-height: 26px;
+                padding: 4px 7px;
+                font-size: 11px;
             }
         }
     </style>

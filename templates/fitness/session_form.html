@@ -5,6 +5,12 @@
 {% block content %}
 <h1>Create Workout Session</h1>
 
+<div class="form-top-bar">
+    <a href="{% url 'fitness:session-list' %}" class="link-button">
+        ← Back
+    </a>
+</div>
+
 <form method="post" class="form-shell">
     {% csrf_token %}
 
@@ -15,9 +21,11 @@
             <div class="form-row">
                 <div>{{ field.label_tag }}</div>
                 <div>{{ field }}</div>
+
                 {% if field.help_text %}
                     <div class="form-help">{{ field.help_text }}</div>
                 {% endif %}
+
                 {{ field.errors }}
             </div>
         {% endfor %}
@@ -25,7 +33,6 @@
 
     <div class="form-actions">
         <button type="submit">Create session</button>
-        <a href="{% url 'fitness:session-list' %}" class="link-button">Back</a>
     </div>
 </form>
 {% endblock %}
