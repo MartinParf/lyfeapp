@@ -26,81 +26,99 @@
         })();
     </script>
 </head>
-<body>
-    <nav class="app-nav">
-        {% if '/fitness/' in request.path %}
-            <div class="mode-switch fitness-active">
-                <span class="mode-switch-indicator" aria-hidden="true"></span>
-                <a href="{% url 'bio:overview' %}" class="mode-switch-link">BIO</a>
-                <a href="{% url 'fitness:session-list' %}" class="mode-switch-link mode-switch-link-active">FITNESS</a>
+<body class="{% if '/fitness/' in request.path %}mode-fitness{% else %}mode-bio{% endif %}">
+    <div class="app-shell">
+        <header class="app-topbar">
+            <div class="app-brand">
+                {% if '/fitness/' in request.path %}
+                    <div class="app-brand-tag">FITNESS MODE</div>
+                    <div class="app-brand-title">LYFE / TRAINING LOG</div>
+                    <div class="app-brand-subtitle">Fast session tracking. Minimal friction. Sharp tools.</div>
+                {% else %}
+                    <div class="app-brand-tag">BIO MODE</div>
+                    <div class="app-brand-title">LYFE / DAILY SIGNALS</div>
+                    <div class="app-brand-subtitle">Daily status, activities, trends, and recovery context.</div>
+                {% endif %}
             </div>
 
-            <div class="context-subnav">
-                <a
-                    href="{% url 'fitness:session-list' %}"
-                    class="context-subnav-link {% if '/fitness/sessions/' in request.path %}context-subnav-link-active{% endif %}"
-                >
-                    Sessions
-                </a>
-                <a
-                    href="{% url 'fitness:pool-list' %}"
-                    class="context-subnav-link {% if '/fitness/pools/' in request.path %}context-subnav-link-active{% endif %}"
-                >
-                    Pools
-                </a>
-                <a
-                    href="{% url 'fitness:exercise-list' %}"
-                    class="context-subnav-link {% if '/fitness/exercises/' in request.path %}context-subnav-link-active{% endif %}"
-                >
-                    Exercises
-                </a>
-                <a
-                    href="{% url 'admin:index' %}"
-                    class="context-subnav-link context-subnav-link-admin {% if '/admin/' in request.path %}context-subnav-link-active{% endif %}"
-                >
-                    Admin
-                </a>
-            </div>
-        {% else %}
-            <div class="mode-switch bio-active">
-                <span class="mode-switch-indicator" aria-hidden="true"></span>
-                <a href="{% url 'bio:overview' %}" class="mode-switch-link mode-switch-link-active">BIO</a>
-                <a href="{% url 'fitness:session-list' %}" class="mode-switch-link">FITNESS</a>
-            </div>
+            {% if request.user.is_authenticated %}
+                <div class="app-topbar-side">
+                    <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
+                </div>
+            {% endif %}
+        </header>
 
-            <div class="context-subnav">
-                <a
-                    href="{% url 'bio:overview' %}"
-                    class="context-subnav-link {% if request.path == '/bio/' %}context-subnav-link-active{% endif %}"
-                >
-                    Overview
-                </a>
-                <a
-                    href="{% url 'bio:dailymetric-list' %}"
-                    class="context-subnav-link {% if '/bio/daily-metrics/' in request.path %}context-subnav-link-active{% endif %}"
-                >
-                    Daily Metrics
-                </a>
-                <a
-                    href="{% url 'bio:activity-list' %}"
-                    class="context-subnav-link {% if '/bio/activities/' in request.path %}context-subnav-link-active{% endif %}"
-                >
-                    Activities
-                </a>
-                <a
-                    href="{% url 'admin:index' %}"
-                    class="context-subnav-link context-subnav-link-admin {% if '/admin/' in request.path %}context-subnav-link-active{% endif %}"
-                >
-                    Admin
-                </a>
-            </div>
-        {% endif %}
-    </nav>
+        <nav class="app-nav">
+            {% if '/fitness/' in request.path %}
+                <div class="mode-switch fitness-active">
+                    <span class="mode-switch-indicator" aria-hidden="true"></span>
+                    <a href="{% url 'bio:overview' %}" class="mode-switch-link">BIO</a>
+                    <a href="{% url 'fitness:session-list' %}" class="mode-switch-link mode-switch-link-active">FITNESS</a>
+                </div>
 
-    {% if request.user.is_authenticated %}
-        <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
-    {% endif %}
+                <div class="context-subnav">
+                    <a
+                        href="{% url 'fitness:session-list' %}"
+                        class="context-subnav-link {% if '/fitness/sessions/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Sessions
+                    </a>
+                    <a
+                        href="{% url 'fitness:pool-list' %}"
+                        class="context-subnav-link {% if '/fitness/pools/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Pools
+                    </a>
+                    <a
+                        href="{% url 'fitness:exercise-list' %}"
+                        class="context-subnav-link {% if '/fitness/exercises/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Exercises
+                    </a>
+                    <a
+                        href="{% url 'admin:index' %}"
+                        class="context-subnav-link context-subnav-link-admin {% if '/admin/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Admin
+                    </a>
+                </div>
+            {% else %}
+                <div class="mode-switch bio-active">
+                    <span class="mode-switch-indicator" aria-hidden="true"></span>
+                    <a href="{% url 'bio:overview' %}" class="mode-switch-link mode-switch-link-active">BIO</a>
+                    <a href="{% url 'fitness:session-list' %}" class="mode-switch-link">FITNESS</a>
+                </div>
 
-    {% block content %}{% endblock %}
+                <div class="context-subnav">
+                    <a
+                        href="{% url 'bio:overview' %}"
+                        class="context-subnav-link {% if request.path == '/bio/' %}context-subnav-link-active{% endif %}"
+                    >
+                        Overview
+                    </a>
+                    <a
+                        href="{% url 'bio:dailymetric-list' %}"
+                        class="context-subnav-link {% if '/bio/daily-metrics/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Daily Metrics
+                    </a>
+                    <a
+                        href="{% url 'bio:activity-list' %}"
+                        class="context-subnav-link {% if '/bio/activities/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Activities
+                    </a>
+                    <a
+                        href="{% url 'admin:index' %}"
+                        class="context-subnav-link context-subnav-link-admin {% if '/admin/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Admin
+                    </a>
+                </div>
+            {% endif %}
+        </nav>
+
+        {% block content %}{% endblock %}
+    </div>
 </body>
 </html>

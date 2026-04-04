@@ -5,27 +5,27 @@
 {% block content %}
 <h2>Today — {{ today }}</h2>
 
-<div class="actions action-group" style="margin-bottom: 10px;">
+<div class="actions action-group">
     <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
         Go to today
     </a>
-    <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+    <a href="{% url 'bio:activity-create' %}" class="link-button">
         Log activity
     </a>
 </div>
 
 <div class="muted" style="margin-bottom: 10px;">
     {% if day_complete %}
-        Day status: <strong style="color: #2e7d32;">✓ complete</strong>
+        Day status: <strong class="status-good">✓ complete</strong>
     {% elif day_started %}
-        Day status: <strong style="color: #b26a00;">in progress</strong>
+        Day status: <strong class="status-warn">in progress</strong>
     {% else %}
-        Day status: <strong style="color: #b00020;">not started</strong>
+        Day status: <strong class="status-bad">not started</strong>
     {% endif %}
     • Activities today: {{ activities_count }}
 </div>
 
-<div class="list-card" style="background: #f7fafc;">
+<div class="list-card panel-accent">
     <h3 class="list-card-title">Weekly Signals</h3>
 
     <div class="meta-grid two-col">
@@ -62,7 +62,7 @@
     {% endif %}
 </div>
 
-<div class="list-card" style="border-color: #9fc2f7; background: #f5f9ff;">
+<div class="list-card panel-soft">
     <h3 class="list-card-title">Daily Status</h3>
 
     {% if today_metric %}
@@ -88,8 +88,6 @@
             </div>
         </div>
 
-        <div style="height: 6px;"></div>
-
         <div class="action-group">
             <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
                 Edit today
@@ -107,7 +105,7 @@
 </div>
 
 {% if today_metric %}
-    <div class="list-card" style="background: #fffdf5;">
+    <div class="list-card {% if not has_activities %}panel-warning{% else %}panel-success{% endif %}">
         <h3 class="list-card-title">Next Step</h3>
 
         {% if not has_activities %}
@@ -125,17 +123,17 @@
     </div>
 {% endif %}
 
-<div class="list-card">
+<div class="list-card panel-soft">
     <h3 class="list-card-title">Today's Activities ({{ activities_count }})</h3>
 
     <div class="action-group" style="margin-bottom: 8px;">
-        <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+        <a href="{% url 'bio:activity-create' %}" class="link-button">
             Log activity
         </a>
     </div>
 
     {% for activity in today_activities %}
-        <div class="card compact-card" style="margin-bottom: 6px;">
+        <div class="card panel-soft" style="margin-bottom: 6px;">
             <div class="meta-grid two-col">
                 <div>
                     <div class="meta-item-label">Type</div>

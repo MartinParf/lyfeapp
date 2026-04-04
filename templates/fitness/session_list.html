@@ -4,30 +4,58 @@
 
 {% block content %}
 <h1>Workout Sessions</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Execution mode. Open a session fast, clone it, or remove old noise.
+</p>
 
-<div class="actions">
-    <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
-        Create workout session
-    </a>
+<div class="list-card panel-accent">
+    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
+        <div>
+            <div class="meta-item-label">Session count</div>
+            <div class="meta-item-value">{{ sessions|length }}</div>
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
+                New session
+            </a>
+        </div>
+    </div>
 </div>
 
 {% for session in sessions %}
-    <div class="list-card">
-        <h3 class="list-card-title">
-            Session #{{ session.id }}
-        </h3>
+    <div class="list-card panel-soft">
+        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+                <div class="list-card-title" style="margin-bottom: 2px;">
+                    Session #{{ session.id }}
+                </div>
+                <div class="muted" style="font-size: 12px;">
+                    {{ session.get_status_display }}
+                </div>
+            </div>
+
+            <div
+                style="
+                    display: inline-flex;
+                    align-items: center;
+                    min-height: 24px;
+                    padding: 2px 6px;
+                    border: 1px solid var(--line-2);
+                    background: var(--panel-3);
+                    color: var(--text);
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                    border-radius: var(--radius);
+                "
+            >
+                {{ session.get_focus_display }}
+            </div>
+        </div>
 
         <div class="meta-grid two-col">
-            <div>
-                <div class="meta-item-label">Focus</div>
-                <div class="meta-item-value">{{ session.get_focus_display }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Status</div>
-                <div class="meta-item-value">{{ session.get_status_display }}</div>
-            </div>
-
             <div>
                 <div class="meta-item-label">Source pool</div>
                 <div class="meta-item-value">{{ session.source_pool|default:"-" }}</div>
@@ -35,12 +63,24 @@
 
             <div>
                 <div class="meta-item-label">Scheduled date</div>
-                <div class="meta-item-value">{{ session.scheduled_date|default:"-" }}</div>
+                <div class="meta-item-value">
+                    {% if session.scheduled_date %}
+                        {{ session.scheduled_date|date:"d.m.Y" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
             </div>
 
             <div>
                 <div class="meta-item-label">Started</div>
-                <div class="meta-item-value">{{ session.started_at|default:"-" }}</div>
+                <div class="meta-item-value">
+                    {% if session.started_at %}
+                        {{ session.started_at|date:"d.m.Y H:i" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
             </div>
         </div>
 
@@ -52,7 +92,6 @@
             <form
                 method="post"
                 action="{% url 'fitness:session-clone' session.pk %}"
-                style="display: inline;"
             >
                 {% csrf_token %}
                 <button type="submit">Clone</button>
@@ -61,7 +100,6 @@
             <form
                 method="post"
                 action="{% url 'fitness:session-delete' session.pk %}"
-                style="display: inline;"
                 onsubmit="return confirm('Delete this workout session?');"
             >
                 {% csrf_token %}
@@ -70,8 +108,16 @@
         </div>
     </div>
 {% empty %}
-    <div class="list-card">
-        <div class="muted">No workout sessions yet.</div>
+    <div class="list-card panel-soft">
+        <div class="list-card-title">No workout sessions yet</div>
+        <div class="muted" style="margin-bottom: 8px;">
+            Start with a clean session and build your flow from there.
+        </div>
+        <div class="action-group">
+            <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
+                Create first session
+            </a>
+        </div>
     </div>
 {% endfor %}
 {% endblock %}
