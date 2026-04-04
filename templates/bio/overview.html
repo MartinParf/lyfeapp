@@ -5,8 +5,6 @@
 {% block content %}
 <h2>Today — {{ today }}</h2>
 
-{% include "bio/partials/subnav.html" %}
-
 <div class="actions action-group" style="margin-bottom: 10px;">
     <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
         Go to today
@@ -25,6 +23,43 @@
         Day status: <strong style="color: #b00020;">not started</strong>
     {% endif %}
     • Activities today: {{ activities_count }}
+</div>
+
+<div class="list-card" style="background: #f7fafc;">
+    <h3 class="list-card-title">Weekly Signals</h3>
+
+    <div class="meta-grid two-col">
+        <div>
+            <div class="meta-item-label">Metric days (7d)</div>
+            <div class="meta-item-value">{{ metric_days_count }}</div>
+        </div>
+
+        <div>
+            <div class="meta-item-label">Activity entries (7d)</div>
+            <div class="meta-item-value">{{ activity_entries_count }}</div>
+        </div>
+    </div>
+
+    {% if consistency_hint %}
+        <div style="margin-top: 6px;">
+            <div class="meta-item-label">Consistency</div>
+            <div class="muted">{{ consistency_hint }}</div>
+        </div>
+    {% endif %}
+
+    {% if activity_hint %}
+        <div style="margin-top: 6px;">
+            <div class="meta-item-label">Activity</div>
+            <div class="muted">{{ activity_hint }}</div>
+        </div>
+    {% endif %}
+
+    {% if sleep_alcohol_hint %}
+        <div style="margin-top: 6px;">
+            <div class="meta-item-label">Sleep / Alcohol</div>
+            <div class="muted">{{ sleep_alcohol_hint }}</div>
+        </div>
+    {% endif %}
 </div>
 
 <div class="list-card" style="border-color: #9fc2f7; background: #f5f9ff;">

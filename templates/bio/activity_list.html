@@ -5,12 +5,28 @@
 {% block content %}
 <h1>Activities</h1>
 
-{% include "bio/partials/subnav.html" %}
-
 <div class="actions action-group">
     <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
         Log activity today
     </a>
+</div>
+
+<div class="actions action-group" style="margin-bottom: 8px;">
+    <a href="?period=7d" class="link-button {% if period == '7d' %}primary-button{% endif %}">
+        Last 7 days
+    </a>
+    <a href="?period=all" class="link-button {% if period == 'all' %}primary-button{% endif %}">
+        All
+    </a>
+</div>
+
+<div class="list-card" style="background: #f7fafc;">
+    <div class="meta-grid two-col">
+        <div>
+            <div class="meta-item-label">Activities</div>
+            <div class="meta-item-value">{{ entries_count }}</div>
+        </div>
+    </div>
 </div>
 
 <div class="list-card" style="border-color: #9fc2f7; background: #f5f9ff;">

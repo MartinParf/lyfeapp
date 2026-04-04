@@ -22,6 +22,8 @@ class DailyMetricForm(forms.ModelForm):
                 format="%Y-%m-%d",
                 attrs={"type": "date"},
             ),
+            "sleep_quality": forms.RadioSelect,
+            "alcohol_units": forms.RadioSelect,
             "notes": forms.Textarea(
                 attrs={
                     "rows": 2,
@@ -57,6 +59,33 @@ class DailyMetricForm(forms.ModelForm):
         self.fields["calories_actual"].widget.attrs.update(
             {"placeholder": "e.g. 2650"}
         )
+        self.fields["sleep_quality"].widget.attrs.update({"style": "min-height: 40px;"})
+        self.fields["alcohol_units"].widget.attrs.update({"style": "min-height: 40px;"})
+
+        self.fields["weight_kg"].widget.attrs.update(
+            {
+                "step": "0.1",
+                "placeholder": "e.g. 82.4",
+                "inputmode": "decimal",
+                "autocomplete": "off",
+            }
+        )
+        self.fields["calories_planned"].widget.attrs.update(
+            {
+                "placeholder": "e.g. 2400",
+                "inputmode": "numeric",
+                "autocomplete": "off",
+            }
+        )
+        self.fields["calories_actual"].widget.attrs.update(
+            {
+                "placeholder": "e.g. 2650",
+                "inputmode": "numeric",
+                "autocomplete": "off",
+            }
+        )
+        self.fields["sleep_quality"].widget.attrs.update({"class": "quick-radio-input"})
+        self.fields["alcohol_units"].widget.attrs.update({"class": "quick-radio-input"})
 
 
 class ActivityForm(forms.ModelForm):

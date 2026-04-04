@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -5,17 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LYFE{% endblock %}</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
     <script>
         (function () {
             let lastScrollY = 0;
-    
+
             document.body.addEventListener("htmx:beforeRequest", function (event) {
                 const elt = event.detail.elt;
                 if (elt && (elt.classList.contains("preserve-scroll") || elt.closest(".preserve-scroll"))) {
                     lastScrollY = window.scrollY;
                 }
             });
-    
+
             document.body.addEventListener("htmx:afterSwap", function () {
                 if (typeof lastScrollY === "number") {
                     window.scrollTo({ top: lastScrollY, behavior: "auto" });
@@ -23,537 +25,82 @@
             });
         })();
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 920px;
-            margin: 0 auto;
-            padding: 12px;
-            line-height: 1.45;
-            font-size: 15px;
-            color: #222;
-            background: #fcfcfc;
-        }
-        nav {
-            margin-bottom: 16px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        nav a {
-            text-decoration: none;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        .actions {
-            margin: 16px 0;
-        }
-        .form-row {
-            margin-bottom: 10px;
-        }
-        .errorlist {
-            color: #b00020;
-            margin: 4px 0;
-        }
-        .muted {
-            color: #666;
-        }
-        .card {
-            border: 1px solid #dddddd;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 10px;
-            background: #ffffff;
-        }
-        .card h3, .card h4 {
-            margin-top: 0;
-        }
-        ul {
-            padding-left: 20px;
-        }
-        button {
-            cursor: pointer;
-            min-height: 36px;
-            padding: 7px 10px;
-            border-radius: 8px;
-            border: 1px solid #cfcfcf;
-            background: #f7f7f7;
-            color: #222;
-            font-size: 14px;
-            line-height: 1.2;
-        }
-        .inline-form {
-            margin-top: 8px;
-            padding: 8px;
-            border: 1px dashed #cfcfcf;
-            border-radius: 10px;
-            background: #fafafa;
-        }
-        .danger {
-            color: #b00020;
-            border-color: #d7a8b1;
-            background: #fff5f6;
-        }
-        .danger:hover {
-            background: #ffecee;
-        }
-        input, select, textarea {
-            width: 100%;
-            box-sizing: border-box;
-            min-height: 40px;
-            padding: 8px 10px;
-            border: 1px solid #bbb;
-            border-radius: 8px;
-        }
-        textarea {
-            height: 44px;
-            min-height: 44px;
-            resize: none;
-        }
-        .errorlist {
-            color: #b00020;
-            margin: 4px 0;
-        }
-        .action-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .stack-mobile {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .set-actions {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .section-title {
-            margin: 0 0 8px 0;
-            font-size: 16px;
-            line-height: 1.2;
-        }
-        .divider-space {
-            margin-bottom: 16px;
-        }
-        .link-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 36px;
-            padding: 7px 10px;
-            border-radius: 8px;
-            border: 1px solid #cfcfcf;
-            background: #f7f7f7;
-            text-decoration: none;
-            color: #222;
-            box-sizing: border-box;
-            font-size: 14px;
-            line-height: 1.2;
-        }
-
-        .link-button:hover {
-            background: #eeeeee;
-        }
-
-        .primary-button {
-            background: #e8f2ff;
-            border-color: #9fc2f7;
-            color: #123a66;
-            font-weight: 600;
-        }
-
-        .list-card {
-            border: 1px solid #dddddd;
-            border-radius: 10px;
-            padding: 8px;
-            margin: 8px 0;
-            background: #ffffff;
-        }
-
-        .list-card-title {
-            margin: 0 0 6px 0;
-            font-size: 17px;
-            line-height: 1.2;
-        }
-
-        .meta-grid {
-            display: grid;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-        .meta-grid.two-col {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            column-gap: 12px;
-            row-gap: 6px;
-        }
-
-        .meta-item-label {
-            font-size: 12px;
-            color: #777;
-            line-height: 1.2;
-            margin-bottom: 2px;
-        }
-
-        .meta-item-value {
-            font-weight: 600;
-            font-size: 13px;
-            line-height: 1.2;
-        }
-
-        .action-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .action-group form {
-            display: inline-flex;
-            margin: 0;
-        }
-
-        .action-group .link-button,
-        .action-group button {
-            min-width: 82px;
-            justify-content: center;
-        }
-        .compact-card {
-            padding: 10px;
-            margin: 10px 0;
-        }
-
-        .compact-row {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .compact-input {
-            max-width: 90px;
-        }
-
-        .compact-actions {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .compact-label {
-            font-size: 13px;
-            color: #666;
-        }
-
-        .compact-set {
-            border-bottom: 1px solid #eee;
-            padding: 6px 0;
-        }
-
-        .compact-set:last-child {
-            border-bottom: none;
-        }
-        .form-shell {
-            display: grid;
-            gap: 10px;
-        }
-
-        .form-section {
-            border: 1px solid #dddddd;
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 10px;
-        }
-
-        .form-section-title {
-            margin: 0 0 8px 0;
-            font-size: 16px;
-            line-height: 1.2;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-top: 4px;
-        }
-
-        .form-help {
-            font-size: 12px;
-            color: #777;
-            margin-top: 4px;
-        }
-        .top-nav {
-            display: grid;
-            gap: 6px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e6e6e6;
-        }
-
-        .nav-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .nav-group-label {
-            font-size: 11px;
-            color: #888;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            min-width: 52px;
-            text-transform: uppercase;
-        }
-
-        .nav-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 28px;
-            padding: 4px 8px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            background: transparent;
-            text-decoration: none;
-            color: #444;
-            font-size: 12px;
-            line-height: 1.2;
-        }
-
-        .nav-pill:hover {
-            background: #f1f1f1;
-            color: #222;
-        }
-
-        .nav-pill-active {
-            background: #e8f2ff;
-            border-color: #c5dcfb;
-            color: #123a66;
-            font-weight: 600;
-        }
-        .sub-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-            margin: 0 0 12px 0;
-        }
-
-        .sub-nav-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 30px;
-            padding: 5px 9px;
-            border-radius: 8px;
-            border: 1px solid #d8d8d8;
-            background: #f7f7f7;
-            text-decoration: none;
-            color: #333;
-            font-size: 12px;
-            line-height: 1.2;
-        }
-
-        .sub-nav-link:hover {
-            background: #efefef;
-        }
-
-        .sub-nav-link-active {
-            background: #e8f2ff;
-            border-color: #c5dcfb;
-            color: #123a66;
-            font-weight: 600;
-        }
-
-        .nav-admin {
-            color: #666;
-        }
-        input:invalid, select:invalid {
-            border: 1px solid #b00020;
-        }
-        .form-top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            margin-bottom: 8px;
-        }
-        .form-top-bar .link-button {
-            min-height: 32px;
-            padding: 5px 10px;
-            font-size: 13px;
-        }
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-                font-size: 14px;
-            }
-
-            .card,
-            .list-card {
-                padding: 8px;
-                margin: 6px 0;
-            }
-
-            .list-card-title {
-                font-size: 16px;
-                margin-bottom: 4px;
-            }
-
-            .meta-item-label {
-                font-size: 11px;
-            }
-
-            .meta-item-value {
-                font-size: 13px;
-            }
-
-            .stack-mobile {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .action-row button,
-            .set-actions button,
-            .action-group button,
-            .link-button {
-                width: auto;
-                min-width: 44px;
-                min-height: 34px;
-                padding: 6px 8px;
-                font-size: 13px;
-            }
-
-            button {
-                width: 100%;
-            }
-
-            .action-row button,
-            .set-actions button,
-            .action-group button {
-                width: auto;
-            }
-
-            .action-group .link-button,
-            .action-group button {
-                min-width: 82px;
-            }
-
-            .mobile-tight {
-                margin-bottom: 6px;
-            }
-            .top-nav {
-                gap: 6px;
-                margin-bottom: 10px;
-                padding-bottom: 6px;
-            }
-
-            .nav-group {
-                gap: 4px;
-            }
-
-            .nav-group-label {
-                width: 100%;
-                min-width: 0;
-                margin-bottom: 1px;
-                font-size: 10px;
-            }
-
-            .nav-pill {
-                min-height: 26px;
-                padding: 4px 7px;
-                font-size: 11px;
-            }
-            .sub-nav {
-                gap: 5px;
-                margin-bottom: 10px;
-            }
-
-            .sub-nav-link {
-                min-height: 28px;
-                padding: 4px 8px;
-                font-size: 11px;
-            }
-        }
-    </style>
 </head>
 <body>
-    <nav class="top-nav">
-        <div class="nav-group">
-            <div class="nav-group-label">BIO</div>
-    
-            <a
-                href="{% url 'bio:overview' %}"
-                class="nav-pill {% if request.path == '/bio/' or '/bio/daily-metrics/' in request.path or '/bio/activities/' in request.path %}nav-pill-active{% endif %}"
-            >
-                Overview
-            </a>
-        </div>
-    
-        <div class="nav-group">
-            <div class="nav-group-label">FITNESS</div>
-    
-            <a
-                href="{% url 'fitness:exercise-list' %}"
-                class="nav-pill {% if '/fitness/exercises/' in request.path %}nav-pill-active{% endif %}"
-            >
-                Exercises
-            </a>
-    
-            <a
-                href="{% url 'fitness:pool-list' %}"
-                class="nav-pill {% if '/fitness/pools/' in request.path %}nav-pill-active{% endif %}"
-            >
-                Pools
-            </a>
-    
-            <a
-                href="{% url 'fitness:session-list' %}"
-                class="nav-pill {% if '/fitness/sessions/' in request.path %}nav-pill-active{% endif %}"
-            >
-                Sessions
-            </a>
-        </div>
-    
-        <div class="nav-group">
-            <div class="nav-group-label">SYSTEM</div>
-    
-            <a
-                href="{% url 'admin:index' %}"
-                class="nav-pill nav-admin {% if '/admin/' in request.path %}nav-pill-active{% endif %}"
-            >
-                Admin
-            </a>
-        </div>
+    <nav class="app-nav">
+        {% if '/fitness/' in request.path %}
+            <div class="mode-switch fitness-active">
+                <span class="mode-switch-indicator" aria-hidden="true"></span>
+                <a href="{% url 'bio:overview' %}" class="mode-switch-link">BIO</a>
+                <a href="{% url 'fitness:session-list' %}" class="mode-switch-link mode-switch-link-active">FITNESS</a>
+            </div>
+
+            <div class="context-subnav">
+                <a
+                    href="{% url 'fitness:session-list' %}"
+                    class="context-subnav-link {% if '/fitness/sessions/' in request.path %}context-subnav-link-active{% endif %}"
+                >
+                    Sessions
+                </a>
+                <a
+                    href="{% url 'fitness:pool-list' %}"
+                    class="context-subnav-link {% if '/fitness/pools/' in request.path %}context-subnav-link-active{% endif %}"
+                >
+                    Pools
+                </a>
+                <a
+                    href="{% url 'fitness:exercise-list' %}"
+                    class="context-subnav-link {% if '/fitness/exercises/' in request.path %}context-subnav-link-active{% endif %}"
+                >
+                    Exercises
+                </a>
+                <a
+                    href="{% url 'admin:index' %}"
+                    class="context-subnav-link context-subnav-link-admin {% if '/admin/' in request.path %}context-subnav-link-active{% endif %}"
+                >
+                    Admin
+                </a>
+            </div>
+        {% else %}
+            <div class="mode-switch bio-active">
+                <span class="mode-switch-indicator" aria-hidden="true"></span>
+                <a href="{% url 'bio:overview' %}" class="mode-switch-link mode-switch-link-active">BIO</a>
+                <a href="{% url 'fitness:session-list' %}" class="mode-switch-link">FITNESS</a>
+            </div>
+
+            <div class="context-subnav">
+                <a
+                    href="{% url 'bio:overview' %}"
+                    class="context-subnav-link {% if request.path == '/bio/' %}context-subnav-link-active{% endif %}"
+                >
+                    Overview
+                </a>
+                <a
+                    href="{% url 'bio:dailymetric-list' %}"
+                    class="context-subnav-link {% if '/bio/daily-metrics/' in request.path %}context-subnav-link-active{% endif %}"
+                >
+                    Daily Metrics
+                </a>
+                <a
+                    href="{% url 'bio:activity-list' %}"
+                    class="context-subnav-link {% if '/bio/activities/' in request.path %}context-subnav-link-active{% endif %}"
+                >
+                    Activities
+                </a>
+                <a
+                    href="{% url 'admin:index' %}"
+                    class="context-subnav-link context-subnav-link-admin {% if '/admin/' in request.path %}context-subnav-link-active{% endif %}"
+                >
+                    Admin
+                </a>
+            </div>
+        {% endif %}
     </nav>
 
     {% if request.user.is_authenticated %}
-        <p class="muted">Logged in as: {{ request.user.username }}</p>
+        <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
     {% endif %}
 
     {% block content %}{% endblock %}
-    <script>
-        let scrollPosition = 0;
-    
-        document.body.addEventListener('htmx:beforeRequest', function () {
-            scrollPosition = window.scrollY;
-        });
-    
-        document.body.addEventListener('htmx:afterSwap', function () {
-            window.scrollTo(0, scrollPosition);
-        });
-    </script>
 </body>
 </html>

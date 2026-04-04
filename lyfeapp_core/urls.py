@@ -6,5 +6,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("fitness/", include("fitness.urls", namespace="fitness")),
     path("bio/", include("bio.urls", namespace="bio")),
-    path("", RedirectView.as_view(pattern_name="fitness:session-list", permanent=False)),
+    path("", RedirectView.as_view(pattern_name="bio:overview", permanent=False)),
 ]

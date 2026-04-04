@@ -4,6 +4,7 @@
 
 {% block content %}
 <h1>{{ page_title }}</h1>
+
 <div class="form-top-bar">
     <a href="{% url 'bio:dailymetric-list' %}" class="link-button">
         ← Back
@@ -16,7 +17,7 @@
     <div class="form-section">
         <h3 class="form-section-title">Daily Basics</h3>
 
-        <div class="meta-grid two-col">
+        <div class="meta-grid two-col" style="row-gap: 8px;">
             <div class="form-row">
                 <div>{{ form.date.label_tag }}</div>
                 <div>{{ form.date }}</div>
@@ -30,27 +31,41 @@
                 {% if form.weight_kg.help_text %}<div class="form-help">{{ form.weight_kg.help_text }}</div>{% endif %}
                 {{ form.weight_kg.errors }}
             </div>
+        </div>
 
-            <div class="form-row">
-                <div>{{ form.sleep_quality.label_tag }}</div>
-                <div>{{ form.sleep_quality }}</div>
-                {% if form.sleep_quality.help_text %}<div class="form-help">{{ form.sleep_quality.help_text }}</div>{% endif %}
-                {{ form.sleep_quality.errors }}
+        <div class="form-row">
+            <div>{{ form.sleep_quality.label_tag }}</div>
+            <div class="quick-choice-group">
+                {% for choice in form.sleep_quality %}
+                    <div class="quick-choice-option">
+                        {{ choice.tag }}
+                        <label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                    </div>
+                {% endfor %}
             </div>
+            {% if form.sleep_quality.help_text %}<div class="quick-choice-help">{{ form.sleep_quality.help_text }}</div>{% endif %}
+            {{ form.sleep_quality.errors }}
+        </div>
 
-            <div class="form-row">
-                <div>{{ form.alcohol_units.label_tag }}</div>
-                <div>{{ form.alcohol_units }}</div>
-                {% if form.alcohol_units.help_text %}<div class="form-help">{{ form.alcohol_units.help_text }}</div>{% endif %}
-                {{ form.alcohol_units.errors }}
+        <div class="form-row" style="margin-bottom: 0;">
+            <div>{{ form.alcohol_units.label_tag }}</div>
+            <div class="quick-choice-group">
+                {% for choice in form.alcohol_units %}
+                    <div class="quick-choice-option">
+                        {{ choice.tag }}
+                        <label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                    </div>
+                {% endfor %}
             </div>
+            {% if form.alcohol_units.help_text %}<div class="quick-choice-help">{{ form.alcohol_units.help_text }}</div>{% endif %}
+            {{ form.alcohol_units.errors }}
         </div>
     </div>
 
     <div class="form-section">
         <h3 class="form-section-title">Nutrition</h3>
 
-        <div class="meta-grid two-col">
+        <div class="meta-grid two-col" style="row-gap: 8px;">
             <div class="form-row">
                 <div>{{ form.diet_mode.label_tag }}</div>
                 <div>{{ form.diet_mode }}</div>
