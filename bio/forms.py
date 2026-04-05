@@ -5,6 +5,38 @@ from .models import Activity, DailyMetric
 
 
 class DailyMetricForm(forms.ModelForm):
+    sleep_quality = forms.IntegerField(
+        min_value=1,
+        max_value=5,
+        label="Sleep quality",
+        widget=forms.NumberInput(
+            attrs={
+                "type": "range",
+                "min": "1",
+                "max": "5",
+                "step": "1",
+                "class": "metric-range-input",
+                "data-display-id": "sleep-quality-display",
+            }
+        ),
+    )
+
+    alcohol_units = forms.IntegerField(
+        min_value=0,
+        max_value=10,
+        label="Alcohol intake",
+        widget=forms.NumberInput(
+            attrs={
+                "type": "range",
+                "min": "0",
+                "max": "10",
+                "step": "1",
+                "class": "metric-range-input",
+                "data-display-id": "alcohol-units-display",
+            }
+        ),
+    )
+
     class Meta:
         model = DailyMetric
         fields = [
@@ -22,8 +54,6 @@ class DailyMetricForm(forms.ModelForm):
                 format="%Y-%m-%d",
                 attrs={"type": "date"},
             ),
-            "sleep_quality": forms.RadioSelect,
-            "alcohol_units": forms.RadioSelect,
             "notes": forms.Textarea(
                 attrs={
                     "rows": 2,
@@ -50,17 +80,11 @@ class DailyMetricForm(forms.ModelForm):
         if not self.instance.pk and not self.initial.get("date"):
             self.initial["date"] = timezone.localdate()
 
-        self.fields["weight_kg"].widget.attrs.update(
-            {"step": "0.1", "placeholder": "e.g. 82.4"}
-        )
-        self.fields["calories_planned"].widget.attrs.update(
-            {"placeholder": "e.g. 2400"}
-        )
-        self.fields["calories_actual"].widget.attrs.update(
-            {"placeholder": "e.g. 2650"}
-        )
-        self.fields["sleep_quality"].widget.attrs.update({"style": "min-height: 40px;"})
-        self.fields["alcohol_units"].widget.attrs.update({"style": "min-height: 40px;"})
+        if not self.instance.pk and self.initial.get("sleep_quality") in (None, ""):
+            self.initial["sleep_quality"] = 3
+
+        if not self.instance.pk and self.initial.get("alcohol_units") in (None, ""):
+            self.initial["alcohol_units"] = 0
 
         self.fields["weight_kg"].widget.attrs.update(
             {
@@ -84,8 +108,11 @@ class DailyMetricForm(forms.ModelForm):
                 "autocomplete": "off",
             }
         )
-        self.fields["sleep_quality"].widget.attrs.update({"class": "quick-radio-input"})
-        self.fields["alcohol_units"].widget.attrs.update({"class": "quick-radio-input"})
+        self.fields["notes"].widget.attrs.update(
+            {
+                "placeholder": "Optional notes for the day...",
+            }
+        )
 
 
 class ActivityForm(forms.ModelForm):
@@ -129,11 +156,24 @@ class ActivityForm(forms.ModelForm):
             self.initial["date"] = timezone.localdate()
 
         self.fields["duration_minutes"].widget.attrs.update(
-            {"placeholder": "e.g. 45"}
+            {
+                "placeholder": "e.g. 45",
+                "inputmode": "numeric",
+                "autocomplete": "off",
+            }
         )
         self.fields["distance_km"].widget.attrs.update(
-            {"step": "0.1", "placeholder": "e.g. 5.2"}
+            {
+                "step": "0.1",
+                "placeholder": "e.g. 5.2",
+                "inputmode": "decimal",
+                "autocomplete": "off",
+            }
         )
         self.fields["calories_burned_est"].widget.attrs.update(
-            {"placeholder": "e.g. 380"}
+            {
+                "placeholder": "e.g. 380",
+                "inputmode": "numeric",
+                "autocomplete": "off",
+            }
         )

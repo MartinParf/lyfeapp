@@ -4,17 +4,49 @@
 
 {% block content %}
 <h1>Create Workout Session</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Start a new session and define the execution context before training starts.
+</p>
 
-<div class="form-top-bar">
-    <a href="{% url 'fitness:session-list' %}" class="link-button">
-        ← Back
-    </a>
+<div class="form-hero">
+    <div class="form-hero-grid">
+        <div class="form-hero-card form-hero-card-primary">
+            <div class="form-hero-badges">
+                <div class="form-hero-badge">FITNESS</div>
+                <div class="form-hero-badge">Session</div>
+            </div>
+
+            <div class="form-hero-title">Create Session</div>
+            <div class="form-hero-copy">
+                Set the training context now. Exercises and details can be adjusted later.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:session-list' %}" class="link-button">
+                    Back to sessions
+                </a>
+            </div>
+        </div>
+
+        <div class="form-hero-card">
+            <div class="form-hero-mini-grid">
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Goal</div>
+                    <div class="form-hero-mini-value">Fast setup</div>
+                </div>
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Flow</div>
+                    <div class="form-hero-mini-value">Create → add work</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <form method="post" class="form-shell">
     {% csrf_token %}
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Session Details</h3>
 
         {% for field in form %}
@@ -32,7 +64,7 @@
     </div>
 
     <div class="form-actions">
-        <button type="submit">Create session</button>
+        <button type="submit" class="primary-button">Create session</button>
     </div>
 </form>
 {% endblock %}

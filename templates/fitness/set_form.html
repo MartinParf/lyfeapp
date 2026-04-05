@@ -4,20 +4,65 @@
 
 {% block content %}
 <h1>Add Set for {{ session_exercise.exercise.name }}</h1>
-<p class="muted">Session #{{ session_exercise.session_id }}, exercise order #{{ session_exercise.sequence }}</p>
+<p class="muted" style="margin-bottom: 10px;">
+    Session #{{ session_exercise.session_id }}, exercise order #{{ session_exercise.sequence }}
+</p>
 
-<form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="form-row">
-            <div>{{ field.label_tag }}</div>
-            <div>{{ field }}</div>
-            {% if field.help_text %}
-                <div class="muted">{{ field.help_text }}</div>
-            {% endif %}
-            {{ field.errors }}
+<div class="execution-hero">
+    <div class="execution-hero-grid">
+        <div class="execution-card execution-card-primary">
+            <div class="execution-badge-row">
+                <div class="execution-badge">Session #{{ session_exercise.session_id }}</div>
+                <div class="execution-badge">Exercise #{{ session_exercise.sequence }}</div>
+            </div>
+
+            <div class="execution-title">{{ session_exercise.exercise.name }}</div>
+            <div class="execution-subtitle">
+                Log one more working set and return straight back to execution.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:session-detail' session_exercise.session_id %}" class="link-button">
+                    Back to session
+                </a>
+            </div>
         </div>
-    {% endfor %}
-    <button type="submit">Save set</button>
+
+        <div class="execution-card">
+            <div class="execution-mini-grid">
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Exercise</div>
+                    <div class="execution-mini-value">{{ session_exercise.exercise.name }}</div>
+                </div>
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Order</div>
+                    <div class="execution-mini-value">{{ session_exercise.sequence }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post" class="form-shell">
+    {% csrf_token %}
+
+    <div class="form-section panel-soft">
+        <h3 class="form-section-title">Set Details</h3>
+
+        {% for field in form %}
+            <div class="form-row">
+                <div>{{ field.label_tag }}</div>
+                <div>{{ field }}</div>
+                {% if field.help_text %}
+                    <div class="form-help">{{ field.help_text }}</div>
+                {% endif %}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="primary-button">Save set</button>
+    </div>
 </form>
 {% endblock %}

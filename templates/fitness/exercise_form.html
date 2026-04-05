@@ -4,17 +4,49 @@
 
 {% block content %}
 <h1>Create Custom Exercise</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Add your own exercise to the library and reuse it in pools or sessions.
+</p>
 
-<div class="form-top-bar">
-    <a href="{% url 'fitness:exercise-list' %}" class="link-button">
-        ← Back
-    </a>
+<div class="form-hero">
+    <div class="form-hero-grid">
+        <div class="form-hero-card form-hero-card-primary">
+            <div class="form-hero-badges">
+                <div class="form-hero-badge">FITNESS</div>
+                <div class="form-hero-badge">Exercise</div>
+            </div>
+
+            <div class="form-hero-title">Create Exercise</div>
+            <div class="form-hero-copy">
+                Expand the exercise library with your own custom movement.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:exercise-list' %}" class="link-button">
+                    Back to exercises
+                </a>
+            </div>
+        </div>
+
+        <div class="form-hero-card">
+            <div class="form-hero-mini-grid">
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Mode</div>
+                    <div class="form-hero-mini-value">Custom exercise</div>
+                </div>
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Target</div>
+                    <div class="form-hero-mini-value">Library growth</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <form method="post" class="form-shell">
     {% csrf_token %}
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Exercise Details</h3>
 
         {% for field in form %}
@@ -32,7 +64,7 @@
     </div>
 
     <div class="form-actions">
-        <button type="submit">Create exercise</button>
+        <button type="submit" class="primary-button">Create exercise</button>
     </div>
 </form>
 {% endblock %}

@@ -5,8 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LYFE{% endblock %}</title>
+
+    <meta name="theme-color" content="#0a0f18">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LYFE">
+
+    <link rel="manifest" href="{% static 'core/manifest.webmanifest' %}">
+    <link rel="icon" href="{% static 'core/icons/icon-192.svg' %}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{% static 'core/icons/icon-192.svg' %}">
+
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+
     <script>
         (function () {
             let lastScrollY = 0;
@@ -42,9 +53,7 @@
             </div>
 
             {% if request.user.is_authenticated %}
-                <div class="app-topbar-side">
-                    <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
-                </div>
+                <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
             {% endif %}
         </header>
 
@@ -120,5 +129,17 @@
 
         {% block content %}{% endblock %}
     </div>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker
+                    .register("{% url 'service-worker' %}", { scope: "/" })
+                    .catch(function (error) {
+                        console.error("Service worker registration failed:", error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>

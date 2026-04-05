@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline | LYFE</title>
+    <meta name="theme-color" content="#0a0f18">
+    <style>
+        :root {
+            --bg: #0a0f18;
+            --panel: #131c2a;
+            --line: #243246;
+            --text: #ecf3fb;
+            --text-soft: #9fb0c6;
+            --accent: #06b6d4;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(180deg, #09111c 0%, #0a0f18 100%);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+            padding: 16px;
+        }
+
+        .offline-card {
+            width: min(100%, 440px);
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, #131c2a 0%, #182334 100%);
+            padding: 20px;
+        }
+
+        .tag {
+            display: inline-flex;
+            min-height: 22px;
+            align-items: center;
+            padding: 2px 8px;
+            border: 1px solid var(--line);
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            line-height: 1.1;
+        }
+
+        p {
+            margin: 0 0 10px 0;
+            color: var(--text-soft);
+            line-height: 1.35;
+        }
+
+        .hint {
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        <div class="tag">LYFE OFFLINE</div>
+        <h1>You are offline</h1>
+        <p>LYFE is installed and the shell is available, but this page needs a connection or a cached visit first.</p>
+        <p>Try reopening a page you already visited, or reconnect and reload.</p>
+        <div class="hint">PWA foundation is active. Offline support can be expanded later.</div>
+    </div>
+</body>
+</html>

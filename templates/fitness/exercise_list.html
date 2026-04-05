@@ -4,32 +4,124 @@
 
 {% block content %}
 <h1>Exercise Library</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Core exercise list for pools and sessions. System items stay read-only, custom items stay editable.
+</p>
 
-<div class="actions">
-    <a href="{% url 'fitness:exercise-create' %}" class="link-button primary-button">
-        Create custom exercise
-    </a>
+<div class="mode-bridge">
+    <div class="mode-bridge-grid">
+        <div class="mode-bridge-card mode-bridge-card-fitness">
+            <div class="mode-bridge-kicker">Library mode</div>
+            <div class="mode-bridge-title">Exercises / Reusable Building Blocks</div>
+            <div class="mode-bridge-copy">
+                Keep the movement library clean, searchable, and ready for pools or direct session use.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'fitness:exercise-create' %}" class="link-button primary-button">
+                    New custom exercise
+                </a>
+                <a href="{% url 'fitness:pool-list' %}" class="link-button">
+                    Open pools
+                </a>
+            </div>
+        </div>
+
+        <div class="mode-bridge-card mode-bridge-card-bio">
+            <div class="mode-bridge-kicker">Context mode</div>
+            <div class="mode-bridge-title">BIO / Daily Signals</div>
+            <div class="mode-bridge-copy">
+                Jump back to daily recovery, activity, and body context when you need the bigger picture.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'bio:overview' %}" class="link-button">
+                    Open BIO
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
-<form method="get" class="list-card">
-    <div class="form-row">
-        <label for="pattern">Pattern</label>
-        <select name="pattern" id="pattern">
-            <option value="">All</option>
-            {% for value, label in pattern_choices %}
-                <option value="{{ value }}" {% if current_pattern == value %}selected{% endif %}>
-                    {{ label }}
-                </option>
-            {% endfor %}
-        </select>
+<div class="list-card panel-accent">
+    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
+        <div class="meta-grid two-col" style="margin-bottom: 0;">
+            <div>
+                <div class="meta-item-label">Exercise count</div>
+                <div class="meta-item-value">{{ exercises|length }}</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Pattern filter</div>
+                <div class="meta-item-value">{{ current_pattern|default:"All" }}</div>
+            </div>
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:exercise-create' %}" class="link-button primary-button">
+                New custom exercise
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="list-card panel-soft">
+    <div class="section-bar">
+        <div class="section-bar-title">
+            <div class="section-kicker">Filter</div>
+            <h3 class="list-card-title" style="margin-bottom: 0;">Exercise Pattern</h3>
+        </div>
     </div>
 
-    <button type="submit">Filter</button>
+    <div class="meta-grid two-col" style="margin-bottom: 8px;">
+        <div class="form-row" style="margin-bottom: 0;">
+            <div class="meta-item-label">Pattern</div>
+            <select name="pattern" id="pattern">
+                <option value="">All</option>
+                {% for value, label in pattern_choices %}
+                    <option value="{{ value }}" {% if current_pattern == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; align-items: end;">
+            <button type="submit">Apply filter</button>
+        </div>
+    </div>
 </form>
 
 {% for exercise in exercises %}
-    <div class="list-card">
-        <h3 class="list-card-title">{{ exercise.name }}</h3>
+    <div class="list-card panel-soft">
+        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+                <div class="list-card-title" style="margin-bottom: 2px;">{{ exercise.name }}</div>
+                <div class="muted" style="font-size: 12px;">
+                    {% if exercise.created_by == request.user %}
+                        Custom exercise
+                    {% else %}
+                        System exercise
+                    {% endif %}
+                </div>
+            </div>
+
+            <div
+                style="
+                    display: inline-flex;
+                    align-items: center;
+                    min-height: 24px;
+                    padding: 2px 6px;
+                    border: 1px solid var(--line-2);
+                    background: var(--panel-3);
+                    color: var(--text);
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                    border-radius: var(--radius);
+                "
+            >
+                {{ exercise.get_primary_pattern_display|default:"-" }}
+            </div>
+        </div>
 
         <div class="meta-grid two-col">
             <div>
@@ -59,7 +151,6 @@
                     <form
                         method="post"
                         action="{% url 'fitness:exercise-deactivate' exercise.pk %}"
-                        style="display: inline;"
                         onsubmit="return confirm('Deactivate this custom exercise?');"
                     >
                         {% csrf_token %}
@@ -74,8 +165,9 @@
         </div>
     </div>
 {% empty %}
-    <div class="list-card">
-        <div class="muted">No exercises found.</div>
+    <div class="list-card panel-soft">
+        <div class="list-card-title">No exercises found</div>
+        <div class="muted">Try a different filter or create your first custom exercise.</div>
     </div>
 {% endfor %}
 {% endblock %}

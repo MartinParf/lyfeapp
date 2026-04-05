@@ -3,18 +3,112 @@
 {% block title %}{{ page_title }} | LYFE{% endblock %}
 
 {% block content %}
-<h1>{{ page_title }}</h1>
+<style>
+    .metric-range-card {
+        display: grid;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
+        border-radius: var(--radius);
+    }
 
-<div class="form-top-bar">
-    <a href="{% url 'bio:dailymetric-list' %}" class="link-button">
-        ← Back
-    </a>
+    .metric-range-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .metric-range-title {
+        font-size: 12px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+    }
+
+    .metric-range-value {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .metric-range-input {
+        width: 100%;
+        min-height: auto;
+        padding: 0;
+        border: none;
+        background: transparent;
+        accent-color: var(--mode);
+        cursor: pointer;
+    }
+
+    .metric-range-scale {
+        display: grid;
+        gap: 4px;
+    }
+
+    .metric-range-ticks {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        font-size: 10px;
+        color: var(--text-dim);
+        line-height: 1;
+    }
+
+    .metric-range-help {
+        font-size: 11px;
+        color: var(--text-soft);
+        margin-top: -2px;
+    }
+</style>
+
+<h1>{{ page_title }}</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Daily recovery and body context. Fast input, low friction.
+</p>
+
+<div class="form-hero">
+    <div class="form-hero-grid">
+        <div class="form-hero-card form-hero-card-primary">
+            <div class="form-hero-badges">
+                <div class="form-hero-badge">BIO</div>
+                <div class="form-hero-badge">Daily metric</div>
+            </div>
+
+            <div class="form-hero-title">{{ page_title }}</div>
+            <div class="form-hero-copy">
+                Enter the minimum useful daily signal: bodyweight, sleep, alcohol, and food context.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'bio:dailymetric-list' %}" class="link-button">
+                    Back
+                </a>
+            </div>
+        </div>
+
+        <div class="form-hero-card">
+            <div class="form-hero-mini-grid">
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Input style</div>
+                    <div class="form-hero-mini-value">Slider-based</div>
+                </div>
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Use case</div>
+                    <div class="form-hero-mini-value">Fast daily loop</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <form method="post" class="form-shell">
     {% csrf_token %}
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Daily Basics</h3>
 
         <div class="meta-grid two-col" style="row-gap: 8px;">
@@ -33,36 +127,55 @@
             </div>
         </div>
 
-        <div class="form-row">
-            <div>{{ form.sleep_quality.label_tag }}</div>
-            <div class="quick-choice-group">
-                {% for choice in form.sleep_quality %}
-                    <div class="quick-choice-option">
-                        {{ choice.tag }}
-                        <label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
-                    </div>
-                {% endfor %}
+        <div class="metric-range-card">
+            <div class="metric-range-head">
+                <div class="metric-range-title">{{ form.sleep_quality.label }}</div>
+                <div class="metric-range-value" id="sleep-quality-display">Average</div>
             </div>
-            {% if form.sleep_quality.help_text %}<div class="quick-choice-help">{{ form.sleep_quality.help_text }}</div>{% endif %}
+
+            <div class="metric-range-scale">
+                {{ form.sleep_quality }}
+                <div class="metric-range-ticks">
+                    <span>Very poor</span>
+                    <span>Poor</span>
+                    <span>Average</span>
+                    <span>Good</span>
+                    <span>Excellent</span>
+                </div>
+            </div>
+
+            <div class="metric-range-help">
+                1 = very poor, 5 = excellent
+            </div>
             {{ form.sleep_quality.errors }}
         </div>
 
-        <div class="form-row" style="margin-bottom: 0;">
-            <div>{{ form.alcohol_units.label_tag }}</div>
-            <div class="quick-choice-group">
-                {% for choice in form.alcohol_units %}
-                    <div class="quick-choice-option">
-                        {{ choice.tag }}
-                        <label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
-                    </div>
-                {% endfor %}
+        <div class="metric-range-card">
+            <div class="metric-range-head">
+                <div class="metric-range-title">{{ form.alcohol_units.label }}</div>
+                <div class="metric-range-value" id="alcohol-units-display">0 — none</div>
             </div>
-            {% if form.alcohol_units.help_text %}<div class="quick-choice-help">{{ form.alcohol_units.help_text }}</div>{% endif %}
+
+            <div class="metric-range-scale">
+                {{ form.alcohol_units }}
+                <div class="metric-range-ticks">
+                    <span>0</span>
+                    <span>2</span>
+                    <span>4</span>
+                    <span>6</span>
+                    <span>8</span>
+                    <span>10</span>
+                </div>
+            </div>
+
+            <div class="metric-range-help">
+                0 = none, 10 = very high intake
+            </div>
             {{ form.alcohol_units.errors }}
         </div>
     </div>
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Nutrition</h3>
 
         <div class="meta-grid two-col" style="row-gap: 8px;">
@@ -91,7 +204,7 @@
         </div>
     </div>
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Notes</h3>
 
         <div class="form-row" style="margin-bottom: 0;">
@@ -103,7 +216,55 @@
     </div>
 
     <div class="form-actions">
-        <button type="submit">{{ submit_label }}</button>
+        <button type="submit" class="primary-button">{{ submit_label }}</button>
     </div>
 </form>
+
+<script>
+    (function () {
+        const sleepInput = document.getElementById("id_sleep_quality");
+        const alcoholInput = document.getElementById("id_alcohol_units");
+        const sleepDisplay = document.getElementById("sleep-quality-display");
+        const alcoholDisplay = document.getElementById("alcohol-units-display");
+
+        const sleepLabels = {
+            1: "Very poor",
+            2: "Poor",
+            3: "Average",
+            4: "Good",
+            5: "Excellent"
+        };
+
+        function alcoholLabel(value) {
+            const numeric = Number(value);
+            if (numeric === 0) return "0 — none";
+            if (numeric <= 2) return numeric + " — light";
+            if (numeric <= 5) return numeric + " — moderate";
+            if (numeric <= 8) return numeric + " — high";
+            return numeric + " — very high";
+        }
+
+        function syncDisplays() {
+            if (sleepInput && sleepDisplay) {
+                sleepDisplay.textContent = sleepLabels[Number(sleepInput.value)] || sleepInput.value;
+            }
+
+            if (alcoholInput && alcoholDisplay) {
+                alcoholDisplay.textContent = alcoholLabel(alcoholInput.value);
+            }
+        }
+
+        if (sleepInput) {
+            sleepInput.addEventListener("input", syncDisplays);
+            sleepInput.addEventListener("change", syncDisplays);
+        }
+
+        if (alcoholInput) {
+            alcoholInput.addEventListener("input", syncDisplays);
+            alcoholInput.addEventListener("change", syncDisplays);
+        }
+
+        syncDisplays();
+    })();
+</script>
 {% endblock %}

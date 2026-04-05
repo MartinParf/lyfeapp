@@ -4,19 +4,49 @@
 
 {% block content %}
 <h1>Add Exercise to {{ pool.name }}</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Extend the pool with another exercise and keep the order flexible later.
+</p>
 
-<form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="form-row">
-            <div>{{ field.label_tag }}</div>
-            <div>{{ field }}</div>
-            {% if field.help_text %}
-                <div class="muted">{{ field.help_text }}</div>
-            {% endif %}
-            {{ field.errors }}
+<div class="form-top-bar">
+    <a href="{% url 'fitness:pool-detail' pool.pk %}" class="link-button">
+        ← Back to pool
+    </a>
+</div>
+
+<div class="list-card panel-accent">
+    <div class="meta-grid two-col">
+        <div>
+            <div class="meta-item-label">Pool</div>
+            <div class="meta-item-value">{{ pool.name }}</div>
         </div>
-    {% endfor %}
-    <button type="submit">Add exercise</button>
+        <div>
+            <div class="meta-item-label">Focus</div>
+            <div class="meta-item-value">{{ pool.get_focus_display }}</div>
+        </div>
+    </div>
+</div>
+
+<form method="post" class="form-shell">
+    {% csrf_token %}
+
+    <div class="form-section panel-soft">
+        <h3 class="form-section-title">Exercise Selection</h3>
+
+        {% for field in form %}
+            <div class="form-row">
+                <div>{{ field.label_tag }}</div>
+                <div>{{ field }}</div>
+                {% if field.help_text %}
+                    <div class="form-help">{{ field.help_text }}</div>
+                {% endif %}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="primary-button">Add exercise</button>
+    </div>
 </form>
 {% endblock %}

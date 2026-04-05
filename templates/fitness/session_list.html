@@ -8,6 +8,42 @@
     Execution mode. Open a session fast, clone it, or remove old noise.
 </p>
 
+<div class="mode-bridge">
+    <div class="mode-bridge-grid">
+        <div class="mode-bridge-card mode-bridge-card-fitness">
+            <div class="mode-bridge-kicker">Current mode</div>
+            <div class="mode-bridge-title">FITNESS / Training Log</div>
+            <div class="mode-bridge-copy">
+                Session-first workflow for logging work fast and staying focused during training.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
+                    New session
+                </a>
+                <a href="{% url 'fitness:pool-list' %}" class="link-button">
+                    Open pools
+                </a>
+            </div>
+        </div>
+
+        <div class="mode-bridge-card mode-bridge-card-bio">
+            <div class="mode-bridge-kicker">Recovery mode</div>
+            <div class="mode-bridge-title">BIO / Daily Signals</div>
+            <div class="mode-bridge-copy">
+                Jump back to recovery context, bodyweight, sleep, alcohol, and activity trends.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'bio:overview' %}" class="link-button">
+                    Open BIO
+                </a>
+                <a href="{% url 'bio:dailymetric-today' %}" class="link-button">
+                    Today’s metric
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="list-card panel-accent">
     <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
         <div>

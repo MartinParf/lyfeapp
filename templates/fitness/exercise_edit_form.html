@@ -4,18 +4,49 @@
 
 {% block content %}
 <h1>Edit Custom Exercise</h1>
-<div class="form-top-bar">
-    <a href="{% url 'fitness:exercise-list' %}" class="link-button">
-        ← Back
-    </a>
-</div>
+<p class="muted" style="margin-bottom: 10px;">
+    Update your custom exercise and keep the library sharp.
+</p>
 
-<p class="muted">Editing your custom exercise: {{ exercise.name }}</p>
+<div class="form-hero">
+    <div class="form-hero-grid">
+        <div class="form-hero-card form-hero-card-primary">
+            <div class="form-hero-badges">
+                <div class="form-hero-badge">FITNESS</div>
+                <div class="form-hero-badge">Edit exercise</div>
+            </div>
+
+            <div class="form-hero-title">{{ exercise.name }}</div>
+            <div class="form-hero-copy">
+                Change naming or metadata without breaking the rest of the flow.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:exercise-list' %}" class="link-button">
+                    Back to exercises
+                </a>
+            </div>
+        </div>
+
+        <div class="form-hero-card">
+            <div class="form-hero-mini-grid">
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Editing</div>
+                    <div class="form-hero-mini-value">{{ exercise.name }}</div>
+                </div>
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Type</div>
+                    <div class="form-hero-mini-value">Custom</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <form method="post" class="form-shell">
     {% csrf_token %}
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Exercise Details</h3>
 
         {% for field in form %}
@@ -31,7 +62,7 @@
     </div>
 
     <div class="form-actions">
-        <button type="submit">Save changes</button>
+        <button type="submit" class="primary-button">Save changes</button>
     </div>
 </form>
 {% endblock %}

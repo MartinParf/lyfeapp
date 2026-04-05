@@ -4,19 +4,65 @@
 
 {% block content %}
 <h1>Add Exercise to Session #{{ session.id }}</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Extend the session flow without being locked to the original pool.
+</p>
 
-<form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="form-row">
-            <div>{{ field.label_tag }}</div>
-            <div>{{ field }}</div>
-            {% if field.help_text %}
-                <div class="muted">{{ field.help_text }}</div>
-            {% endif %}
-            {{ field.errors }}
+<div class="execution-hero">
+    <div class="execution-hero-grid">
+        <div class="execution-card execution-card-primary">
+            <div class="execution-badge-row">
+                <div class="execution-badge">Session #{{ session.id }}</div>
+                <div class="execution-badge">{{ session.get_focus_display }}</div>
+            </div>
+
+            <div class="execution-title">Add Another Exercise</div>
+            <div class="execution-subtitle">
+                Keep the session flexible. Choose what fits the real workout.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:session-detail' session.pk %}" class="link-button">
+                    Back to session
+                </a>
+            </div>
         </div>
-    {% endfor %}
-    <button type="submit">Add exercise</button>
+
+        <div class="execution-card">
+            <div class="execution-mini-grid">
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Session</div>
+                    <div class="execution-mini-value">#{{ session.id }}</div>
+                </div>
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Focus</div>
+                    <div class="execution-mini-value">{{ session.get_focus_display }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post" class="form-shell">
+    {% csrf_token %}
+
+    <div class="form-section panel-soft">
+        <h3 class="form-section-title">Exercise Selection</h3>
+
+        {% for field in form %}
+            <div class="form-row">
+                <div>{{ field.label_tag }}</div>
+                <div>{{ field }}</div>
+                {% if field.help_text %}
+                    <div class="form-help">{{ field.help_text }}</div>
+                {% endif %}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="primary-button">Add exercise</button>
+    </div>
 </form>
 {% endblock %}

@@ -4,8 +4,74 @@
 
 {% block content %}
 <h1>{{ pool.name }}</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Pool detail. Manage included exercises, edit the pool, or remove it entirely.
+</p>
 
-<div class="list-card">
+<div class="execution-hero">
+    <div class="execution-hero-grid">
+        <div class="execution-card execution-card-primary">
+            <div class="execution-badge-row">
+                <div class="execution-badge">Pool</div>
+                <div class="execution-badge">{{ pool.get_focus_display }}</div>
+                <div class="execution-badge">{% if pool.is_active %}Active{% else %}Inactive{% endif %}</div>
+            </div>
+
+            <div class="execution-title">{{ pool.name }}</div>
+            <div class="execution-subtitle">
+                Recommendation source for future sessions. Exercises stay flexible later.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:pool-add-exercise' pool.pk %}" class="link-button primary-button">
+                    Add exercise
+                </a>
+                <a href="{% url 'fitness:pool-edit' pool.pk %}" class="link-button">
+                    Edit pool
+                </a>
+            </div>
+        </div>
+
+        <div class="execution-card">
+            <div class="execution-mini-grid">
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Focus</div>
+                    <div class="execution-mini-value">{{ pool.get_focus_display }}</div>
+                </div>
+
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Exercises</div>
+                    <div class="execution-mini-value">{{ pool.items.count }}</div>
+                </div>
+
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Active</div>
+                    <div class="execution-mini-value">{{ pool.is_active|yesno:"Yes,No" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="list-card panel-soft">
+    <div class="section-bar">
+        <div class="section-bar-title">
+            <div class="section-kicker">Pool state</div>
+            <h3 class="list-card-title" style="margin-bottom: 0;">Pool Summary</h3>
+        </div>
+
+        <div class="action-group">
+            <form
+                method="post"
+                action="{% url 'fitness:pool-delete' pool.pk %}"
+                onsubmit="return confirm('Delete this pool?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete pool</button>
+            </form>
+        </div>
+    </div>
+
     <div class="meta-grid two-col">
         <div>
             <div class="meta-item-label">Focus</div>
@@ -20,29 +86,9 @@
         {% if pool.description %}
             <div style="grid-column: 1 / -1;">
                 <div class="meta-item-label">Description</div>
-                <div class="meta-item-value" style="font-weight: normal;">{{ pool.description }}</div>
+                <div class="muted">{{ pool.description }}</div>
             </div>
         {% endif %}
-    </div>
-
-    <div class="action-group" style="margin-top: 12px;">
-        <a href="{% url 'fitness:pool-add-exercise' pool.pk %}" class="link-button primary-button">
-            Add exercise
-        </a>
-
-        <a href="{% url 'fitness:pool-edit' pool.pk %}" class="link-button">
-            Edit pool
-        </a>
-
-        <form
-            method="post"
-            action="{% url 'fitness:pool-delete' pool.pk %}"
-            style="display: inline;"
-            onsubmit="return confirm('Delete this pool?');"
-        >
-            {% csrf_token %}
-            <button type="submit" class="danger">Delete pool</button>
-        </form>
     </div>
 </div>
 

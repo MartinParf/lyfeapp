@@ -4,17 +4,49 @@
 
 {% block content %}
 <h1>Create Exercise Pool</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Build a reusable exercise source for future sessions.
+</p>
 
-<div class="form-top-bar">
-    <a href="{% url 'fitness:pool-list' %}" class="link-button">
-        ← Back
-    </a>
+<div class="form-hero">
+    <div class="form-hero-grid">
+        <div class="form-hero-card form-hero-card-primary">
+            <div class="form-hero-badges">
+                <div class="form-hero-badge">FITNESS</div>
+                <div class="form-hero-badge">Pool</div>
+            </div>
+
+            <div class="form-hero-title">Create Pool</div>
+            <div class="form-hero-copy">
+                Use pools as recommendation sources, not hard locks for session content.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:pool-list' %}" class="link-button">
+                    Back to pools
+                </a>
+            </div>
+        </div>
+
+        <div class="form-hero-card">
+            <div class="form-hero-mini-grid">
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Mode</div>
+                    <div class="form-hero-mini-value">Pool creation</div>
+                </div>
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Purpose</div>
+                    <div class="form-hero-mini-value">Reuse & planning</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <form method="post" class="form-shell">
     {% csrf_token %}
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Pool Details</h3>
 
         {% for field in form %}
@@ -32,7 +64,7 @@
     </div>
 
     <div class="form-actions">
-        <button type="submit">Create pool</button>
+        <button type="submit" class="primary-button">Create pool</button>
     </div>
 </form>
 {% endblock %}

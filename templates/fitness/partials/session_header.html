@@ -1,4 +1,4 @@
-<div class="card">
+<div id="session-header" class="list-card panel-soft">
     <h2>Session Header</h2>
 
     <form
@@ -6,41 +6,50 @@
         hx-post="{% url 'fitness:htmx-session-update-header' session.pk %}"
         hx-target="#session-header"
         hx-swap="outerHTML"
-        class="preserve-scroll"
+        class="preserve-scroll form-shell"
     >
         {% csrf_token %}
 
-        {% for field in header_form %}
-            <div class="form-row">
-                <div>{{ field.label_tag }}</div>
-                <div>{{ field }}</div>
-                {% if field.help_text %}
-                    <div class="muted">{{ field.help_text }}</div>
-                {% endif %}
-                {{ field.errors }}
-            </div>
-        {% endfor %}
+        <div class="form-section panel-soft">
+            <h3 class="form-section-title">Header Data</h3>
 
-        <button type="submit">Save session header</button>
-    </form>
-    
-    <form
-        method="post"
-        action="{% url 'fitness:session-clone' session.pk %}"
-        style="margin-top: 12px;"
-    >
-        {% csrf_token %}
-        <button type="submit">Clone session</button>
+            {% for field in header_form %}
+                <div class="form-row">
+                    <div>{{ field.label_tag }}</div>
+                    <div>{{ field }}</div>
+                    {% if field.help_text %}
+                        <div class="form-help">{{ field.help_text }}</div>
+                    {% endif %}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="primary-button">Save header</button>
+        </div>
     </form>
 
-    <hr style="margin: 16px 0;">
+    <div class="list-card panel-soft" style="margin-top: 8px;">
+        <div class="meta-item-label" style="margin-bottom: 6px;">Session actions</div>
 
-    <form
-        method="post"
-        action="{% url 'fitness:session-delete' session.pk %}"
-        onsubmit="return confirm('Delete this workout session?');"
-    >
-        {% csrf_token %}
-        <button type="submit" class="danger">Delete session</button>
-    </form>
+        <div class="action-group">
+            <form
+                method="post"
+                action="{% url 'fitness:session-clone' session.pk %}"
+            >
+                {% csrf_token %}
+                <button type="submit">Clone session</button>
+            </form>
+
+            <form
+                method="post"
+                action="{% url 'fitness:session-delete' session.pk %}"
+                onsubmit="return confirm('Delete this workout session?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete session</button>
+            </form>
+        </div>
+    </div>
 </div>

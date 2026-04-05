@@ -4,11 +4,62 @@
 
 {% block content %}
 <h1>Activities</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Activity history for movement context, output, and day quality.
+</p>
 
-<div class="actions action-group">
-    <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
-        Log activity today
-    </a>
+<div class="mode-bridge">
+    <div class="mode-bridge-grid">
+        <div class="mode-bridge-card mode-bridge-card-bio">
+            <div class="mode-bridge-kicker">Current mode</div>
+            <div class="mode-bridge-title">BIO / Activity History</div>
+            <div class="mode-bridge-copy">
+                Track movement context across the week and connect it to recovery and daily quality.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+                    Log activity
+                </a>
+                <a href="{% url 'bio:overview' %}" class="link-button">
+                    Open overview
+                </a>
+            </div>
+        </div>
+
+        <div class="mode-bridge-card mode-bridge-card-fitness">
+            <div class="mode-bridge-kicker">Execution mode</div>
+            <div class="mode-bridge-title">FITNESS / Session Work</div>
+            <div class="mode-bridge-copy">
+                Jump to the gym-side execution flow when you want training detail instead of daily context.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'fitness:session-list' %}" class="link-button">
+                    Open sessions
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="list-card panel-accent">
+    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
+        <div class="meta-grid two-col" style="margin-bottom: 0;">
+            <div>
+                <div class="meta-item-label">Activities</div>
+                <div class="meta-item-value">{{ entries_count }}</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Period</div>
+                <div class="meta-item-value">{{ period|upper }}</div>
+            </div>
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+                Log activity
+            </a>
+        </div>
+    </div>
 </div>
 
 <div class="actions action-group" style="margin-bottom: 8px;">
@@ -20,16 +71,7 @@
     </a>
 </div>
 
-<div class="list-card" style="background: #f7fafc;">
-    <div class="meta-grid two-col">
-        <div>
-            <div class="meta-item-label">Activities</div>
-            <div class="meta-item-value">{{ entries_count }}</div>
-        </div>
-    </div>
-</div>
-
-<div class="list-card" style="border-color: #9fc2f7; background: #f5f9ff;">
+<div class="list-card panel-soft">
     <h3 class="list-card-title">Today</h3>
     <div class="muted" style="margin-bottom: 8px;">
         Quickly log a walk, run, cycling session, or another activity for today.
@@ -45,7 +87,7 @@
 <h2 style="margin: 14px 0 8px 0;">History</h2>
 
 {% for activity in activities %}
-    <div class="list-card">
+    <div class="list-card panel-soft">
         <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
             <div>
                 <div class="list-card-title" style="margin-bottom: 2px;">{{ activity.date }}</div>
@@ -95,8 +137,9 @@
         {% endif %}
     </div>
 {% empty %}
-    <div class="list-card">
-        <div class="muted">No activities yet.</div>
+    <div class="list-card panel-soft">
+        <div class="list-card-title">No activities yet</div>
+        <div class="muted">Start logging movement to build better daily context.</div>
     </div>
 {% endfor %}
 {% endblock %}

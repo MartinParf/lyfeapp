@@ -1,22 +1,55 @@
 {% extends "base.html" %}
 
-{% block title %}{{ page_title }} | LYFE{% endblock %}
+{% block title %}{{ page_title|default:"Activity" }} | LYFE{% endblock %}
 
 {% block content %}
-<h1>{{ page_title }}</h1>
-<div class="form-top-bar">
-    <a href="{% url 'bio:activity-list' %}" class="link-button">
-        ← Back
-    </a>
+<h1>{{ page_title|default:"Log Activity" }}</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Quick activity logging for daily context. Keep it fast and clean.
+</p>
+
+<div class="form-hero">
+    <div class="form-hero-grid">
+        <div class="form-hero-card form-hero-card-primary">
+            <div class="form-hero-badges">
+                <div class="form-hero-badge">BIO</div>
+                <div class="form-hero-badge">Activity</div>
+            </div>
+
+            <div class="form-hero-title">{{ page_title|default:"Log Activity" }}</div>
+            <div class="form-hero-copy">
+                Add movement context without slowing the daily workflow down.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'bio:activity-list' %}" class="link-button">
+                    Back
+                </a>
+            </div>
+        </div>
+
+        <div class="form-hero-card">
+            <div class="form-hero-mini-grid">
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Mode</div>
+                    <div class="form-hero-mini-value">Activity entry</div>
+                </div>
+                <div class="form-hero-mini-tile">
+                    <div class="form-hero-mini-label">Use case</div>
+                    <div class="form-hero-mini-value">Walk / run / cycle</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <form method="post" class="form-shell">
     {% csrf_token %}
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Activity Basics</h3>
 
-        <div class="meta-grid two-col">
+        <div class="meta-grid two-col" style="row-gap: 8px;">
             <div class="form-row">
                 <div>{{ form.date.label_tag }}</div>
                 <div>{{ form.date }}</div>
@@ -54,7 +87,7 @@
         </div>
     </div>
 
-    <div class="form-section">
+    <div class="form-section panel-soft">
         <h3 class="form-section-title">Notes</h3>
 
         <div class="form-row" style="margin-bottom: 0;">
@@ -66,7 +99,7 @@
     </div>
 
     <div class="form-actions">
-        <button type="submit">{{ submit_label }}</button>
+        <button type="submit" class="primary-button">{{ submit_label|default:"Save activity" }}</button>
     </div>
 </form>
 {% endblock %}

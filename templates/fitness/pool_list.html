@@ -4,18 +4,93 @@
 
 {% block content %}
 <h1>Exercise Pools</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Reusable exercise groups for planning and fast session composition.
+</p>
 
-<div class="actions">
-    <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
-        Create pool
-    </a>
+<div class="mode-bridge">
+    <div class="mode-bridge-grid">
+        <div class="mode-bridge-card mode-bridge-card-fitness">
+            <div class="mode-bridge-kicker">Planning mode</div>
+            <div class="mode-bridge-title">Pools / Reusable Exercise Sources</div>
+            <div class="mode-bridge-copy">
+                Build flexible recommendation groups that speed up sessions without locking execution.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
+                    New pool
+                </a>
+                <a href="{% url 'fitness:session-list' %}" class="link-button">
+                    Open sessions
+                </a>
+            </div>
+        </div>
+
+        <div class="mode-bridge-card mode-bridge-card-bio">
+            <div class="mode-bridge-kicker">Context mode</div>
+            <div class="mode-bridge-title">BIO / Daily Signals</div>
+            <div class="mode-bridge-copy">
+                Return to daily recovery and activity context when planning needs body-state awareness.
+            </div>
+            <div class="mode-bridge-actions">
+                <a href="{% url 'bio:overview' %}" class="link-button">
+                    Open BIO
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="list-card panel-accent">
+    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
+        <div class="meta-grid two-col" style="margin-bottom: 0;">
+            <div>
+                <div class="meta-item-label">Pool count</div>
+                <div class="meta-item-value">{{ pools|length }}</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Purpose</div>
+                <div class="meta-item-value">Reusable planning</div>
+            </div>
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
+                New pool
+            </a>
+        </div>
+    </div>
 </div>
 
 {% for pool in pools %}
-    <div class="list-card">
-        <h3 class="list-card-title">
-            {{ pool.name }}
-        </h3>
+    <div class="list-card panel-soft">
+        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+                <div class="list-card-title" style="margin-bottom: 2px;">{{ pool.name }}</div>
+                <div class="muted" style="font-size: 12px;">
+                    {{ pool.items.count }} exercises
+                </div>
+            </div>
+
+            <div
+                style="
+                    display: inline-flex;
+                    align-items: center;
+                    min-height: 24px;
+                    padding: 2px 6px;
+                    border: 1px solid var(--line-2);
+                    background: var(--panel-3);
+                    color: var(--text);
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                    border-radius: var(--radius);
+                "
+            >
+                {{ pool.get_focus_display }}
+            </div>
+        </div>
 
         <div class="meta-grid two-col">
             <div>
@@ -32,9 +107,7 @@
 
             <div>
                 <div class="meta-item-label">Exercises</div>
-                <div class="meta-item-value">
-                    {{ pool.items.count }}
-                </div>
+                <div class="meta-item-value">{{ pool.items.count }}</div>
             </div>
         </div>
 
@@ -50,7 +123,6 @@
             <form
                 method="post"
                 action="{% url 'fitness:pool-delete' pool.pk %}"
-                style="display: inline;"
                 onsubmit="return confirm('Delete this pool?');"
             >
                 {% csrf_token %}
@@ -59,8 +131,16 @@
         </div>
     </div>
 {% empty %}
-    <div class="list-card">
-        <div class="muted">No exercise pools yet.</div>
+    <div class="list-card panel-soft">
+        <div class="list-card-title">No exercise pools yet</div>
+        <div class="muted" style="margin-bottom: 8px;">
+            Create your first pool to speed up future sessions.
+        </div>
+        <div class="action-group">
+            <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
+                Create first pool
+            </a>
+        </div>
     </div>
 {% endfor %}
 {% endblock %}

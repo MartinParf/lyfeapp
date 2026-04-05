@@ -4,6 +4,71 @@
 
 {% block content %}
 <h1>Workout Session #{{ session.id }}</h1>
+<p class="muted" style="margin-bottom: 10px;">
+    Execution view. Edit header data, manage exercise order, and log sets inside the session.
+</p>
+
+<div class="execution-hero">
+    <div class="execution-hero-grid">
+        <div class="execution-card execution-card-primary">
+            <div class="execution-badge-row">
+                <div class="execution-badge">Session #{{ session.id }}</div>
+                <div class="execution-badge">{{ session.get_focus_display }}</div>
+                <div class="execution-badge">{{ session.get_status_display }}</div>
+            </div>
+
+            <div class="execution-title">Training Execution</div>
+            <div class="execution-subtitle">
+                Fast logging, set management, exercise ordering, and session-level control.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'fitness:session-add-exercise' session.pk %}" class="link-button primary-button">
+                    Add exercise
+                </a>
+                <a href="{% url 'fitness:session-list' %}" class="link-button">
+                    Back to sessions
+                </a>
+            </div>
+        </div>
+
+        <div class="execution-card">
+            <div class="execution-mini-grid">
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Source pool</div>
+                    <div class="execution-mini-value">{{ session.source_pool|default:"-" }}</div>
+                </div>
+
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Scheduled</div>
+                    <div class="execution-mini-value">
+                        {% if session.scheduled_date %}
+                            {{ session.scheduled_date|date:"d.m.Y" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Started</div>
+                    <div class="execution-mini-value">
+                        {% if session.started_at %}
+                            {{ session.started_at|date:"d.m.Y H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="execution-mini-tile">
+                    <div class="execution-mini-label">Exercises</div>
+                    <div class="execution-mini-value">{{ session.session_exercises.count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="session-header">
     {% include "fitness/partials/session_header.html" %}
