@@ -50,15 +50,15 @@ jobs:
         shell: bash
         run: |
           set -e
-          ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" << EOF
+          ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'EOF'
             set -e
             cd "$DEPLOY_PATH"
 
             docker compose up -d db
             docker compose build web
-            docker compose run --rm web python manage.py check
-            docker compose run --rm web python manage.py migrate --noinput
-            docker compose run --rm web python manage.py collectstatic --noinput
+            docker compose run --rm -T web python manage.py check
+            docker compose run --rm -T web python manage.py migrate --noinput
+            docker compose run --rm -T web python manage.py collectstatic --noinput
             docker compose up -d web
 
             sleep 5
