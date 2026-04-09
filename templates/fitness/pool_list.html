@@ -5,53 +5,14 @@
 {% block content %}
 <h1>Exercise Pools</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Reusable exercise groups for planning and fast session composition.
+    Reusable exercise groups for planning and faster session setup.
 </p>
 
-<div class="mode-bridge">
-    <div class="mode-bridge-grid">
-        <div class="mode-bridge-card mode-bridge-card-fitness">
-            <div class="mode-bridge-kicker">Planning mode</div>
-            <div class="mode-bridge-title">Pools / Reusable Exercise Sources</div>
-            <div class="mode-bridge-copy">
-                Build flexible recommendation groups that speed up sessions without locking execution.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
-                    New pool
-                </a>
-                <a href="{% url 'fitness:session-list' %}" class="link-button">
-                    Open sessions
-                </a>
-            </div>
-        </div>
-
-        <div class="mode-bridge-card mode-bridge-card-bio">
-            <div class="mode-bridge-kicker">Context mode</div>
-            <div class="mode-bridge-title">BIO / Daily Signals</div>
-            <div class="mode-bridge-copy">
-                Return to daily recovery and activity context when planning needs body-state awareness.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'bio:overview' %}" class="link-button">
-                    Open BIO
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="list-card panel-accent">
-    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
-            <div>
-                <div class="meta-item-label">Pool count</div>
-                <div class="meta-item-value">{{ pools|length }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Purpose</div>
-                <div class="meta-item-value">Reusable planning</div>
-            </div>
+    <div class="section-bar">
+        <div class="section-bar-title">
+            <div class="section-kicker">Primary action</div>
+            <h3 class="list-card-title" style="margin-bottom: 0;">Pools</h3>
         </div>
 
         <div class="action-group">
@@ -60,14 +21,61 @@
             </a>
         </div>
     </div>
+
+    <div class="meta-grid two-col" style="margin-bottom: 0;">
+        <div>
+            <div class="meta-item-label">Pool count</div>
+            <div class="meta-item-value">{{ pools|length }}</div>
+        </div>
+
+        <div>
+            <div class="meta-item-label">Use</div>
+            <div class="meta-item-value">Planning / reuse</div>
+        </div>
+    </div>
 </div>
+
+<div class="overview-content-grid" style="margin-bottom: 8px;">
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Planning shortcuts</div>
+        <div class="list-card-title" style="margin-bottom: 4px;">Execution</div>
+        <div class="muted" style="margin-bottom: 8px;">
+            Open sessions or create a new reusable pool.
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:session-list' %}" class="link-button">
+                Open sessions
+            </a>
+            <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
+                New pool
+            </a>
+        </div>
+    </div>
+
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Context shortcut</div>
+        <div class="list-card-title" style="margin-bottom: 4px;">BIO</div>
+        <div class="muted" style="margin-bottom: 8px;">
+            Use BIO only when pool planning needs recovery context.
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'bio:overview' %}" class="link-button">
+                Open BIO
+            </a>
+        </div>
+    </div>
+</div>
+
+<h2 style="margin: 12px 0 8px 0;">Pools</h2>
 
 {% for pool in pools %}
     <div class="list-card panel-soft">
-        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <div class="section-bar" style="margin-bottom: 6px;">
             <div>
                 <div class="list-card-title" style="margin-bottom: 2px;">{{ pool.name }}</div>
-                <div class="muted" style="font-size: 12px;">
+                <div class="muted-compact">
                     {{ pool.items.count }} exercises
                 </div>
             </div>

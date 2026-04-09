@@ -5,50 +5,14 @@
 {% block content %}
 <h1>Workout Sessions</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Execution mode. Open a session fast, clone it, or remove old noise.
+    Execution mode. Keep the session list near the top and the next action obvious.
 </p>
 
-<div class="mode-bridge">
-    <div class="mode-bridge-grid">
-        <div class="mode-bridge-card mode-bridge-card-fitness">
-            <div class="mode-bridge-kicker">Current mode</div>
-            <div class="mode-bridge-title">FITNESS / Training Log</div>
-            <div class="mode-bridge-copy">
-                Session-first workflow for logging work fast and staying focused during training.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
-                    New session
-                </a>
-                <a href="{% url 'fitness:pool-list' %}" class="link-button">
-                    Open pools
-                </a>
-            </div>
-        </div>
-
-        <div class="mode-bridge-card mode-bridge-card-bio">
-            <div class="mode-bridge-kicker">Recovery mode</div>
-            <div class="mode-bridge-title">BIO / Daily Signals</div>
-            <div class="mode-bridge-copy">
-                Jump back to recovery context, bodyweight, sleep, alcohol, and activity trends.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'bio:overview' %}" class="link-button">
-                    Open BIO
-                </a>
-                <a href="{% url 'bio:dailymetric-today' %}" class="link-button">
-                    Today’s metric
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="list-card panel-accent">
-    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
-        <div>
-            <div class="meta-item-label">Session count</div>
-            <div class="meta-item-value">{{ sessions|length }}</div>
+    <div class="section-bar">
+        <div class="section-bar-title">
+            <div class="section-kicker">Primary action</div>
+            <h3 class="list-card-title" style="margin-bottom: 0;">Sessions</h3>
         </div>
 
         <div class="action-group">
@@ -57,16 +21,66 @@
             </a>
         </div>
     </div>
+
+    <div class="meta-grid two-col" style="margin-bottom: 0;">
+        <div>
+            <div class="meta-item-label">Session count</div>
+            <div class="meta-item-value">{{ sessions|length }}</div>
+        </div>
+
+        <div>
+            <div class="meta-item-label">Use</div>
+            <div class="meta-item-value">Open / clone / continue</div>
+        </div>
+    </div>
 </div>
+
+<div class="overview-content-grid" style="margin-bottom: 8px;">
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Session shortcuts</div>
+        <div class="list-card-title" style="margin-bottom: 4px;">Execution</div>
+        <div class="muted" style="margin-bottom: 8px;">
+            Create a new session or open pools for planning.
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
+                New session
+            </a>
+            <a href="{% url 'fitness:pool-list' %}" class="link-button">
+                Open pools
+            </a>
+        </div>
+    </div>
+
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Recovery shortcut</div>
+        <div class="list-card-title" style="margin-bottom: 4px;">BIO</div>
+        <div class="muted" style="margin-bottom: 8px;">
+            Jump back to daily signals only when you need recovery context.
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'bio:overview' %}" class="link-button">
+                Open BIO
+            </a>
+            <a href="{% url 'bio:dailymetric-today' %}" class="link-button">
+                Today’s metric
+            </a>
+        </div>
+    </div>
+</div>
+
+<h2 style="margin: 12px 0 8px 0;">Sessions</h2>
 
 {% for session in sessions %}
     <div class="list-card panel-soft">
-        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <div class="section-bar" style="margin-bottom: 6px;">
             <div>
                 <div class="list-card-title" style="margin-bottom: 2px;">
                     Session #{{ session.id }}
                 </div>
-                <div class="muted" style="font-size: 12px;">
+                <div class="muted-compact">
                     {{ session.get_status_display }}
                 </div>
             </div>
@@ -98,7 +112,7 @@
             </div>
 
             <div>
-                <div class="meta-item-label">Scheduled date</div>
+                <div class="meta-item-label">Scheduled</div>
                 <div class="meta-item-value">
                     {% if session.scheduled_date %}
                         {{ session.scheduled_date|date:"d.m.Y" }}
@@ -125,10 +139,7 @@
                 Open
             </a>
 
-            <form
-                method="post"
-                action="{% url 'fitness:session-clone' session.pk %}"
-            >
+            <form method="post" action="{% url 'fitness:session-clone' session.pk %}">
                 {% csrf_token %}
                 <button type="submit">Clone</button>
             </form>

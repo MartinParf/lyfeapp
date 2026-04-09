@@ -5,53 +5,14 @@
 {% block content %}
 <h1>Exercise Library</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Core exercise list for pools and sessions. System items stay read-only, custom items stay editable.
+    Core exercise list for pools and sessions. Keep the filter and the list close together.
 </p>
 
-<div class="mode-bridge">
-    <div class="mode-bridge-grid">
-        <div class="mode-bridge-card mode-bridge-card-fitness">
-            <div class="mode-bridge-kicker">Library mode</div>
-            <div class="mode-bridge-title">Exercises / Reusable Building Blocks</div>
-            <div class="mode-bridge-copy">
-                Keep the movement library clean, searchable, and ready for pools or direct session use.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'fitness:exercise-create' %}" class="link-button primary-button">
-                    New custom exercise
-                </a>
-                <a href="{% url 'fitness:pool-list' %}" class="link-button">
-                    Open pools
-                </a>
-            </div>
-        </div>
-
-        <div class="mode-bridge-card mode-bridge-card-bio">
-            <div class="mode-bridge-kicker">Context mode</div>
-            <div class="mode-bridge-title">BIO / Daily Signals</div>
-            <div class="mode-bridge-copy">
-                Jump back to daily recovery, activity, and body context when you need the bigger picture.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'bio:overview' %}" class="link-button">
-                    Open BIO
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="list-card panel-accent">
-    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
-            <div>
-                <div class="meta-item-label">Exercise count</div>
-                <div class="meta-item-value">{{ exercises|length }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Pattern filter</div>
-                <div class="meta-item-value">{{ current_pattern|default:"All" }}</div>
-            </div>
+    <div class="section-bar">
+        <div class="section-bar-title">
+            <div class="section-kicker">Primary action</div>
+            <h3 class="list-card-title" style="margin-bottom: 0;">Exercises</h3>
         </div>
 
         <div class="action-group">
@@ -60,18 +21,26 @@
             </a>
         </div>
     </div>
-</div>
 
-<form method="get" class="list-card panel-soft">
-    <div class="section-bar">
-        <div class="section-bar-title">
-            <div class="section-kicker">Filter</div>
-            <h3 class="list-card-title" style="margin-bottom: 0;">Exercise Pattern</h3>
+    <div class="meta-grid two-col" style="margin-bottom: 0;">
+        <div>
+            <div class="meta-item-label">Exercise count</div>
+            <div class="meta-item-value">{{ exercises|length }}</div>
+        </div>
+
+        <div>
+            <div class="meta-item-label">Pattern filter</div>
+            <div class="meta-item-value">{{ current_pattern|default:"All" }}</div>
         </div>
     </div>
+</div>
 
-    <div class="meta-grid two-col" style="margin-bottom: 8px;">
-        <div class="form-row" style="margin-bottom: 0;">
+<div class="overview-content-grid" style="margin-bottom: 8px;">
+    <form method="get" class="list-card panel-soft" style="margin: 0;">
+        <div class="section-kicker">Filter</div>
+        <div class="list-card-title" style="margin-bottom: 6px;">Exercise pattern</div>
+
+        <div class="form-row" style="margin-bottom: 8px;">
             <div class="meta-item-label">Pattern</div>
             <select name="pattern" id="pattern">
                 <option value="">All</option>
@@ -83,18 +52,37 @@
             </select>
         </div>
 
-        <div style="display: flex; align-items: end;">
+        <div class="form-actions">
             <button type="submit">Apply filter</button>
         </div>
+    </form>
+
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Shortcuts</div>
+        <div class="list-card-title" style="margin-bottom: 4px;">Related views</div>
+        <div class="muted" style="margin-bottom: 8px;">
+            Go to pools or jump back to BIO only when you need context.
+        </div>
+
+        <div class="action-group">
+            <a href="{% url 'fitness:pool-list' %}" class="link-button">
+                Open pools
+            </a>
+            <a href="{% url 'bio:overview' %}" class="link-button">
+                Open BIO
+            </a>
+        </div>
     </div>
-</form>
+</div>
+
+<h2 style="margin: 12px 0 8px 0;">Exercises</h2>
 
 {% for exercise in exercises %}
     <div class="list-card panel-soft">
-        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <div class="section-bar" style="margin-bottom: 6px;">
             <div>
                 <div class="list-card-title" style="margin-bottom: 2px;">{{ exercise.name }}</div>
-                <div class="muted" style="font-size: 12px;">
+                <div class="muted-compact">
                     {% if exercise.created_by == request.user %}
                         Custom exercise
                     {% else %}
