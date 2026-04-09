@@ -1,0 +1,66 @@
+name: Deploy LYFEAPP
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lyfeapp-production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Sync project to server
+        shell: bash
+        run: |
+          set -e
+          rsync -az --delete \
+            --exclude-from=.deployignore \
+            -e "ssh -p $DEPLOY_PORT" \
+            ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+
+      - name: Run deploy commands on server
+        shell: bash
+        run: |
+          set -e
+          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
+            set -e
+            cd "$DEPLOY_PATH"
+
+            docker compose up -d db
+            docker compose build web
+            docker compose run --rm web python manage.py check
+            docker compose run --rm web python manage.py migrate --noinput
+            docker compose run --rm web python manage.py collectstatic --noinput
+            docker compose up -d web
+
+            sleep 5
+            docker compose ps
+            docker compose logs --tail=50 web
+          EOF
