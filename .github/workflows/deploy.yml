@@ -27,13 +27,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare SSH
+      - name: Prepare SSH key
         shell: bash
         run: |
           set -e
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s' "${{ secrets.DEPLOY_SSH_KEY_B64 }}" | base64 -d | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null
           ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
       - name: Sync project to server
@@ -42,14 +43,14 @@ jobs:
           set -e
           rsync -az --delete \
             --exclude-from=.deployignore \
-            -e "ssh -p $DEPLOY_PORT" \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $DEPLOY_PORT -o IdentitiesOnly=yes" \
             ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
 
       - name: Run deploy commands on server
         shell: bash
         run: |
           set -e
-          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" << EOF
             set -e
             cd "$DEPLOY_PATH"
 
