@@ -5,248 +5,224 @@
 {% block content %}
 <h1>Today — {{ today }}</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Your main daily dashboard: recovery, activity, and next action.
+    Main daily dashboard. Keep the next action obvious and the rest quiet.
 </p>
 
-<div class="mode-bridge">
-    <div class="mode-bridge-grid">
-        <div class="mode-bridge-card mode-bridge-card-bio">
-            <div class="mode-bridge-kicker">Current mode</div>
-            <div class="mode-bridge-title">BIO / Daily Signals</div>
-            <div class="mode-bridge-copy">
-                Track sleep, alcohol, bodyweight, food context, and daily movement quality.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
-                    Go to today
-                </a>
-                <a href="{% url 'bio:activity-create' %}" class="link-button">
-                    Log activity
-                </a>
-            </div>
-        </div>
+<div class="overview-shell">
+    <div class="overview-priority-grid">
+        <div class="list-card panel-accent overview-primary-card">
+            <div class="section-kicker">Today status</div>
 
-        <div class="mode-bridge-card mode-bridge-card-fitness">
-            <div class="mode-bridge-kicker">Execution mode</div>
-            <div class="mode-bridge-title">FITNESS / Training Log</div>
-            <div class="mode-bridge-copy">
-                Jump into sessions, log work fast, and keep gym flow separate from recovery context.
-            </div>
-            <div class="mode-bridge-actions">
-                <a href="{% url 'fitness:session-list' %}" class="link-button">
-                    Open sessions
-                </a>
-                <a href="{% url 'fitness:session-create' %}" class="link-button">
-                    New session
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+            {% if day_complete %}
+                <div class="overview-status-line">
+                    <div class="status-chip status-chip-good">Complete</div>
+                </div>
+                <div class="overview-lead">
+                    Today already has both a daily metric and at least one activity.
+                </div>
 
-<div class="dashboard-grid two-col">
-    <div class="stat-tile stat-tile-accent">
-        <div class="stat-label">Day status</div>
+                <div class="action-group">
+                    <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
+                        Edit today
+                    </a>
+                    <a href="{% url 'fitness:session-list' %}" class="link-button">
+                        Open sessions
+                    </a>
+                </div>
+            {% elif day_started %}
+                <div class="overview-status-line">
+                    <div class="status-chip status-chip-warn">In progress</div>
+                </div>
+                <div class="overview-lead">
+                    Daily metric exists, but movement is still missing for today.
+                </div>
 
-        {% if day_complete %}
-            <div class="status-chip status-chip-good">Complete</div>
-            <div class="stat-subvalue">Daily metric and activity are both logged.</div>
-        {% elif day_started %}
-            <div class="status-chip status-chip-warn">In progress</div>
-            <div class="stat-subvalue">Today has started, but the loop is not complete yet.</div>
-        {% else %}
-            <div class="status-chip status-chip-bad">Not started</div>
-            <div class="stat-subvalue">No daily metric or activity logged yet.</div>
-        {% endif %}
-    </div>
-
-    <div class="stat-tile">
-        <div class="stat-label">Quick actions</div>
-        <div class="action-group">
-            <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
-                Go to today
-            </a>
-            <a href="{% url 'bio:activity-create' %}" class="link-button">
-                Log activity
-            </a>
-        </div>
-    </div>
-</div>
-
-<div class="dashboard-grid two-col">
-    <div class="stat-tile">
-        <div class="stat-label">Activities today</div>
-        <div class="stat-value">{{ activities_count }}</div>
-        <div class="stat-subvalue">Logged movement entries for today.</div>
-    </div>
-
-    <div class="stat-tile">
-        <div class="stat-label">Metric days (7d)</div>
-        <div class="stat-value">{{ metric_days_count }}</div>
-        <div class="stat-subvalue">Days with daily metric entries this week.</div>
-    </div>
-
-    <div class="stat-tile">
-        <div class="stat-label">Activity entries (7d)</div>
-        <div class="stat-value">{{ activity_entries_count }}</div>
-        <div class="stat-subvalue">Movement log entries this week.</div>
-    </div>
-
-    <div class="stat-tile">
-        <div class="stat-label">Weekly signal</div>
-        {% if consistency_hint %}
-            <div class="stat-subvalue">{{ consistency_hint }}</div>
-        {% else %}
-            <div class="stat-subvalue">No strong weekly signal yet.</div>
-        {% endif %}
-    </div>
-</div>
-
-<div class="list-card panel-soft">
-    <div class="section-bar">
-        <div class="section-bar-title">
-            <div class="section-kicker">Daily state</div>
-            <h3 class="list-card-title" style="margin-bottom: 0;">Today’s Metric</h3>
-        </div>
-
-        <div class="action-group">
-            {% if today_metric %}
-                <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
-                    Edit today
-                </a>
+                <div class="action-group">
+                    <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
+                        Log activity
+                    </a>
+                    <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button">
+                        Edit today
+                    </a>
+                </div>
             {% else %}
-                <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
-                    Create today
-                </a>
+                <div class="overview-status-line">
+                    <div class="status-chip status-chip-bad">Not started</div>
+                </div>
+                <div class="overview-lead">
+                    Start with the daily metric. That creates the main recovery/body context.
+                </div>
+
+                <div class="action-group">
+                    <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
+                        Create today
+                    </a>
+                </div>
             {% endif %}
         </div>
-    </div>
 
-    {% if today_metric %}
-        <div class="meta-grid two-col">
-            <div>
-                <div class="meta-item-label">Weight (kg)</div>
-                <div class="meta-item-value">{{ today_metric.weight_kg|default:"-" }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Sleep quality</div>
-                <div class="meta-item-value">{{ today_metric.get_sleep_quality_display|default:"-" }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Alcohol intake</div>
-                <div class="meta-item-value">{{ today_metric.get_alcohol_units_display }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Calories (actual)</div>
-                <div class="meta-item-value">{{ today_metric.calories_actual|default:"-" }}</div>
-            </div>
-        </div>
-
-        {% if sleep_alcohol_hint %}
-            <div style="margin-top: 6px;">
-                <div class="meta-item-label">Sleep / Alcohol signal</div>
-                <div class="muted">{{ sleep_alcohol_hint }}</div>
-            </div>
-        {% endif %}
-    {% else %}
-        <div class="empty-state">
-            No daily entry yet. Start with weight, sleep, alcohol, and nutrition context.
-        </div>
-    {% endif %}
-</div>
-
-<div class="list-card {% if today_metric and not has_activities %}panel-warning{% elif day_complete %}panel-success{% else %}panel-soft{% endif %}">
-    <div class="section-bar">
-        <div class="section-bar-title">
-            <div class="section-kicker">Execution</div>
-            <h3 class="list-card-title" style="margin-bottom: 0;">Next Step</h3>
-        </div>
-    </div>
-
-    {% if today_metric %}
-        {% if not has_activities %}
-            <div class="muted" style="margin-bottom: 8px;">
-                Your daily metric is done. You can still log an activity for today.
-            </div>
-            <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
-                Log today’s activity
-            </a>
-        {% else %}
-            <div class="muted">
-                Today looks good. You have both a daily metric and at least one activity logged.
-            </div>
-        {% endif %}
-    {% else %}
-        <div class="muted" style="margin-bottom: 8px;">
-            Start by logging today’s daily metric. That creates the main body/recovery context.
-        </div>
-        <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
-            Create today’s metric
-        </a>
-    {% endif %}
-</div>
-
-<div class="list-card panel-soft">
-    <div class="section-bar">
-        <div class="section-bar-title">
-            <div class="section-kicker">Movement</div>
-            <h3 class="list-card-title" style="margin-bottom: 0;">Today's Activities</h3>
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'bio:activity-create' %}" class="link-button">
-                Log activity
-            </a>
-        </div>
-    </div>
-
-    <div class="activity-stack">
-        {% for activity in today_activities %}
-            <div class="activity-row">
-                <div class="section-bar" style="margin-bottom: 0;">
-                    <div>
-                        <div class="list-card-title" style="margin-bottom: 2px;">
-                            {{ activity.get_activity_type_display }}
-                        </div>
-                        <div class="muted" style="font-size: 12px;">
-                            {{ activity.duration_minutes }} min
-                        </div>
-                    </div>
-
-                    <div class="action-group">
-                        <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
-                            Edit
-                        </a>
-                    </div>
+        <div class="overview-mode-stack">
+            <div class="list-card overview-bridge-card overview-bridge-card-current">
+                <div class="mode-bridge-kicker">Current mode</div>
+                <div class="mode-bridge-title">BIO / Daily Signals</div>
+                <div class="mode-bridge-copy">
+                    Daily metrics and activities live here.
                 </div>
-
-                <div class="meta-grid two-col" style="margin-bottom: 0;">
-                    <div>
-                        <div class="meta-item-label">Distance</div>
-                        <div class="meta-item-value">{{ activity.distance_km|default:"-" }}</div>
-                    </div>
-
-                    <div>
-                        <div class="meta-item-label">Calories</div>
-                        <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
-                    </div>
+                <div class="mode-bridge-actions">
+                    <a href="{% url 'bio:dailymetric-list' %}" class="link-button">
+                        Daily Metrics
+                    </a>
+                    <a href="{% url 'bio:activity-list' %}" class="link-button">
+                        Activities
+                    </a>
                 </div>
+            </div>
 
-                {% if activity.notes %}
-                    <div>
-                        <div class="meta-item-label">Notes</div>
-                        <div class="muted">{{ activity.notes }}</div>
-                    </div>
+            <div class="list-card overview-bridge-card overview-bridge-card-other">
+                <div class="mode-bridge-kicker">Execution mode</div>
+                <div class="mode-bridge-title">FITNESS / Training Log</div>
+                <div class="mode-bridge-copy">
+                    Sessions stay separate from recovery context.
+                </div>
+                <div class="mode-bridge-actions">
+                    <a href="{% url 'fitness:session-list' %}" class="link-button">
+                        Open sessions
+                    </a>
+                    <a href="{% url 'fitness:session-create' %}" class="link-button">
+                        New session
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overview-tiles">
+        <div class="stat-tile stat-tile-quiet">
+            <div class="stat-label">Activities today</div>
+            <div class="stat-value">{{ activities_count }}</div>
+        </div>
+
+        <div class="stat-tile stat-tile-quiet">
+            <div class="stat-label">Metric days (7d)</div>
+            <div class="stat-value">{{ metric_days_count }}</div>
+        </div>
+
+        <div class="stat-tile stat-tile-quiet">
+            <div class="stat-label">Activity entries (7d)</div>
+            <div class="stat-value">{{ activity_entries_count }}</div>
+        </div>
+
+        <div class="stat-tile stat-tile-quiet">
+            <div class="stat-label">Weekly signal</div>
+            <div class="stat-subvalue">
+                {% if consistency_hint %}
+                    {{ consistency_hint }}
+                {% else %}
+                    No strong weekly signal yet.
                 {% endif %}
             </div>
-        {% empty %}
-            <div class="empty-state">
-                No activities logged today.
+        </div>
+    </div>
+
+    <div class="overview-content-grid">
+        <div class="list-card panel-soft">
+            <div class="section-bar">
+                <div class="section-bar-title">
+                    <div class="section-kicker">Daily metric</div>
+                    <h3 class="list-card-title" style="margin-bottom: 0;">Snapshot</h3>
+                </div>
             </div>
-        {% endfor %}
+
+            {% if today_metric %}
+                <div class="meta-grid two-col">
+                    <div>
+                        <div class="meta-item-label">Weight (kg)</div>
+                        <div class="meta-item-value">{{ today_metric.weight_kg|default:"-" }}</div>
+                    </div>
+
+                    <div>
+                        <div class="meta-item-label">Sleep quality</div>
+                        <div class="meta-item-value">{{ today_metric.get_sleep_quality_display|default:"-" }}</div>
+                    </div>
+
+                    <div>
+                        <div class="meta-item-label">Alcohol intake</div>
+                        <div class="meta-item-value">{{ today_metric.get_alcohol_units_display }}</div>
+                    </div>
+
+                    <div>
+                        <div class="meta-item-label">Calories (actual)</div>
+                        <div class="meta-item-value">{{ today_metric.calories_actual|default:"-" }}</div>
+                    </div>
+                </div>
+
+                {% if sleep_alcohol_hint %}
+                    <div style="margin-top: 6px;">
+                        <div class="meta-item-label">Signal</div>
+                        <div class="muted">{{ sleep_alcohol_hint }}</div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    No daily entry yet.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="list-card panel-soft">
+            <div class="section-bar">
+                <div class="section-bar-title">
+                    <div class="section-kicker">Movement</div>
+                    <h3 class="list-card-title" style="margin-bottom: 0;">Today’s activities</h3>
+                </div>
+            </div>
+
+            <div class="activity-stack">
+                {% for activity in today_activities %}
+                    <div class="activity-row">
+                        <div class="section-bar" style="margin-bottom: 0;">
+                            <div>
+                                <div class="list-card-title" style="margin-bottom: 2px;">
+                                    {{ activity.get_activity_type_display }}
+                                </div>
+                                <div class="muted-compact">
+                                    {{ activity.duration_minutes }} min
+                                </div>
+                            </div>
+
+                            <div class="action-group">
+                                <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
+                                    Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="meta-grid two-col" style="margin-bottom: 0;">
+                            <div>
+                                <div class="meta-item-label">Distance</div>
+                                <div class="meta-item-value">{{ activity.distance_km|default:"-" }}</div>
+                            </div>
+
+                            <div>
+                                <div class="meta-item-label">Calories</div>
+                                <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
+                            </div>
+                        </div>
+
+                        {% if activity.notes %}
+                            <div>
+                                <div class="meta-item-label">Notes</div>
+                                <div class="muted">{{ activity.notes }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        No activities logged today.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -3,69 +3,68 @@
 {% block title %}Session {{ session.id }} | LYFE{% endblock %}
 
 {% block content %}
-<h1>Workout Session #{{ session.id }}</h1>
+<h1>Session #{{ session.id }}</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Execution view. Edit header data, manage exercise order, and log sets inside the session.
+    Compact execution view. Keep the next training action near the top.
 </p>
 
-<div class="execution-hero">
-    <div class="execution-hero-grid">
-        <div class="execution-card execution-card-primary">
-            <div class="execution-badge-row">
+<div class="list-card panel-accent session-page-head">
+    <div class="session-top-grid">
+        <div>
+            <div class="section-kicker">Execution</div>
+            <div class="list-card-title" style="margin-bottom: 4px;">Workout session</div>
+            <div class="muted">
+                Fast logging, compact exercise cards, and less scroll pressure.
+            </div>
+
+            <div class="session-top-meta" style="margin-top: 8px;">
                 <div class="execution-badge">Session #{{ session.id }}</div>
                 <div class="execution-badge">{{ session.get_focus_display }}</div>
                 <div class="execution-badge">{{ session.get_status_display }}</div>
             </div>
+        </div>
 
-            <div class="execution-title">Training Execution</div>
-            <div class="execution-subtitle">
-                Fast logging, set management, exercise ordering, and session-level control.
-            </div>
+        <div class="action-group">
+            <a href="#session-exercises" class="link-button primary-button">
+                Jump to exercises
+            </a>
+            <a href="{% url 'fitness:session-list' %}" class="link-button">
+                Back to sessions
+            </a>
+        </div>
+    </div>
 
-            <div class="action-group">
-                <a href="{% url 'fitness:session-add-exercise' session.pk %}" class="link-button primary-button">
-                    Add exercise
-                </a>
-                <a href="{% url 'fitness:session-list' %}" class="link-button">
-                    Back to sessions
-                </a>
+    <div class="session-mini-grid">
+        <div class="session-mini-tile">
+            <div class="meta-item-label">Source pool</div>
+            <div class="meta-item-value">{{ session.source_pool|default:"-" }}</div>
+        </div>
+
+        <div class="session-mini-tile">
+            <div class="meta-item-label">Scheduled</div>
+            <div class="meta-item-value">
+                {% if session.scheduled_date %}
+                    {{ session.scheduled_date|date:"d.m.Y" }}
+                {% else %}
+                    -
+                {% endif %}
             </div>
         </div>
 
-        <div class="execution-card">
-            <div class="execution-mini-grid">
-                <div class="execution-mini-tile">
-                    <div class="execution-mini-label">Source pool</div>
-                    <div class="execution-mini-value">{{ session.source_pool|default:"-" }}</div>
-                </div>
-
-                <div class="execution-mini-tile">
-                    <div class="execution-mini-label">Scheduled</div>
-                    <div class="execution-mini-value">
-                        {% if session.scheduled_date %}
-                            {{ session.scheduled_date|date:"d.m.Y" }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="execution-mini-tile">
-                    <div class="execution-mini-label">Started</div>
-                    <div class="execution-mini-value">
-                        {% if session.started_at %}
-                            {{ session.started_at|date:"d.m.Y H:i" }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="execution-mini-tile">
-                    <div class="execution-mini-label">Exercises</div>
-                    <div class="execution-mini-value">{{ session.session_exercises.count }}</div>
-                </div>
+        <div class="session-mini-tile">
+            <div class="meta-item-label">Started</div>
+            <div class="meta-item-value">
+                {% if session.started_at %}
+                    {{ session.started_at|date:"d.m.Y H:i" }}
+                {% else %}
+                    -
+                {% endif %}
             </div>
+        </div>
+
+        <div class="session-mini-tile">
+            <div class="meta-item-label">Exercises</div>
+            <div class="meta-item-value">{{ session.session_exercises.count }}</div>
         </div>
     </div>
 </div>
