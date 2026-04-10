@@ -6,14 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LYFE{% endblock %}</title>
 
-    <meta name="theme-color" content="#0a0f18">
+    <meta name="theme-color" content="#08131f" id="theme-color-meta">
+    <meta name="color-scheme" content="dark light">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="LYFE">
 
     <link rel="manifest" href="{% static 'core/manifest.webmanifest' %}">
     <link rel="icon" href="{% static 'core/icons/icon-192.svg' %}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{% static 'core/icons/icon-192.svg' %}">
+
+    <script>
+        (function () {
+            const STORAGE_KEY = "lyfe-theme";
+            const stored = localStorage.getItem(STORAGE_KEY) || "auto";
+            const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const resolved = stored === "auto" ? (systemDark ? "dark" : "light") : stored;
+
+            document.documentElement.dataset.themeIntent = stored;
+            document.documentElement.dataset.theme = resolved;
+        })();
+    </script>
 
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
@@ -44,7 +57,7 @@
                 {% if '/fitness/' in request.path %}
                     <div class="app-brand-tag">FITNESS MODE</div>
                     <div class="app-brand-title">LYFE / TRAINING LOG</div>
-                    <div class="app-brand-subtitle">Fast session tracking. Minimal friction. Sharp tools.</div>
+                    <div class="app-brand-subtitle">Fast session tracking. Minimal friction. Clean flow.</div>
                 {% else %}
                     <div class="app-brand-tag">BIO MODE</div>
                     <div class="app-brand-title">LYFE / DAILY SIGNALS</div>
@@ -52,9 +65,17 @@
                 {% endif %}
             </div>
 
-            {% if request.user.is_authenticated %}
-                <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
-            {% endif %}
+            <div class="app-utility">
+                <div class="theme-switcher" role="group" aria-label="Vzhled aplikace">
+                    <button type="button" class="theme-switcher-button" data-theme-choice="auto">Auto</button>
+                    <button type="button" class="theme-switcher-button" data-theme-choice="light">Light</button>
+                    <button type="button" class="theme-switcher-button" data-theme-choice="dark">Dark</button>
+                </div>
+
+                {% if request.user.is_authenticated %}
+                    <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
+                {% endif %}
+            </div>
         </header>
 
         <nav class="app-nav">
@@ -131,6 +152,72 @@
     </div>
 
     <script>
+        (function () {
+            const STORAGE_KEY = "lyfe-theme";
+            const root = document.documentElement;
+            const metaThemeColor = document.getElementById("theme-color-meta");
+            const buttons = document.querySelectorAll("[data-theme-choice]");
+            const media = window.matchMedia("(prefers-color-scheme: dark)");
+
+            function getStoredIntent() {
+                return localStorage.getItem(STORAGE_KEY) || "auto";
+            }
+
+            function resolveTheme(intent) {
+                if (intent === "light" || intent === "dark") {
+                    return intent;
+                }
+                return media.matches ? "dark" : "light";
+            }
+
+            function currentMode() {
+                return document.body.classList.contains("mode-fitness") ? "fitness" : "bio";
+            }
+
+            function updateThemeMeta(resolvedTheme) {
+                if (!metaThemeColor) return;
+
+                const mode = currentMode();
+                if (resolvedTheme === "light") {
+                    metaThemeColor.setAttribute("content", mode === "fitness" ? "#fff5e9" : "#f4fbff");
+                } else {
+                    metaThemeColor.setAttribute("content", mode === "fitness" ? "#16120b" : "#0b1420");
+                }
+            }
+
+            function syncButtons(intent) {
+                buttons.forEach((button) => {
+                    const active = button.dataset.themeChoice === intent;
+                    button.classList.toggle("is-active", active);
+                    button.setAttribute("aria-pressed", active ? "true" : "false");
+                });
+            }
+
+            function applyTheme(intent) {
+                const resolved = resolveTheme(intent);
+                root.dataset.themeIntent = intent;
+                root.dataset.theme = resolved;
+                syncButtons(intent);
+                updateThemeMeta(resolved);
+            }
+
+            buttons.forEach((button) => {
+                button.addEventListener("click", function () {
+                    const intent = this.dataset.themeChoice || "auto";
+                    localStorage.setItem(STORAGE_KEY, intent);
+                    applyTheme(intent);
+                });
+            });
+
+            media.addEventListener("change", function () {
+                if ((root.dataset.themeIntent || "auto") === "auto") {
+                    applyTheme("auto");
+                }
+            });
+
+            applyTheme(getStoredIntent());
+        })();
+
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", function () {
                 navigator.serviceWorker
