@@ -2477,3 +2477,212 @@ input[type="button"] {
         min-height: 36px;
     }
 }
+/* =========================================================
+   EMERGENCY ROLLBACK — stable dark only + radius fix
+   ========================================================= */
+
+   :root,
+   :root[data-theme="light"],
+   :root[data-theme="dark"] {
+       --bg: #08111b;
+       --panel: #0d1724;
+       --panel-2: #122033;
+       --panel-3: #18283d;
+   
+       --line: rgba(120, 145, 180, 0.18);
+       --line-2: rgba(120, 145, 180, 0.28);
+   
+       --text: #edf3fb;
+       --text-soft: #b8c5d7;
+       --text-dim: #7f90a8;
+   
+       --radius-xs: 4px;
+       --radius-sm: 8px;
+       --radius-md: 14px;
+       --radius-lg: 18px;
+       --radius-xl: 999px;
+       --radius: var(--radius-sm);
+   
+       --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.18);
+       --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.18);
+       --shadow-md: 0 14px 32px rgba(0, 0, 0, 0.22);
+   }
+   
+   html {
+       background:
+           radial-gradient(circle at top left, rgba(24, 183, 214, 0.07) 0%, transparent 28%),
+           radial-gradient(circle at top right, rgba(231, 154, 21, 0.06) 0%, transparent 22%),
+           linear-gradient(180deg, #050c14 0%, #09131f 52%, #0a1420 100%) !important;
+   }
+   
+   body {
+       background: transparent !important;
+       color: var(--text);
+   }
+   
+   .theme-toggle-icon,
+   .theme-switcher {
+       display: none !important;
+   }
+   
+   .app-topbar {
+       grid-template-columns: 1fr auto;
+       align-items: start;
+   }
+   
+   .app-utility {
+       display: grid;
+       justify-items: end;
+       gap: 6px;
+   }
+   
+   .logged-in-row {
+       color: var(--text-dim);
+   }
+   
+   .app-brand-tag {
+       border-radius: var(--radius-xl);
+   }
+   
+   .mode-switch {
+       border-radius: 22px;
+       overflow: hidden;
+   }
+   
+   .mode-switch-link {
+       border-radius: 0;
+   }
+   
+   .context-subnav-link,
+   .nav-pill,
+   .sub-nav-link,
+   .link-button,
+   button,
+   input[type="submit"],
+   input[type="button"] {
+       border-radius: var(--radius-xl);
+   }
+   
+   .card,
+   .list-card,
+   .form-section,
+   .inline-form,
+   .stat-tile,
+   .mode-bridge-card,
+   .overview-bridge-card,
+   .execution-card,
+   .form-hero-card,
+   .session-mini-tile,
+   .session-history-card,
+   .session-collapsible,
+   .session-secondary-details,
+   .session-set-block,
+   .session-add-set-block,
+   .exercise-entry-card,
+   .panel-soft {
+       border-radius: var(--radius-md);
+   }
+   
+   .panel-accent,
+   .overview-primary-card,
+   .session-page-head,
+   .execution-card-primary,
+   .form-hero-card-primary {
+       border-radius: var(--radius-lg);
+   }
+   
+   .list-card,
+   .card,
+   .form-section,
+   .inline-form,
+   .stat-tile,
+   .mode-bridge-card,
+   .overview-bridge-card,
+   .execution-card,
+   .form-hero-card,
+   .session-mini-tile,
+   .session-history-card,
+   .panel-soft {
+       box-shadow: var(--shadow-sm);
+   }
+   
+   .panel-accent,
+   .overview-primary-card,
+   .session-page-head,
+   .execution-card-primary,
+   .form-hero-card-primary {
+       box-shadow: var(--shadow-md);
+   }
+   
+   .mode-switch-link,
+   .context-subnav-link,
+   .nav-pill,
+   .sub-nav-link,
+   .link-button,
+   button,
+   input[type="submit"],
+   input[type="button"] {
+       color: var(--text);
+   }
+   
+   .mode-switch-link-active,
+   .context-subnav-link-active,
+   .nav-pill-active,
+   .sub-nav-link-active,
+   .primary-button {
+       color: #f8fbff !important;
+   }
+   
+   input,
+   select,
+   textarea {
+       background: color-mix(in srgb, var(--panel-2) 90%, white 10%);
+       color: var(--text);
+       border-color: var(--line);
+       border-radius: var(--radius-sm);
+   }
+   
+   textarea {
+       min-height: 72px;
+   }
+   
+   .card *,
+   .list-card *,
+   .form-section *,
+   .inline-form *,
+   .panel-accent *,
+   .overview-primary-card *,
+   .execution-card-primary *,
+   .form-hero-card-primary * {
+       text-shadow: none;
+   }
+   
+   @media (max-width: 768px) {
+       .logged-in-row {
+           text-align: right;
+           font-size: 12px;
+       }
+   
+       .card,
+       .list-card,
+       .form-section,
+       .inline-form,
+       .stat-tile,
+       .mode-bridge-card,
+       .overview-bridge-card,
+       .execution-card,
+       .form-hero-card,
+       .session-mini-tile,
+       .session-history-card,
+       .panel-soft {
+           border-radius: 14px;
+       }
+   
+       .panel-accent,
+       .overview-primary-card,
+       .session-page-head,
+       .execution-card-primary,
+       .form-hero-card-primary {
+           border-radius: 18px;
+       }
+   }
