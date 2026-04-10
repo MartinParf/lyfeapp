@@ -2686,3 +2686,144 @@ input[type="button"] {
            border-radius: 18px;
        }
    }
+   /* =========================================================
+   RADIUS TIGHTENING — calmer corners, no text collisions
+   ========================================================= */
+
+:root,
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius: var(--radius-sm);
+}
+
+/* hlavní BIO/FITNESS switch může zůstat měkčí */
+.mode-switch {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.mode-switch-link {
+    border-radius: 0;
+}
+
+/* horní pill navigace jen lehce kulatá */
+.context-subnav-link,
+.nav-pill,
+.sub-nav-link,
+.link-button,
+button,
+input[type="submit"],
+input[type="button"] {
+    border-radius: 14px;
+}
+
+/* malé badge/chipy */
+.app-brand-tag,
+.status-badge,
+.exercise-chip,
+.session-chip,
+.pattern-chip,
+.tag,
+.badge {
+    border-radius: 999px;
+}
+
+/* běžné karty a bloky */
+.card,
+.list-card,
+.form-section,
+.inline-form,
+.stat-tile,
+.mode-bridge-card,
+.overview-bridge-card,
+.execution-card,
+.form-hero-card,
+.session-mini-tile,
+.session-history-card,
+.session-collapsible,
+.session-secondary-details,
+.session-set-block,
+.session-add-set-block,
+.exercise-entry-card,
+.panel-soft {
+    border-radius: 12px;
+}
+
+/* zvýrazněné horní boxy */
+.panel-accent,
+.overview-primary-card,
+.session-page-head,
+.execution-card-primary,
+.form-hero-card-primary {
+    border-radius: 16px;
+}
+
+/* trochu víc prostoru od rohů */
+.panel-accent,
+.overview-primary-card,
+.execution-card-primary,
+.form-hero-card-primary,
+.card,
+.list-card,
+.form-section,
+.inline-form,
+.panel-soft {
+    padding-top: 14px;
+    padding-right: 14px;
+    padding-left: 14px;
+}
+
+/* na mobilu ještě utaženější */
+@media (max-width: 768px) {
+    .card,
+    .list-card,
+    .form-section,
+    .inline-form,
+    .stat-tile,
+    .mode-bridge-card,
+    .overview-bridge-card,
+    .execution-card,
+    .form-hero-card,
+    .session-mini-tile,
+    .session-history-card,
+    .panel-soft {
+        border-radius: 10px;
+    }
+
+    .panel-accent,
+    .overview-primary-card,
+    .session-page-head,
+    .execution-card-primary,
+    .form-hero-card-primary {
+        border-radius: 14px;
+    }
+
+    .context-subnav-link,
+    .nav-pill,
+    .sub-nav-link,
+    .link-button,
+    button,
+    input[type="submit"],
+    input[type="button"] {
+        border-radius: 12px;
+    }
+
+    .panel-accent,
+    .overview-primary-card,
+    .execution-card-primary,
+    .form-hero-card-primary,
+    .card,
+    .list-card,
+    .form-section,
+    .inline-form,
+    .panel-soft {
+        padding-top: 12px;
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+}
