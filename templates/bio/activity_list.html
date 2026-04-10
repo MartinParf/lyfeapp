@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div class="mode-bridge-card mode-bridge-card-fitness">
+        <div class="mode-bridge-card mode-bridge-card-fitness mobile-hidden">
             <div class="mode-bridge-kicker">Execution mode</div>
             <div class="mode-bridge-title">FITNESS / Session Work</div>
             <div class="mode-bridge-copy">
@@ -69,19 +69,6 @@
     <a href="?period=all" class="link-button {% if period == 'all' %}primary-button{% endif %}">
         All
     </a>
-</div>
-
-<div class="list-card panel-soft">
-    <h3 class="list-card-title">Today</h3>
-    <div class="muted" style="margin-bottom: 8px;">
-        Quickly log a walk, run, cycling session, or another activity for today.
-    </div>
-
-    <div class="action-group">
-        <a href="{% url 'bio:activity-create' %}" class="link-button primary-button">
-            Create activity
-        </a>
-    </div>
 </div>
 
 <h2 style="margin: 14px 0 8px 0;">History</h2>

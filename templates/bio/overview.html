@@ -25,8 +25,8 @@
                     <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
                         Edit today
                     </a>
-                    <a href="{% url 'fitness:session-list' %}" class="link-button">
-                        Open sessions
+                    <a href="{% url 'bio:activity-list' %}" class="link-button">
+                        Open activities
                     </a>
                 </div>
             {% elif day_started %}
@@ -57,6 +57,9 @@
                     <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
                         Create today
                     </a>
+                    <a href="{% url 'bio:activity-create' %}" class="link-button">
+                        Log activity
+                    </a>
                 </div>
             {% endif %}
         </div>
@@ -78,7 +81,7 @@
                 </div>
             </div>
 
-            <div class="list-card overview-bridge-card overview-bridge-card-other">
+            <div class="list-card overview-bridge-card overview-bridge-card-other mobile-hidden">
                 <div class="mode-bridge-kicker">Execution mode</div>
                 <div class="mode-bridge-title">FITNESS / Training Log</div>
                 <div class="mode-bridge-copy">
@@ -96,29 +99,43 @@
         </div>
     </div>
 
-    <div class="overview-tiles">
-        <div class="stat-tile stat-tile-quiet">
-            <div class="stat-label">Activities today</div>
+    <div class="overview-tiles overview-tiles-strip">
+        <div class="stat-tile stat-tile-quiet stat-tile-mini">
+            <div class="stat-label">
+                <span class="stat-label-full">Activities today</span>
+                <span class="stat-label-short">ACT</span>
+            </div>
             <div class="stat-value">{{ activities_count }}</div>
         </div>
 
-        <div class="stat-tile stat-tile-quiet">
-            <div class="stat-label">Metric days (7d)</div>
+        <div class="stat-tile stat-tile-quiet stat-tile-mini">
+            <div class="stat-label">
+                <span class="stat-label-full">Metric days (7d)</span>
+                <span class="stat-label-short">MET</span>
+            </div>
             <div class="stat-value">{{ metric_days_count }}</div>
         </div>
 
-        <div class="stat-tile stat-tile-quiet">
-            <div class="stat-label">Activity entries (7d)</div>
+        <div class="stat-tile stat-tile-quiet stat-tile-mini">
+            <div class="stat-label">
+                <span class="stat-label-full">Activity entries (7d)</span>
+                <span class="stat-label-short">LOG</span>
+            </div>
             <div class="stat-value">{{ activity_entries_count }}</div>
         </div>
 
-        <div class="stat-tile stat-tile-quiet">
-            <div class="stat-label">Weekly signal</div>
-            <div class="stat-subvalue">
-                {% if consistency_hint %}
-                    {{ consistency_hint }}
+        <div class="stat-tile stat-tile-quiet stat-tile-mini">
+            <div class="stat-label">
+                <span class="stat-label-full">Weekly signal</span>
+                <span class="stat-label-short">SIG</span>
+            </div>
+            <div class="stat-subvalue stat-subvalue-compact">
+                {% if metric_days_count >= 5 %}
+                    usable
+                {% elif metric_days_count >= 3 %}
+                    build
                 {% else %}
-                    No strong weekly signal yet.
+                    low
                 {% endif %}
             </div>
         </div>

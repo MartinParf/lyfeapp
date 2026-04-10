@@ -19,6 +19,9 @@
             <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
                 New pool
             </a>
+            <a href="{% url 'fitness:session-list' %}" class="link-button">
+                Open sessions
+            </a>
         </div>
     </div>
 
@@ -35,36 +38,17 @@
     </div>
 </div>
 
-<div class="overview-content-grid" style="margin-bottom: 8px;">
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Planning shortcuts</div>
-        <div class="list-card-title" style="margin-bottom: 4px;">Execution</div>
-        <div class="muted" style="margin-bottom: 8px;">
-            Open sessions or create a new reusable pool.
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'fitness:session-list' %}" class="link-button">
-                Open sessions
-            </a>
-            <a href="{% url 'fitness:pool-create' %}" class="link-button primary-button">
-                New pool
-            </a>
-        </div>
+<div class="list-card panel-soft mobile-hidden">
+    <div class="section-kicker">Context shortcut</div>
+    <div class="list-card-title" style="margin-bottom: 4px;">BIO</div>
+    <div class="muted" style="margin-bottom: 8px;">
+        Use BIO only when pool planning needs recovery context.
     </div>
 
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Context shortcut</div>
-        <div class="list-card-title" style="margin-bottom: 4px;">BIO</div>
-        <div class="muted" style="margin-bottom: 8px;">
-            Use BIO only when pool planning needs recovery context.
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'bio:overview' %}" class="link-button">
-                Open BIO
-            </a>
-        </div>
+    <div class="action-group">
+        <a href="{% url 'bio:overview' %}" class="link-button">
+            Open BIO
+        </a>
     </div>
 </div>
 

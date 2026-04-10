@@ -19,6 +19,9 @@
             <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
                 New session
             </a>
+            <a href="{% url 'fitness:pool-list' %}" class="link-button">
+                Open pools
+            </a>
         </div>
     </div>
 
@@ -35,39 +38,20 @@
     </div>
 </div>
 
-<div class="overview-content-grid" style="margin-bottom: 8px;">
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Session shortcuts</div>
-        <div class="list-card-title" style="margin-bottom: 4px;">Execution</div>
-        <div class="muted" style="margin-bottom: 8px;">
-            Create a new session or open pools for planning.
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
-                New session
-            </a>
-            <a href="{% url 'fitness:pool-list' %}" class="link-button">
-                Open pools
-            </a>
-        </div>
+<div class="list-card panel-soft mobile-hidden">
+    <div class="section-kicker">Recovery shortcut</div>
+    <div class="list-card-title" style="margin-bottom: 4px;">BIO</div>
+    <div class="muted" style="margin-bottom: 8px;">
+        Jump back to daily signals only when you need recovery context.
     </div>
 
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Recovery shortcut</div>
-        <div class="list-card-title" style="margin-bottom: 4px;">BIO</div>
-        <div class="muted" style="margin-bottom: 8px;">
-            Jump back to daily signals only when you need recovery context.
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'bio:overview' %}" class="link-button">
-                Open BIO
-            </a>
-            <a href="{% url 'bio:dailymetric-today' %}" class="link-button">
-                Today’s metric
-            </a>
-        </div>
+    <div class="action-group">
+        <a href="{% url 'bio:overview' %}" class="link-button">
+            Open BIO
+        </a>
+        <a href="{% url 'bio:dailymetric-today' %}" class="link-button">
+            Today’s metric
+        </a>
     </div>
 </div>
 

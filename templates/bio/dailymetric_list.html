@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div class="mode-bridge-card mode-bridge-card-fitness">
+        <div class="mode-bridge-card mode-bridge-card-fitness mobile-hidden">
             <div class="mode-bridge-kicker">Execution mode</div>
             <div class="mode-bridge-title">FITNESS / Session Work</div>
             <div class="mode-bridge-copy">
@@ -71,44 +71,43 @@
     </a>
 </div>
 
-<div class="list-card panel-soft">
-    <h3 class="list-card-title">Summary</h3>
-
-    <div class="meta-grid two-col">
-        <div>
-            <div class="meta-item-label">Avg weight</div>
-            <div class="meta-item-value">
-                {% if avg_weight %}{{ avg_weight|floatformat:1 }} kg{% else %}-{% endif %}
-            </div>
+<div class="summary-tiles">
+    <div class="stat-tile summary-tile summary-tile-weight">
+        <div class="stat-label">Avg weight</div>
+        <div class="stat-value">
+            {% if avg_weight %}{{ avg_weight|floatformat:1 }}{% else %}-{% endif %}
         </div>
+        <div class="stat-subvalue">kg</div>
+    </div>
 
-        <div>
-            <div class="meta-item-label">Avg sleep</div>
-            <div class="meta-item-value">
-                {% if avg_sleep %}{{ avg_sleep|floatformat:1 }}/5{% else %}-{% endif %}
-            </div>
+    <div class="stat-tile summary-tile summary-tile-sleep">
+        <div class="stat-label">Avg sleep</div>
+        <div class="stat-value">
+            {% if avg_sleep %}{{ avg_sleep|floatformat:1 }}{% else %}-{% endif %}
         </div>
+        <div class="stat-subvalue">/5</div>
+    </div>
 
-        <div>
-            <div class="meta-item-label">Avg alcohol</div>
-            <div class="meta-item-value">
-                {% if avg_alcohol is not None %}{{ avg_alcohol|floatformat:1 }}/10{% else %}-{% endif %}
-            </div>
+    <div class="stat-tile summary-tile summary-tile-alcohol">
+        <div class="stat-label">Avg alcohol</div>
+        <div class="stat-value">
+            {% if avg_alcohol is not None %}{{ avg_alcohol|floatformat:1 }}{% else %}-{% endif %}
         </div>
+        <div class="stat-subvalue">/10</div>
+    </div>
 
-        <div>
-            <div class="meta-item-label">Weight trend</div>
-            <div class="meta-item-value">
-                {% if weight_trend == "up" %}
-                    ↑ increasing
-                {% elif weight_trend == "down" %}
-                    ↓ decreasing
-                {% elif weight_trend == "flat" %}
-                    → stable
-                {% else %}
-                    -
-                {% endif %}
-            </div>
+    <div class="stat-tile summary-tile summary-tile-trend">
+        <div class="stat-label">Weight trend</div>
+        <div class="stat-subvalue">
+            {% if weight_trend == "up" %}
+                ↑ increasing
+            {% elif weight_trend == "down" %}
+                ↓ decreasing
+            {% elif weight_trend == "flat" %}
+                → stable
+            {% else %}
+                -
+            {% endif %}
         </div>
     </div>
 </div>

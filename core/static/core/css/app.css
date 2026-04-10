@@ -1237,7 +1237,60 @@ select:invalid {
     padding: 8px;
     color: var(--text-soft);
 }
+/* ---------- PASS 3 / MOBILE HIDING + STRIP TILES + CALMER LISTS ---------- */
 
+.mobile-hidden {
+    display: block;
+}
+
+.stat-label-short {
+    display: none;
+}
+
+.overview-tiles-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stat-tile-mini {
+    min-height: 0;
+}
+
+.stat-subvalue-compact {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.summary-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.summary-tile {
+    margin: 0;
+}
+
+.summary-tile-weight {
+    border-color: rgba(6, 182, 212, 0.35);
+    background: linear-gradient(180deg, rgba(6, 182, 212, 0.08) 0%, var(--panel) 100%);
+}
+
+.summary-tile-sleep {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, var(--panel) 100%);
+}
+
+.summary-tile-alcohol {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, var(--panel) 100%);
+}
+
+.summary-tile-trend {
+    border-color: rgba(59, 130, 246, 0.35);
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, var(--panel) 100%);
+}
 /* ---------- MOBILE ---------- */
 
 @media (max-width: 768px) {
@@ -1375,5 +1428,52 @@ select:invalid {
 
     .session-compact-form-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .mobile-hidden {
+        display: none !important;
+    }
+
+    .overview-tiles-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+    }
+
+    .stat-tile-mini {
+        padding: 6px 4px;
+        gap: 3px;
+    }
+
+    .stat-tile-mini .stat-label {
+        text-align: center;
+        font-size: 9px;
+        letter-spacing: 0.03em;
+    }
+
+    .stat-tile-mini .stat-value,
+    .stat-tile-mini .stat-subvalue {
+        text-align: center;
+    }
+
+    .stat-tile-mini .stat-value {
+        font-size: 15px;
+        line-height: 1;
+    }
+
+    .stat-tile-mini .stat-subvalue {
+        font-size: 9px;
+        line-height: 1.05;
+    }
+
+    .stat-label-full {
+        display: none;
+    }
+
+    .stat-label-short {
+        display: inline;
+    }
+
+    .summary-tiles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
     }
 }
