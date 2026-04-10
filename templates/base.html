@@ -19,11 +19,9 @@
     <script>
         (function () {
             const STORAGE_KEY = "lyfe-theme";
-            const stored = localStorage.getItem(STORAGE_KEY) || "auto";
-            const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            const resolved = stored === "auto" ? (systemDark ? "dark" : "light") : stored;
-
-            document.documentElement.dataset.themeIntent = stored;
+            const saved = localStorage.getItem(STORAGE_KEY);
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const resolved = saved || (prefersDark ? "dark" : "light");
             document.documentElement.dataset.theme = resolved;
         })();
     </script>
@@ -66,11 +64,16 @@
             </div>
 
             <div class="app-utility">
-                <div class="theme-switcher" role="group" aria-label="Vzhled aplikace">
-                    <button type="button" class="theme-switcher-button" data-theme-choice="auto">Auto</button>
-                    <button type="button" class="theme-switcher-button" data-theme-choice="light">Light</button>
-                    <button type="button" class="theme-switcher-button" data-theme-choice="dark">Dark</button>
-                </div>
+                <button
+                    type="button"
+                    id="theme-toggle"
+                    class="theme-toggle-icon"
+                    aria-label="Přepnout světlý nebo tmavý režim"
+                    title="Přepnout světlý nebo tmavý režim"
+                >
+                    <span class="theme-toggle-glyph theme-toggle-glyph-dark">☾</span>
+                    <span class="theme-toggle-glyph theme-toggle-glyph-light">☀</span>
+                </button>
 
                 {% if request.user.is_authenticated %}
                     <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
@@ -156,66 +159,49 @@
             const STORAGE_KEY = "lyfe-theme";
             const root = document.documentElement;
             const metaThemeColor = document.getElementById("theme-color-meta");
-            const buttons = document.querySelectorAll("[data-theme-choice]");
+            const button = document.getElementById("theme-toggle");
             const media = window.matchMedia("(prefers-color-scheme: dark)");
 
-            function getStoredIntent() {
-                return localStorage.getItem(STORAGE_KEY) || "auto";
-            }
-
-            function resolveTheme(intent) {
-                if (intent === "light" || intent === "dark") {
-                    return intent;
-                }
-                return media.matches ? "dark" : "light";
+            function getTheme() {
+                return localStorage.getItem(STORAGE_KEY) || (media.matches ? "dark" : "light");
             }
 
             function currentMode() {
                 return document.body.classList.contains("mode-fitness") ? "fitness" : "bio";
             }
 
-            function updateThemeMeta(resolvedTheme) {
+            function updateMeta(theme) {
                 if (!metaThemeColor) return;
 
                 const mode = currentMode();
-                if (resolvedTheme === "light") {
-                    metaThemeColor.setAttribute("content", mode === "fitness" ? "#fff5e9" : "#f4fbff");
+
+                if (theme === "light") {
+                    metaThemeColor.setAttribute("content", mode === "fitness" ? "#f6f1e8" : "#eef7fb");
                 } else {
-                    metaThemeColor.setAttribute("content", mode === "fitness" ? "#16120b" : "#0b1420");
+                    metaThemeColor.setAttribute("content", mode === "fitness" ? "#17130d" : "#09131d");
                 }
             }
 
-            function syncButtons(intent) {
-                buttons.forEach((button) => {
-                    const active = button.dataset.themeChoice === intent;
-                    button.classList.toggle("is-active", active);
-                    button.setAttribute("aria-pressed", active ? "true" : "false");
-                });
+            function applyTheme(theme) {
+                root.dataset.theme = theme;
+                updateMeta(theme);
             }
 
-            function applyTheme(intent) {
-                const resolved = resolveTheme(intent);
-                root.dataset.themeIntent = intent;
-                root.dataset.theme = resolved;
-                syncButtons(intent);
-                updateThemeMeta(resolved);
-            }
-
-            buttons.forEach((button) => {
+            if (button) {
                 button.addEventListener("click", function () {
-                    const intent = this.dataset.themeChoice || "auto";
-                    localStorage.setItem(STORAGE_KEY, intent);
-                    applyTheme(intent);
+                    const next = root.dataset.theme === "dark" ? "light" : "dark";
+                    localStorage.setItem(STORAGE_KEY, next);
+                    applyTheme(next);
                 });
-            });
+            }
 
             media.addEventListener("change", function () {
-                if ((root.dataset.themeIntent || "auto") === "auto") {
-                    applyTheme("auto");
+                if (!localStorage.getItem(STORAGE_KEY)) {
+                    applyTheme(media.matches ? "dark" : "light");
                 }
             });
 
-            applyTheme(getStoredIntent());
+            applyTheme(getTheme());
         })();
 
         if ("serviceWorker" in navigator) {
