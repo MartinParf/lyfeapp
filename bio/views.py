@@ -6,6 +6,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Avg
 from django.urls import reverse
+from .services.analytics import build_bio_analytics
 
 from .forms import ActivityForm, DailyMetricForm
 from .models import Activity, DailyMetric
@@ -376,4 +377,24 @@ class BioOverviewView(LoginRequiredMixin, View):
             "activity_entries_count": activity_entries_count,
         }
 
+        return render(request, self.template_name, context)
+
+class BioAnalyticsView(LoginRequiredMixin, View):
+    template_name = "bio/analytics.html"
+
+    def get(self, request):
+        period_param = request.GET.get("period", "7d")
+        period_map = {
+            "7d": 7,
+            "14d": 14,
+            "30d": 30,
+        }
+        period_days = period_map.get(period_param, 7)
+
+        analytics = build_bio_analytics(user=request.user, period_days=period_days)
+
+        context = {
+            "period": period_param,
+            "analytics": analytics,
+        }
         return render(request, self.template_name, context)
