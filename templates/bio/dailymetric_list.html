@@ -113,113 +113,120 @@
 </div>
 
 <div class="list-card panel-soft">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px;">
-        <div>
-            <div class="list-card-title" style="margin-bottom: 2px;">Today — {{ today }}</div>
-            <div class="muted-compact">Current recovery snapshot</div>
+    <div class="metric-history-card">
+        <div class="metric-history-head">
+            <div class="metric-history-head-main">
+                <div class="metric-history-date">Today — {{ today }}</div>
+                <div class="metric-history-subline">Current recovery snapshot</div>
+            </div>
+
+            {% if today_metric %}
+                <div class="metric-history-weight">
+                    <div class="metric-history-weight-label">Weight</div>
+                    <div class="metric-history-weight-value">{{ today_metric.weight_kg|default:"-" }}</div>
+                    <div class="metric-history-weight-unit">kg</div>
+                </div>
+            {% endif %}
         </div>
 
         {% if today_metric %}
-            <div style="text-align: right;">
-                <div class="meta-item-label">Weight</div>
-                <div class="meta-item-value" style="font-size: 26px; line-height: 1;">{{ today_metric.weight_kg|default:"-" }}</div>
-                <div class="muted-compact">kg</div>
+            <div class="metric-history-primary-grid">
+                <div>
+                    <div class="metric-history-item-label">Sleep</div>
+                    <div class="metric-history-item-value">{{ today_metric.get_sleep_quality_display|default:"-" }}</div>
+                </div>
+
+                <div>
+                    <div class="metric-history-item-label">Alcohol</div>
+                    <div class="metric-history-item-value">{{ today_metric.get_alcohol_units_display }}</div>
+                </div>
+
+                <div>
+                    <div class="metric-history-item-label">Diet</div>
+                    <div class="metric-history-item-value">{{ today_metric.get_diet_mode_display|default:"-" }}</div>
+                </div>
+
+                <div></div>
+            </div>
+
+            <div class="metric-history-secondary">
+                <div class="metric-history-item-label">Calories</div>
+                <div class="metric-history-item-value">{{ today_metric.calories_actual|default:"-" }}</div>
+            </div>
+
+            <div class="metric-history-actions">
+                <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
+                    Edit today
+                </a>
+            </div>
+        {% else %}
+            <div class="metric-history-subline">No entry for today yet.</div>
+
+            <div class="metric-history-actions">
+                <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
+                    Create today
+                </a>
             </div>
         {% endif %}
     </div>
-
-    {% if today_metric %}
-        <div class="meta-grid two-col" style="margin-bottom: 10px;">
-            <div>
-                <div class="meta-item-label">Sleep</div>
-                <div class="meta-item-value">{{ today_metric.get_sleep_quality_display|default:"-" }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Alcohol</div>
-                <div class="meta-item-value">{{ today_metric.get_alcohol_units_display }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Diet</div>
-                <div class="meta-item-value">{{ today_metric.get_diet_mode_display|default:"-" }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Calories</div>
-                <div class="meta-item-value">{{ today_metric.calories_actual|default:"-" }}</div>
-            </div>
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
-                Edit today
-            </a>
-        </div>
-    {% else %}
-        <div class="muted" style="margin-bottom: 8px;">
-            No entry for today yet.
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
-                Create today
-            </a>
-        </div>
-    {% endif %}
 </div>
 
 <h2 style="margin: 14px 0 8px 0;">History</h2>
 
 {% for metric in history_metrics %}
     <div class="list-card panel-soft">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px;">
-            <div>
-                <div class="list-card-title" style="margin-bottom: 2px;">{{ metric.date|date:"d.m.Y" }}</div>
-                <div class="muted-compact">
-                    Sleep: {{ metric.get_sleep_quality_display|default:"-" }}
+        <div class="metric-history-card">
+            <div class="metric-history-head">
+                <div class="metric-history-head-main">
+                    <div class="metric-history-date">{{ metric.date|date:"d.m.Y" }}</div>
+                    <div class="metric-history-subline">Sleep: {{ metric.get_sleep_quality_display|default:"-" }}</div>
+                </div>
+
+                <div class="metric-history-weight">
+                    <div class="metric-history-weight-label">Weight</div>
+                    <div class="metric-history-weight-value">{{ metric.weight_kg|default:"-" }}</div>
+                    <div class="metric-history-weight-unit">kg</div>
                 </div>
             </div>
 
-            <div style="text-align: right;">
-                <div class="meta-item-label">Weight</div>
-                <div class="meta-item-value" style="font-size: 26px; line-height: 1;">{{ metric.weight_kg|default:"-" }}</div>
-                <div class="muted-compact">kg</div>
+            <div class="metric-history-primary-grid">
+                <div>
+                    <div class="metric-history-item-label">Sleep</div>
+                    <div class="metric-history-item-value">{{ metric.get_sleep_quality_display|default:"-" }}</div>
+                </div>
+
+                <div>
+                    <div class="metric-history-item-label">Alcohol</div>
+                    <div class="metric-history-item-value">{{ metric.get_alcohol_units_display }}</div>
+                </div>
             </div>
-        </div>
 
-        <div class="meta-grid two-col" style="margin-bottom: 10px;">
-            <div>
-                <div class="meta-item-label">Alcohol</div>
-                <div class="meta-item-value">{{ metric.get_alcohol_units_display }}</div>
+            <div class="metric-history-secondary">
+                <div class="metric-history-item-label">Calories</div>
+                <div class="metric-history-item-value">{{ metric.calories_actual|default:"-" }}</div>
             </div>
 
-            <div>
-                <div class="meta-item-label">Calories</div>
-                <div class="meta-item-value">{{ metric.calories_actual|default:"-" }}</div>
+            {% if metric.notes %}
+                <div>
+                    <div class="metric-history-item-label">Notes</div>
+                    <div class="metric-history-subline">{{ metric.notes }}</div>
+                </div>
+            {% endif %}
+
+            <div class="metric-history-actions">
+                <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
+                    Edit
+                </a>
+
+                <form
+                    method="post"
+                    action="{% url 'bio:dailymetric-delete' metric.pk %}"
+                    onsubmit="return confirm('Delete this daily metric?');"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="danger">Delete</button>
+                </form>
             </div>
-        </div>
-
-        {% if metric.notes %}
-            <div style="margin-bottom: 10px;">
-                <div class="meta-item-label">Notes</div>
-                <div class="muted">{{ metric.notes }}</div>
-            </div>
-        {% endif %}
-
-        <div class="action-group">
-            <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
-                Edit
-            </a>
-
-            <form
-                method="post"
-                action="{% url 'bio:dailymetric-delete' metric.pk %}"
-                onsubmit="return confirm('Delete this daily metric?');"
-            >
-                {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
-            </form>
         </div>
     </div>
 {% empty %}

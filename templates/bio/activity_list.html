@@ -74,30 +74,10 @@
 <h2 style="margin: 14px 0 8px 0;">History</h2>
 
 {% for activity in activities %}
+    {% with activity_label=activity.get_activity_type_display %}
     <div class="list-card panel-soft">
-        {% with activity_label=activity.get_activity_type_display %}
-        <div
-            style="
-                display: grid;
-                grid-template-columns: auto minmax(0, 1fr) auto;
-                gap: 10px;
-                align-items: center;
-                margin-bottom: 10px;
-            "
-        >
-            <div
-                style="
-                    width: 42px;
-                    height: 42px;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 1px solid var(--line-2);
-                    background: var(--panel-3);
-                    border-radius: var(--radius);
-                    font-size: 20px;
-                "
-            >
+        <div class="activity-history-card">
+            <div class="activity-history-icon">
                 {% if activity_label == "Running" %}
                     🏃
                 {% elif activity_label == "Cycling" %}
@@ -117,52 +97,56 @@
                 {% endif %}
             </div>
 
-            <div>
-                <div class="list-card-title" style="margin-bottom: 2px;">{{ activity_label }}</div>
-                <div class="muted-compact">{{ activity.date|date:"d.m.Y" }}</div>
+            <div class="activity-history-main">
+                <div class="activity-history-top">
+                    <div>
+                        <div class="activity-history-title">{{ activity_label }}</div>
+                        <div class="activity-history-date">{{ activity.date|date:"d.m.Y" }}</div>
+                    </div>
+
+                    <div class="activity-history-duration">
+                        <div class="metric-history-item-label">Duration</div>
+                        <div class="metric-history-item-value">{{ activity.duration_minutes }} min</div>
+                    </div>
+                </div>
+
+                <div class="activity-history-stats">
+                    <div>
+                        <div class="metric-history-item-label">Distance</div>
+                        <div class="metric-history-item-value">{{ activity.distance_km|default:"-" }}</div>
+                    </div>
+
+                    <div>
+                        <div class="metric-history-item-label">Calories</div>
+                        <div class="metric-history-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
+                    </div>
+                </div>
+
+                {% if activity.notes %}
+                    <div>
+                        <div class="metric-history-item-label">Notes</div>
+                        <div class="metric-history-subline">{{ activity.notes }}</div>
+                    </div>
+                {% endif %}
+
+                <div class="activity-history-actions">
+                    <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
+                        Edit
+                    </a>
+
+                    <form
+                        method="post"
+                        action="{% url 'bio:activity-delete' activity.pk %}"
+                        onsubmit="return confirm('Delete this activity?');"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="danger">Delete</button>
+                    </form>
+                </div>
             </div>
-
-            <div style="text-align: right;">
-                <div class="meta-item-label">Duration</div>
-                <div class="meta-item-value">{{ activity.duration_minutes }} min</div>
-            </div>
-        </div>
-        {% endwith %}
-
-        <div class="meta-grid two-col" style="margin-bottom: 10px;">
-            <div>
-                <div class="meta-item-label">Distance</div>
-                <div class="meta-item-value">{{ activity.distance_km|default:"-" }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Calories</div>
-                <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
-            </div>
-        </div>
-
-        {% if activity.notes %}
-            <div style="margin-bottom: 10px;">
-                <div class="meta-item-label">Notes</div>
-                <div class="muted">{{ activity.notes }}</div>
-            </div>
-        {% endif %}
-
-        <div class="action-group">
-            <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
-                Edit
-            </a>
-
-            <form
-                method="post"
-                action="{% url 'bio:activity-delete' activity.pk %}"
-                onsubmit="return confirm('Delete this activity?');"
-            >
-                {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
-            </form>
         </div>
     </div>
+    {% endwith %}
 {% empty %}
     <div class="list-card panel-soft">
         <div class="list-card-title">No activities yet</div>
