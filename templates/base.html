@@ -19,33 +19,36 @@
     <script>
         (function () {
             try {
-                localStorage.removeItem("lyfe-theme");
-            } catch (e) {}
-    
-            document.documentElement.dataset.theme = "dark";
+                const savedTheme = localStorage.getItem("lyfe-theme");
+                const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+                const theme = savedTheme ? savedTheme : (prefersLight ? "light" : "dark");
+                document.documentElement.dataset.theme = theme;
+            } catch (e) {
+                document.documentElement.dataset.theme = "dark";
+            }
         })();
     </script>
 
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-    <link rel="stylesheet" href="{% static 'core/css/app.css' %}?v=rollback-dark-1">
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}?v=light-safe-1">
 
     <script>
-        (function () {
+        document.addEventListener("DOMContentLoaded", function () {
             let lastScrollY = 0;
-
+    
             document.body.addEventListener("htmx:beforeRequest", function (event) {
                 const elt = event.detail.elt;
                 if (elt && (elt.classList.contains("preserve-scroll") || elt.closest(".preserve-scroll"))) {
                     lastScrollY = window.scrollY;
                 }
             });
-
+    
             document.body.addEventListener("htmx:afterSwap", function () {
                 if (typeof lastScrollY === "number") {
                     window.scrollTo({ top: lastScrollY, behavior: "auto" });
                 }
             });
-        })();
+        });
     </script>
 </head>
 <body class="{% if '/fitness/' in request.path %}mode-fitness{% else %}mode-bio{% endif %}">
@@ -69,6 +72,22 @@
                 {% if request.user.is_authenticated %}
                     <div class="logged-in-row">Logged in as: {{ request.user.username }}</div>
                 {% endif %}
+                <button id="theme-toggle" class="theme-toggle" aria-label="Přepnout motiv">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
             </div>
         </header>
 
@@ -155,6 +174,33 @@
                     });
             });
         }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const themeToggleBtn = document.getElementById("theme-toggle");
+            const themeColorMeta = document.getElementById("theme-color-meta");
+
+            function applyThemeUi(theme) {
+                if (themeColorMeta) {
+                    themeColorMeta.setAttribute("content", theme === "light" ? "#f3f7fb" : "#08111b");
+                }
+                if (themeToggleBtn) {
+                    themeToggleBtn.setAttribute("aria-pressed", theme === "light" ? "true" : "false");
+                }
+            }
+
+            applyThemeUi(document.documentElement.dataset.theme || "dark");
+
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener("click", function () {
+                    const currentTheme = document.documentElement.dataset.theme;
+                    const newTheme = currentTheme === "dark" ? "light" : "dark";
+                    document.documentElement.dataset.theme = newTheme;
+                    localStorage.setItem("lyfe-theme", newTheme);
+                    applyThemeUi(newTheme);
+                });
+            }
+        });
     </script>
 </body>
 </html>
