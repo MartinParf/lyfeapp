@@ -89,6 +89,87 @@
 
 <div class="overview-content-grid">
     <div class="list-card panel-soft">
+        <div class="section-kicker">Main insight</div>
+        <div class="section-bar" style="margin-bottom: 8px;">
+            <div>
+                <div class="list-card-title" style="margin-bottom: 2px;">{{ analytics.main_insight.title }}</div>
+            </div>
+
+            {% if analytics.main_insight.tone == "positive" %}
+                <div class="status-chip status-chip-good">Positive</div>
+            {% elif analytics.main_insight.tone == "warning" %}
+                <div class="status-chip status-chip-bad">Warning</div>
+            {% else %}
+                <div class="status-chip status-chip-warn">Neutral</div>
+            {% endif %}
+        </div>
+
+        <div class="muted">{{ analytics.main_insight.body }}</div>
+    </div>
+
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Next action</div>
+        <div class="list-card-title" style="margin-bottom: 8px;">{{ analytics.next_action.label }}</div>
+        <div class="muted">{{ analytics.next_action.reason }}</div>
+    </div>
+</div>
+
+<div class="overview-content-grid">
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Weekly summary</div>
+        <div class="list-card-title" style="margin-bottom: 8px;">{{ analytics.weekly_summary.title }}</div>
+        <div class="muted">{{ analytics.weekly_summary.body }}</div>
+    </div>
+
+    <div class="list-card panel-soft">
+        <div class="section-kicker">Consistency</div>
+        <div class="list-card-title" style="margin-bottom: 8px;">Score breakdown</div>
+
+        <div class="meta-grid two-col" style="margin-bottom: 0;">
+            <div>
+                <div class="meta-item-label">Metric score</div>
+                <div class="meta-item-value">{{ analytics.consistency.metric_score }}</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Activity score</div>
+                <div class="meta-item-value">{{ analytics.consistency.activity_score }}</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Overall score</div>
+                <div class="meta-item-value">{{ analytics.consistency.overall_score }}</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Active days</div>
+                <div class="meta-item-value">{{ analytics.summary.active_days }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="overview-content-grid">
+    {% for item in analytics.secondary_insights %}
+        <div class="list-card panel-soft">
+            <div class="section-kicker">Secondary insight</div>
+            <div class="section-bar" style="margin-bottom: 8px;">
+                <div>
+                    <div class="list-card-title" style="margin-bottom: 2px;">{{ item.label }}</div>
+                    <div class="muted-compact">{{ item.note }}</div>
+                </div>
+
+                {% if item.tone == "positive" %}
+                    <div class="status-chip status-chip-good">{{ item.value }}</div>
+                {% elif item.tone == "warning" %}
+                    <div class="status-chip status-chip-bad">{{ item.value }}</div>
+                {% else %}
+                    <div class="status-chip status-chip-warn">{{ item.value }}</div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="overview-content-grid">
+    <div class="list-card panel-soft">
         <div class="section-kicker">Trend logic</div>
         <div class="list-card-title" style="margin-bottom: 8px;">Signals</div>
 
@@ -109,29 +190,77 @@
                 <div class="meta-item-label">Activity</div>
                 <div class="meta-item-value">{{ analytics.trends.activity }}</div>
             </div>
+            <div>
+                <div class="meta-item-label">Intake kcal</div>
+                <div class="meta-item-value">{{ analytics.trends.kcal }}</div>
+            </div>
         </div>
     </div>
 
     <div class="list-card panel-soft">
-        <div class="section-kicker">Score breakdown</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">Consistency</div>
+        <div class="section-kicker">Recent vs previous</div>
+        <div class="list-card-title" style="margin-bottom: 8px;">Comparison</div>
 
         <div class="meta-grid two-col" style="margin-bottom: 0;">
             <div>
-                <div class="meta-item-label">Metric score</div>
-                <div class="meta-item-value">{{ analytics.consistency.metric_score }}</div>
+                <div class="meta-item-label">Weight delta</div>
+                <div class="meta-item-value">
+                    {% if analytics.deltas.avg_weight is not None %}
+                        {{ analytics.deltas.avg_weight|floatformat:2 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
             </div>
             <div>
-                <div class="meta-item-label">Activity score</div>
-                <div class="meta-item-value">{{ analytics.consistency.activity_score }}</div>
+                <div class="meta-item-label">Sleep delta</div>
+                <div class="meta-item-value">
+                    {% if analytics.deltas.avg_sleep is not None %}
+                        {{ analytics.deltas.avg_sleep|floatformat:1 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
             </div>
             <div>
-                <div class="meta-item-label">Overall score</div>
-                <div class="meta-item-value">{{ analytics.consistency.overall_score }}</div>
+                <div class="meta-item-label">Alcohol delta</div>
+                <div class="meta-item-value">
+                    {% if analytics.deltas.avg_alcohol is not None %}
+                        {{ analytics.deltas.avg_alcohol|floatformat:1 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
             </div>
             <div>
-                <div class="meta-item-label">Active days</div>
-                <div class="meta-item-value">{{ analytics.summary.active_days }}</div>
+                <div class="meta-item-label">Minutes delta</div>
+                <div class="meta-item-value">
+                    {% if analytics.deltas.activity_minutes is not None %}
+                        {{ analytics.deltas.activity_minutes|floatformat:0 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <div class="meta-item-label">Intake kcal delta</div>
+                <div class="meta-item-value">
+                    {% if analytics.deltas.avg_calories_actual is not None %}
+                        {{ analytics.deltas.avg_calories_actual|floatformat:0 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <div class="meta-item-label">Distance delta</div>
+                <div class="meta-item-value">
+                    {% if analytics.deltas.distance is not None %}
+                        {{ analytics.deltas.distance|floatformat:2 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -164,10 +293,9 @@
                 </div>
             </div>
             <div>
-                <div class="meta-item-label">Calories</div>
+                <div class="meta-item-label">Activity calories</div>
                 <div class="meta-item-value">{{ analytics.summary.total_activity_calories }}</div>
             </div>
-
             <div>
                 <div class="meta-item-label">Avg intake kcal</div>
                 <div class="meta-item-value">
@@ -178,8 +306,6 @@
                     {% endif %}
                 </div>
             </div>
-
-            
         </div>
     </div>
 
@@ -190,6 +316,14 @@
         </div>
 
         <div class="meta-grid two-col" style="margin-bottom: 0;">
+            <div>
+                <div class="meta-item-label">Metric days</div>
+                <div class="meta-item-value">{{ analytics.previous_summary.metric_days }}</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Active days</div>
+                <div class="meta-item-value">{{ analytics.previous_summary.active_days }}</div>
+            </div>
             <div>
                 <div class="meta-item-label">Avg weight</div>
                 <div class="meta-item-value">
@@ -221,11 +355,6 @@
                 </div>
             </div>
             <div>
-                <div class="meta-item-label">Activity mins</div>
-                <div class="meta-item-value">{{ analytics.previous_summary.total_activity_minutes }}</div>
-            </div>
-
-            <div>
                 <div class="meta-item-label">Avg intake kcal</div>
                 <div class="meta-item-value">
                     {% if analytics.previous_summary.avg_calories_actual is not None %}
@@ -235,107 +364,7 @@
                     {% endif %}
                 </div>
             </div>
-
-
         </div>
-    </div>
-</div>
-
-<div class="list-card panel-soft">
-    <div class="section-kicker">Recent vs previous</div>
-    <div class="list-card-title" style="margin-bottom: 8px;">Comparison</div>
-
-    <div class="meta-grid two-col" style="margin-bottom: 0;">
-        <div>
-            <div class="meta-item-label">Weight delta</div>
-            <div class="meta-item-value">
-                {% if analytics.deltas.avg_weight is not None %}
-                    {{ analytics.deltas.avg_weight|floatformat:2 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-        <div>
-            <div class="meta-item-label">Sleep delta</div>
-            <div class="meta-item-value">
-                {% if analytics.deltas.avg_sleep is not None %}
-                    {{ analytics.deltas.avg_sleep|floatformat:1 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-        <div>
-            <div class="meta-item-label">Alcohol delta</div>
-            <div class="meta-item-value">
-                {% if analytics.deltas.avg_alcohol is not None %}
-                    {{ analytics.deltas.avg_alcohol|floatformat:1 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-        <div>
-            <div class="meta-item-label">Minutes delta</div>
-            <div class="meta-item-value">
-                {% if analytics.deltas.activity_minutes is not None %}
-                    {{ analytics.deltas.activity_minutes|floatformat:0 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-        <div>
-            <div class="meta-item-label">Calories delta</div>
-            <div class="meta-item-value">
-                {% if analytics.deltas.activity_calories is not None %}
-                    {{ analytics.deltas.activity_calories|floatformat:0 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-        <div>
-            <div class="meta-item-label">Distance delta</div>
-            <div class="meta-item-value">
-                {% if analytics.deltas.distance is not None %}
-                    {{ analytics.deltas.distance|floatformat:2 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-
-        <div>
-            <div class="meta-item-label">Intake kcal delta</div>
-            <div class="meta-item-value">
-                {% if analytics.deltas.avg_calories_actual is not None %}
-                    {{ analytics.deltas.avg_calories_actual|floatformat:0 }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-
-
-    </div>
-</div>
-
-<div class="list-card panel-soft">
-    <div class="section-kicker">Insights</div>
-    <div class="list-card-title" style="margin-bottom: 8px;">Interpretation</div>
-
-    <div class="activity-stack">
-        {% for insight in analytics.insights %}
-            <div class="activity-row">
-                <div class="muted">{{ insight }}</div>
-            </div>
-        {% empty %}
-            <div class="empty-state">
-                Not enough data yet for useful interpretation.
-            </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}
