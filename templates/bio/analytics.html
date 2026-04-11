@@ -35,7 +35,12 @@
     </div>
 </div>
 
-<div class="section-kicker" style="margin-bottom: 6px;">{{ analytics.period_days }}D insight</div>
+<div class="analytics-section-head" style="margin-bottom: 8px;">
+    <div>
+        <div class="section-kicker">{{ analytics.period_days }}D INSIGHT</div>
+        <div class="section-meta">{{ analytics.comparison_label }}</div>
+    </div>
+</div>
 
 <div class="overview-tiles overview-tiles-strip overview-tiles-strip-5" style="margin-bottom: 8px;">
     <div class="stat-tile stat-tile-quiet stat-tile-mini">
@@ -94,8 +99,10 @@
                 <div class="section-kicker">{{ analytics.main_insight.kicker }}</div>
                 <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.main_insight.title }}</div>
             </div>
-            {% if analytics.main_insight.badge %}
-                <span class="link-button" style="pointer-events: none;">{{ analytics.main_insight.badge }}</span>
+            {% if analytics.main_insight.badge_label %}
+                <span class="analytics-badge analytics-badge--{{ analytics.main_insight.badge_tone }}">
+                    {{ analytics.main_insight.badge_label }}
+                </span>
             {% endif %}
         </div>
 
@@ -112,8 +119,10 @@
                 <div class="section-kicker">{{ analytics.next_action.kicker }}</div>
                 <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.next_action.title }}</div>
             </div>
-            {% if analytics.next_action.badge %}
-                <span class="link-button" style="pointer-events: none;">{{ analytics.next_action.badge }}</span>
+            {% if analytics.next_action.badge_label %}
+                <span class="analytics-badge analytics-badge--{{ analytics.next_action.badge_tone }}">
+                    {{ analytics.next_action.badge_label }}
+                </span>
             {% endif %}
         </div>
 
@@ -132,24 +141,39 @@
         <div class="muted">{{ analytics.weekly_summary_card.body }}</div>
     </div>
 
-    <div class="list-card {{ analytics.consistency_card.panel_class }}">
-        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+    <div class="analytics-card analytics-card--consistency">
+        <div class="analytics-card-head">
             <div>
-                <div class="section-kicker">{{ analytics.consistency_card.kicker }}</div>
-                <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.consistency_card.title }}</div>
+                <div class="section-kicker">CONSISTENCY</div>
+                <h3 style="margin: 0; font-size: inherit;">Score breakdown</h3>
             </div>
-            {% if analytics.consistency_card.badge %}
-                <span class="link-button" style="pointer-events: none;">{{ analytics.consistency_card.badge }}</span>
+            {% if analytics.consistency.badge_label %}
+                <span class="analytics-badge analytics-badge--{{ analytics.consistency.badge_tone }}">
+                    {{ analytics.consistency.badge_label }}
+                </span>
             {% endif %}
         </div>
 
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
-            {% for row in analytics.consistency_card.meta_rows %}
-                <div>
-                    <div class="meta-item-label">{{ row.label }}</div>
-                    <div class="meta-item-value">{{ row.value }}</div>
-                </div>
-            {% endfor %}
+        <div class="analytics-score-grid">
+            <div class="analytics-score-item analytics-score-item--primary">
+                <div class="analytics-score-label">OVERALL SCORE</div>
+                <div class="analytics-score-value">{{ analytics.consistency.overall_score }}</div>
+            </div>
+
+            <div class="analytics-score-item">
+                <div class="analytics-score-label">METRIC SCORE</div>
+                <div class="analytics-score-value">{{ analytics.consistency.metric_score }}</div>
+            </div>
+
+            <div class="analytics-score-item">
+                <div class="analytics-score-label">ACTIVITY SCORE</div>
+                <div class="analytics-score-value">{{ analytics.consistency.activity_score }}</div>
+            </div>
+
+            <div class="analytics-score-item">
+                <div class="analytics-score-label">ACTIVE DAYS</div>
+                <div class="analytics-score-value">{{ analytics.consistency.active_days }}</div>
+            </div>
         </div>
     </div>
 </div>
@@ -162,8 +186,10 @@
                     <div class="section-kicker">{{ card.kicker }}</div>
                     <div class="list-card-title" style="margin-bottom: 0;">{{ card.title }}</div>
                 </div>
-                {% if card.badge %}
-                    <span class="link-button" style="pointer-events: none;">{{ card.badge }}</span>
+                {% if card.badge_label %}
+                    <span class="analytics-badge analytics-badge--{{ card.badge_tone }}">
+                        {{ card.badge_label }}
+                    </span>
                 {% endif %}
             </div>
 

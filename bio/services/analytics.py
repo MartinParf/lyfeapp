@@ -12,6 +12,126 @@ from bio.models import Activity, DailyMetric
 
 User = get_user_model()
 
+def _safe_state(value):
+    return (value or "").strip().lower()
+
+
+def _badge_label_for_state(state, *, kind="secondary"):
+    state = _safe_state(state)
+
+    if kind == "main":
+        mapping = {
+            "neutral": "STABLE",
+            "stable": "STABLE",
+            "mixed": "MIXED",
+            "improving": "IMPROVING",
+            "worsening": "WORSENING",
+            "insufficient_data": "LIMITED",
+            "limited": "LIMITED",
+        }
+        return mapping.get(state, state.replace("_", " ").upper() if state else "STABLE")
+
+    if kind == "action":
+        return "PRIORITY"
+
+    if kind == "consistency":
+        mapping = {
+            "strong": "STRONG",
+            "moderate": "MODERATE",
+            "limited": "LIMITED",
+        }
+        return mapping.get(state, "MODERATE")
+
+    mapping = {
+        "increasing": "HIGHER",
+        "decreasing": "LOWER",
+        "improving": "IMPROVING",
+        "worsening": "WORSENING",
+        "stable": "STABLE",
+        "neutral": "STABLE",
+        "mixed": "MIXED",
+        "insufficient_data": "LIMITED",
+        "limited": "LIMITED",
+        "strong": "STRONG",
+        "moderate": "MODERATE",
+        "lower": "LOWER",
+        "higher": "HIGHER",
+    }
+    return mapping.get(state, state.replace("_", " ").upper() if state else "STABLE")
+
+
+def _badge_tone_for_state(state, *, kind="secondary"):
+    state = _safe_state(state)
+
+    if kind == "action":
+        return "info"
+
+    if kind == "consistency":
+        if state == "strong":
+            return "success"
+        if state == "limited":
+            return "warning"
+        return "neutral"
+
+    if state in {"improving", "strong"}:
+        return "success"
+    if state in {"worsening"}:
+        return "danger"
+    if state in {"decreasing", "lower"}:
+        return "warning"
+    if state in {"increasing", "higher"}:
+        return "info"
+    if state in {"insufficient_data", "limited"}:
+        return "muted"
+
+    return "neutral"
+
+
+def _consistency_state_from_score(score):
+    if score >= 75:
+        return "strong"
+    if score >= 45:
+        return "moderate"
+    return "limited"
+
+
+def _apply_analytics_polish(analytics, window_days):
+    analytics["comparison_label"] = f"vs previous {window_days}d"
+
+    main_insight = analytics.get("main_insight")
+    if main_insight:
+        raw_state = (
+            main_insight.get("state")
+            or main_insight.get("status")
+            or main_insight.get("badge")
+            or "neutral"
+        )
+        main_insight["badge_label"] = _badge_label_for_state(raw_state, kind="main")
+        main_insight["badge_tone"] = _badge_tone_for_state(raw_state, kind="main")
+
+    next_action = analytics.get("next_action")
+    if next_action:
+        next_action["badge_label"] = _badge_label_for_state("priority", kind="action")
+        next_action["badge_tone"] = _badge_tone_for_state("priority", kind="action")
+
+    consistency = analytics.get("consistency")
+    if consistency:
+        overall_score = consistency.get("overall_score", 0)
+        consistency_state = _consistency_state_from_score(overall_score)
+        consistency["badge_label"] = _badge_label_for_state(consistency_state, kind="consistency")
+        consistency["badge_tone"] = _badge_tone_for_state(consistency_state, kind="consistency")
+
+    for item in analytics.get("secondary_insights", []):
+        raw_state = (
+            item.get("state")
+            or item.get("status")
+            or item.get("badge")
+            or "stable"
+        )
+        item["badge_label"] = _badge_label_for_state(raw_state, kind="secondary")
+        item["badge_tone"] = _badge_tone_for_state(raw_state, kind="secondary")
+
+    return analytics
 
 def _to_float(value: Any) -> float | None:
     if value is None:
