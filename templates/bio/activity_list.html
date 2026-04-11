@@ -75,53 +75,93 @@
 
 {% for activity in activities %}
     <div class="list-card panel-soft">
-        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-            <div>
-                <div class="list-card-title" style="margin-bottom: 2px;">{{ activity.date }}</div>
-                <div class="muted" style="font-size: 12px;">
-                    {{ activity.get_activity_type_display }}
-                </div>
+        {% with activity_label=activity.get_activity_type_display %}
+        <div
+            style="
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr) auto;
+                gap: 10px;
+                align-items: center;
+                margin-bottom: 10px;
+            "
+        >
+            <div
+                style="
+                    width: 42px;
+                    height: 42px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px solid var(--line-2);
+                    background: var(--panel-3);
+                    border-radius: var(--radius);
+                    font-size: 20px;
+                "
+            >
+                {% if activity_label == "Running" %}
+                    🏃
+                {% elif activity_label == "Cycling" %}
+                    🚴
+                {% elif activity_label == "Swimming" %}
+                    🏊
+                {% elif activity_label == "Walking" %}
+                    🚶
+                {% elif activity_label == "Hiking" %}
+                    🥾
+                {% elif activity_label == "Yoga" %}
+                    🧘
+                {% elif activity_label == "Gym" or activity_label == "Strength Training" %}
+                    🏋️
+                {% else %}
+                    •
+                {% endif %}
             </div>
 
-            <div class="action-group">
-                <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
-                    Edit
-                </a>
-
-                <form
-                    method="post"
-                    action="{% url 'bio:activity-delete' activity.pk %}"
-                    onsubmit="return confirm('Delete this activity?');"
-                >
-                    {% csrf_token %}
-                    <button type="submit" class="danger">Delete</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="meta-grid two-col">
             <div>
+                <div class="list-card-title" style="margin-bottom: 2px;">{{ activity_label }}</div>
+                <div class="muted-compact">{{ activity.date|date:"d.m.Y" }}</div>
+            </div>
+
+            <div style="text-align: right;">
                 <div class="meta-item-label">Duration</div>
                 <div class="meta-item-value">{{ activity.duration_minutes }} min</div>
             </div>
+        </div>
+        {% endwith %}
 
+        <div class="meta-grid two-col" style="margin-bottom: 10px;">
             <div>
                 <div class="meta-item-label">Distance</div>
                 <div class="meta-item-value">{{ activity.distance_km|default:"-" }}</div>
             </div>
 
             <div>
-                <div class="meta-item-label">Calories burned</div>
+                <div class="meta-item-label">Calories</div>
                 <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
             </div>
         </div>
 
         {% if activity.notes %}
-            <div style="margin-top: 6px;">
+            <div style="margin-bottom: 10px;">
                 <div class="meta-item-label">Notes</div>
                 <div class="muted">{{ activity.notes }}</div>
             </div>
         {% endif %}
+
+        <div class="action-group">
+            <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
+                Edit
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'bio:activity-delete' activity.pk %}"
+                onsubmit="return confirm('Delete this activity?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete</button>
+            </form>
+        </div>
     </div>
 {% empty %}
     <div class="list-card panel-soft">

@@ -59,63 +59,73 @@
 
 {% for session in sessions %}
     <div class="list-card panel-soft">
-        <div class="section-bar" style="margin-bottom: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
             <div>
                 <div class="list-card-title" style="margin-bottom: 2px;">
                     Session #{{ session.id }}
                 </div>
                 <div class="muted-compact">
-                    {{ session.get_status_display }}
-                </div>
-            </div>
-
-            <div
-                style="
-                    display: inline-flex;
-                    align-items: center;
-                    min-height: 24px;
-                    padding: 2px 6px;
-                    border: 1px solid var(--line-2);
-                    background: var(--panel-3);
-                    color: var(--text);
-                    font-size: 11px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.04em;
-                    border-radius: var(--radius);
-                "
-            >
-                {{ session.get_focus_display }}
-            </div>
-        </div>
-
-        <div class="meta-grid two-col">
-            <div>
-                <div class="meta-item-label">Source pool</div>
-                <div class="meta-item-value">{{ session.source_pool|default:"-" }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Scheduled</div>
-                <div class="meta-item-value">
                     {% if session.scheduled_date %}
                         {{ session.scheduled_date|date:"d.m.Y" }}
                     {% else %}
-                        -
+                        No scheduled date
                     {% endif %}
                 </div>
             </div>
 
-            <div>
-                <div class="meta-item-label">Started</div>
-                <div class="meta-item-value">
-                    {% if session.started_at %}
-                        {{ session.started_at|date:"d.m.Y H:i" }}
-                    {% else %}
-                        -
-                    {% endif %}
+            <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px;">
+                <div
+                    style="
+                        display: inline-flex;
+                        align-items: center;
+                        min-height: 24px;
+                        padding: 2px 8px;
+                        border: 1px solid var(--line-2);
+                        background: var(--panel-3);
+                        color: var(--text);
+                        font-size: 11px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.04em;
+                        border-radius: var(--radius);
+                    "
+                >
+                    {{ session.get_focus_display }}
+                </div>
+
+                <div
+                    style="
+                        display: inline-flex;
+                        align-items: center;
+                        min-height: 24px;
+                        padding: 2px 8px;
+                        border: 1px solid var(--line-2);
+                        background: var(--panel-2);
+                        color: var(--text-soft);
+                        font-size: 11px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.04em;
+                        border-radius: var(--radius);
+                    "
+                >
+                    {{ session.get_status_display }}
                 </div>
             </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+            {% if session.source_pool %}
+                <div class="muted-compact">
+                    From pool: <strong style="color: var(--text);">{{ session.source_pool }}</strong>
+                </div>
+            {% endif %}
+
+            {% if session.started_at %}
+                <div class="muted-compact">
+                    Started {{ session.started_at|date:"d.m.Y H:i" }}
+                </div>
+            {% endif %}
         </div>
 
         <div class="action-group">

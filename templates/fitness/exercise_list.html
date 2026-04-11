@@ -79,7 +79,7 @@
 
 {% for exercise in exercises %}
     <div class="list-card panel-soft">
-        <div class="section-bar" style="margin-bottom: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
             <div>
                 <div class="list-card-title" style="margin-bottom: 2px;">{{ exercise.name }}</div>
                 <div class="muted-compact">
@@ -96,7 +96,7 @@
                     display: inline-flex;
                     align-items: center;
                     min-height: 24px;
-                    padding: 2px 6px;
+                    padding: 2px 8px;
                     border: 1px solid var(--line-2);
                     background: var(--panel-3);
                     color: var(--text);
@@ -111,26 +111,21 @@
             </div>
         </div>
 
-        <div class="meta-grid two-col">
-            <div>
-                <div class="meta-item-label">Pattern</div>
-                <div class="meta-item-value">{{ exercise.get_primary_pattern_display|default:"-" }}</div>
-            </div>
-
-            <div>
-                <div class="meta-item-label">Source</div>
-                <div class="meta-item-value">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+            <div class="muted-compact">
+                Source:
+                <strong style="color: var(--text);">
                     {% if exercise.created_by == request.user %}
                         Custom
                     {% else %}
                         System
                     {% endif %}
-                </div>
+                </strong>
             </div>
         </div>
 
-        <div class="action-group">
-            {% if exercise.created_by == request.user %}
+        {% if exercise.created_by == request.user %}
+            <div class="action-group">
                 <a href="{% url 'fitness:exercise-edit' exercise.pk %}" class="link-button">
                     Edit
                 </a>
@@ -147,10 +142,8 @@
                 {% else %}
                     <span class="muted">Inactive</span>
                 {% endif %}
-            {% else %}
-                <span class="muted">System exercise</span>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
     </div>
 {% empty %}
     <div class="list-card panel-soft">
