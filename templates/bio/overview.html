@@ -99,37 +99,33 @@
         </div>
     </div>
 
-    <div class="overview-tiles overview-tiles-strip">
+    <div class="section-kicker" style="margin-bottom: 6px;">7D insight</div>
+
+    <div class="overview-tiles overview-tiles-strip overview-tiles-strip-5">
         <div class="stat-tile stat-tile-quiet stat-tile-mini">
             <div class="stat-label">
                 <span class="stat-label-full">Weight</span>
                 <span class="stat-label-short">WGT</span>
             </div>
-            <div class="stat-subvalue stat-subvalue-compact">
-                {{ overview_analytics.trends.weight }}
-            </div>
+            <div class="stat-value">{{ overview_analytics.signal_symbols.weight }}</div>
         </div>
-    
+
         <div class="stat-tile stat-tile-quiet stat-tile-mini">
             <div class="stat-label">
                 <span class="stat-label-full">Sleep</span>
                 <span class="stat-label-short">SLP</span>
             </div>
-            <div class="stat-subvalue stat-subvalue-compact">
-                {{ overview_analytics.trends.sleep }}
-            </div>
+            <div class="stat-value">{{ overview_analytics.signal_symbols.sleep }}</div>
         </div>
-    
+
         <div class="stat-tile stat-tile-quiet stat-tile-mini">
             <div class="stat-label">
                 <span class="stat-label-full">Alcohol</span>
                 <span class="stat-label-short">ALC</span>
             </div>
-            <div class="stat-subvalue stat-subvalue-compact">
-                {{ overview_analytics.trends.alcohol }}
-            </div>
+            <div class="stat-value">{{ overview_analytics.signal_symbols.alcohol }}</div>
         </div>
-    
+
         <div class="stat-tile stat-tile-quiet stat-tile-mini">
             <div class="stat-label">
                 <span class="stat-label-full">Activity</span>
@@ -137,6 +133,21 @@
             </div>
             <div class="stat-value">{{ overview_analytics.summary.total_activity_minutes }}</div>
             <div class="stat-subvalue stat-subvalue-compact">min</div>
+        </div>
+
+        <div class="stat-tile stat-tile-quiet stat-tile-mini">
+            <div class="stat-label">
+                <span class="stat-label-full">Calories</span>
+                <span class="stat-label-short">KCAL</span>
+            </div>
+            <div class="stat-value">
+                {% if overview_analytics.summary.avg_calories_actual is not None %}
+                    {{ overview_analytics.summary.avg_calories_actual|floatformat:0 }}
+                {% else %}
+                    -
+                {% endif %}
+            </div>
+            <div class="stat-subvalue stat-subvalue-compact">avg</div>
         </div>
     </div>
 

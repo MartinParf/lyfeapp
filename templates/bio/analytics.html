@@ -35,47 +35,55 @@
     </div>
 </div>
 
-<div class="summary-tiles">
-    <div class="stat-tile summary-tile summary-tile-weight">
-        <div class="stat-label">Avg weight</div>
-        <div class="stat-value">
-            {% if analytics.summary.avg_weight is not None %}
-                {{ analytics.summary.avg_weight|floatformat:2 }}
-            {% else %}
-                -
-            {% endif %}
+<div class="section-kicker" style="margin-bottom: 6px;">{{ analytics.period_days }}D insight</div>
+
+<div class="overview-tiles overview-tiles-strip overview-tiles-strip-5" style="margin-bottom: 8px;">
+    <div class="stat-tile stat-tile-quiet stat-tile-mini">
+        <div class="stat-label">
+            <span class="stat-label-full">Weight</span>
+            <span class="stat-label-short">WGT</span>
         </div>
-        <div class="stat-subvalue">kg</div>
+        <div class="stat-value">{{ analytics.signal_symbols.weight }}</div>
     </div>
 
-    <div class="stat-tile summary-tile summary-tile-sleep">
-        <div class="stat-label">Avg sleep</div>
-        <div class="stat-value">
-            {% if analytics.summary.avg_sleep is not None %}
-                {{ analytics.summary.avg_sleep|floatformat:1 }}
-            {% else %}
-                -
-            {% endif %}
+    <div class="stat-tile stat-tile-quiet stat-tile-mini">
+        <div class="stat-label">
+            <span class="stat-label-full">Sleep</span>
+            <span class="stat-label-short">SLP</span>
         </div>
-        <div class="stat-subvalue">/5</div>
+        <div class="stat-value">{{ analytics.signal_symbols.sleep }}</div>
     </div>
 
-    <div class="stat-tile summary-tile summary-tile-alcohol">
-        <div class="stat-label">Avg alcohol</div>
-        <div class="stat-value">
-            {% if analytics.summary.avg_alcohol is not None %}
-                {{ analytics.summary.avg_alcohol|floatformat:1 }}
-            {% else %}
-                -
-            {% endif %}
+    <div class="stat-tile stat-tile-quiet stat-tile-mini">
+        <div class="stat-label">
+            <span class="stat-label-full">Alcohol</span>
+            <span class="stat-label-short">ALC</span>
         </div>
-        <div class="stat-subvalue">/10</div>
+        <div class="stat-value">{{ analytics.signal_symbols.alcohol }}</div>
     </div>
 
-    <div class="stat-tile summary-tile summary-tile-trend">
-        <div class="stat-label">Activity mins</div>
+    <div class="stat-tile stat-tile-quiet stat-tile-mini">
+        <div class="stat-label">
+            <span class="stat-label-full">Activity</span>
+            <span class="stat-label-short">ACT</span>
+        </div>
         <div class="stat-value">{{ analytics.summary.total_activity_minutes }}</div>
-        <div class="stat-subvalue">min</div>
+        <div class="stat-subvalue stat-subvalue-compact">min</div>
+    </div>
+
+    <div class="stat-tile stat-tile-quiet stat-tile-mini">
+        <div class="stat-label">
+            <span class="stat-label-full">Calories</span>
+            <span class="stat-label-short">KCAL</span>
+        </div>
+        <div class="stat-value">
+            {% if analytics.summary.avg_calories_actual is not None %}
+                {{ analytics.summary.avg_calories_actual|floatformat:0 }}
+            {% else %}
+                -
+            {% endif %}
+        </div>
+        <div class="stat-subvalue stat-subvalue-compact">avg</div>
     </div>
 </div>
 
@@ -159,6 +167,19 @@
                 <div class="meta-item-label">Calories</div>
                 <div class="meta-item-value">{{ analytics.summary.total_activity_calories }}</div>
             </div>
+
+            <div>
+                <div class="meta-item-label">Avg intake kcal</div>
+                <div class="meta-item-value">
+                    {% if analytics.summary.avg_calories_actual is not None %}
+                        {{ analytics.summary.avg_calories_actual|floatformat:0 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+
+            
         </div>
     </div>
 
@@ -203,6 +224,19 @@
                 <div class="meta-item-label">Activity mins</div>
                 <div class="meta-item-value">{{ analytics.previous_summary.total_activity_minutes }}</div>
             </div>
+
+            <div>
+                <div class="meta-item-label">Avg intake kcal</div>
+                <div class="meta-item-value">
+                    {% if analytics.previous_summary.avg_calories_actual is not None %}
+                        {{ analytics.previous_summary.avg_calories_actual|floatformat:0 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+
+
         </div>
     </div>
 </div>
@@ -272,6 +306,19 @@
                 {% endif %}
             </div>
         </div>
+
+        <div>
+            <div class="meta-item-label">Intake kcal delta</div>
+            <div class="meta-item-value">
+                {% if analytics.deltas.avg_calories_actual is not None %}
+                    {{ analytics.deltas.avg_calories_actual|floatformat:0 }}
+                {% else %}
+                    -
+                {% endif %}
+            </div>
+        </div>
+
+
     </div>
 </div>
 

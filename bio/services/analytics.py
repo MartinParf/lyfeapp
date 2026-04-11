@@ -84,6 +84,16 @@ def _activity_signal(label: str) -> str:
     return "no data"
 
 
+def _signal_symbol(signal: str) -> str:
+    if signal in {"increasing", "improving"}:
+        return "↑"
+    if signal in {"decreasing", "worsening"}:
+        return "↓"
+    if signal == "stable":
+        return "•"
+    return "–"
+
+
 def _consistency_breakdown(metric_days: int, active_days: int, period_days: int) -> dict[str, int]:
     if period_days <= 0:
         return {
@@ -201,10 +211,18 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
     avg_weight = _round_or_none(recent_metrics.aggregate(value=Avg("weight_kg"))["value"])
     avg_sleep = _round_or_none(recent_metrics.aggregate(value=Avg("sleep_quality"))["value"], 1)
     avg_alcohol = _round_or_none(recent_metrics.aggregate(value=Avg("alcohol_units"))["value"], 1)
+    avg_calories_actual = _round_or_none(
+        recent_metrics.exclude(calories_actual__isnull=True).aggregate(value=Avg("calories_actual"))["value"],
+        0,
+    )
 
     prev_avg_weight = _round_or_none(previous_metrics.aggregate(value=Avg("weight_kg"))["value"])
     prev_avg_sleep = _round_or_none(previous_metrics.aggregate(value=Avg("sleep_quality"))["value"], 1)
     prev_avg_alcohol = _round_or_none(previous_metrics.aggregate(value=Avg("alcohol_units"))["value"], 1)
+    prev_avg_calories_actual = _round_or_none(
+        previous_metrics.exclude(calories_actual__isnull=True).aggregate(value=Avg("calories_actual"))["value"],
+        0,
+    )
 
     total_activity_minutes = recent_activities.aggregate(value=Sum("duration_minutes"))["value"] or 0
     total_activity_calories = recent_activities.aggregate(value=Sum("calories_burned_est"))["value"] or 0
@@ -220,6 +238,11 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
     activity_trend_raw = _trend_label(float(total_activity_minutes), float(prev_total_activity_minutes), tolerance=20.0)
 
     consistency = _consistency_breakdown(metric_days, active_days, period_days)
+
+    weight_signal = _weight_signal(weight_trend_raw)
+    sleep_signal = _sleep_signal(sleep_trend_raw)
+    alcohol_signal = _alcohol_signal(alcohol_trend_raw)
+    activity_signal = _activity_signal(activity_trend_raw)
 
     insights = _build_insights(
         metric_days=metric_days,
@@ -250,6 +273,7 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
             "avg_weight": avg_weight,
             "avg_sleep": avg_sleep,
             "avg_alcohol": avg_alcohol,
+            "avg_calories_actual": avg_calories_actual,
             "total_activity_minutes": total_activity_minutes,
             "total_activity_calories": total_activity_calories,
             "total_distance": total_distance,
@@ -258,6 +282,7 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
             "avg_weight": prev_avg_weight,
             "avg_sleep": prev_avg_sleep,
             "avg_alcohol": prev_avg_alcohol,
+            "avg_calories_actual": prev_avg_calories_actual,
             "total_activity_minutes": prev_total_activity_minutes,
             "total_activity_calories": prev_total_activity_calories,
             "total_distance": prev_total_distance,
@@ -266,15 +291,21 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
             "avg_weight": _safe_delta(avg_weight, prev_avg_weight, 2),
             "avg_sleep": _safe_delta(avg_sleep, prev_avg_sleep, 1),
             "avg_alcohol": _safe_delta(avg_alcohol, prev_avg_alcohol, 1),
+            "avg_calories_actual": _safe_delta(avg_calories_actual, prev_avg_calories_actual, 0),
             "activity_minutes": _safe_delta(float(total_activity_minutes), float(prev_total_activity_minutes), 0),
             "activity_calories": _safe_delta(float(total_activity_calories), float(prev_total_activity_calories), 0),
             "distance": _safe_delta(total_distance, prev_total_distance, 2),
         },
         "trends": {
-            "weight": _weight_signal(weight_trend_raw),
-            "sleep": _sleep_signal(sleep_trend_raw),
-            "alcohol": _alcohol_signal(alcohol_trend_raw),
-            "activity": _activity_signal(activity_trend_raw),
+            "weight": weight_signal,
+            "sleep": sleep_signal,
+            "alcohol": alcohol_signal,
+            "activity": activity_signal,
+        },
+        "signal_symbols": {
+            "weight": _signal_symbol(weight_signal),
+            "sleep": _signal_symbol(sleep_signal),
+            "alcohol": _signal_symbol(alcohol_signal),
         },
         "consistency": consistency,
         "insights": insights,

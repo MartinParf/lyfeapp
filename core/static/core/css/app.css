@@ -2051,3 +2051,13 @@ input[type="button"] {
 :root[data-theme="dark"] .primary-button {
     color: #f8fbff;
 }
+/* 10.2b / 5-column compact insight strip */
+.overview-tiles-strip-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+@media (max-width: 768px) {
+    .overview-tiles-strip-5 {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
+    }
+}
