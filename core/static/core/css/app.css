@@ -111,10 +111,15 @@ body.mode-fitness {
     color: var(--text);
     background: var(--panel-3);
 }
-
+.theme-toggle {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    flex: 0 0 32px;
+}
 .theme-toggle svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
 }
 
 /* Logika skrývání ikon podle režimu */
@@ -251,7 +256,26 @@ td {
     gap: 10px;
     margin-bottom: 6px;
 }
-
+.app-utility {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    align-self: start;
+    white-space: nowrap;
+}
+.app-user-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1;
+}
 .app-brand {
     display: grid;
     gap: 2px;
@@ -1471,8 +1495,9 @@ button:focus-visible,
 
     .app-topbar {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 6px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        gap: 8px;
     }
 
     .card,
@@ -1640,6 +1665,19 @@ button:focus-visible,
     .list-card,
     .stat-tile {
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
+    }
+    .app-utility {
+        justify-items: end;
+    }
+    .app-utility {
+        gap: 6px;
+    }
+    .app-user-chip {
+        max-width: 88px;
+        padding: 0 8px;
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
    /* =========================================================
