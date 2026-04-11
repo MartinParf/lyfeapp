@@ -293,10 +293,13 @@ class ActivityDeleteView(LoginRequiredMixin, View):
 
 class BioOverviewView(LoginRequiredMixin, View):
     template_name = "bio/overview.html"
+    
 
     def get(self, request):
         today = timezone.localdate()
         cutoff = today - timedelta(days=7)
+
+        overview_analytics = build_bio_analytics(user=request.user, period_days=7)
 
         today_metric = (
             DailyMetric.objects
@@ -375,6 +378,7 @@ class BioOverviewView(LoginRequiredMixin, View):
             "activity_hint": activity_hint,
             "metric_days_count": metric_days_count,
             "activity_entries_count": activity_entries_count,
+            "overview_analytics": overview_analytics,
         }
 
         return render(request, self.template_name, context)
