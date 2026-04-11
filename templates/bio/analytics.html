@@ -87,83 +87,91 @@
     </div>
 </div>
 
-<div class="overview-content-grid">
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Main insight</div>
-        <div class="section-bar" style="margin-bottom: 8px;">
+<div class="overview-content-grid" style="margin-bottom: 8px;">
+    <div class="list-card {{ analytics.main_insight.panel_class }}">
+        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
             <div>
-                <div class="list-card-title" style="margin-bottom: 2px;">{{ analytics.main_insight.title }}</div>
+                <div class="section-kicker">{{ analytics.main_insight.kicker }}</div>
+                <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.main_insight.title }}</div>
             </div>
-
-            {% if analytics.main_insight.tone == "positive" %}
-                <div class="status-chip status-chip-good">Positive</div>
-            {% elif analytics.main_insight.tone == "warning" %}
-                <div class="status-chip status-chip-bad">Warning</div>
-            {% else %}
-                <div class="status-chip status-chip-warn">Neutral</div>
+            {% if analytics.main_insight.badge %}
+                <span class="link-button" style="pointer-events: none;">{{ analytics.main_insight.badge }}</span>
             {% endif %}
         </div>
 
         <div class="muted">{{ analytics.main_insight.body }}</div>
+
+        {% if analytics.main_insight.supporting %}
+            <div class="muted-compact" style="margin-top: 6px;">{{ analytics.main_insight.supporting }}</div>
+        {% endif %}
     </div>
 
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Next action</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">{{ analytics.next_action.label }}</div>
-        <div class="muted">{{ analytics.next_action.reason }}</div>
+    <div class="list-card {{ analytics.next_action.panel_class }}">
+        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+                <div class="section-kicker">{{ analytics.next_action.kicker }}</div>
+                <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.next_action.title }}</div>
+            </div>
+            {% if analytics.next_action.badge %}
+                <span class="link-button" style="pointer-events: none;">{{ analytics.next_action.badge }}</span>
+            {% endif %}
+        </div>
+
+        <div class="muted">{{ analytics.next_action.body }}</div>
+
+        {% if analytics.next_action.supporting %}
+            <div class="muted-compact" style="margin-top: 6px;">{{ analytics.next_action.supporting }}</div>
+        {% endif %}
     </div>
 </div>
 
-<div class="overview-content-grid">
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Weekly summary</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">{{ analytics.weekly_summary.title }}</div>
-        <div class="muted">{{ analytics.weekly_summary.body }}</div>
+<div class="overview-content-grid" style="margin-bottom: 8px;">
+    <div class="list-card {{ analytics.weekly_summary_card.panel_class }}">
+        <div class="section-kicker">{{ analytics.weekly_summary_card.kicker }}</div>
+        <div class="list-card-title" style="margin-bottom: 8px;">{{ analytics.weekly_summary_card.title }}</div>
+        <div class="muted">{{ analytics.weekly_summary_card.body }}</div>
     </div>
 
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Consistency</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">Score breakdown</div>
+    <div class="list-card {{ analytics.consistency_card.panel_class }}">
+        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+                <div class="section-kicker">{{ analytics.consistency_card.kicker }}</div>
+                <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.consistency_card.title }}</div>
+            </div>
+            {% if analytics.consistency_card.badge %}
+                <span class="link-button" style="pointer-events: none;">{{ analytics.consistency_card.badge }}</span>
+            {% endif %}
+        </div>
 
         <div class="meta-grid two-col" style="margin-bottom: 0;">
-            <div>
-                <div class="meta-item-label">Metric score</div>
-                <div class="meta-item-value">{{ analytics.consistency.metric_score }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Activity score</div>
-                <div class="meta-item-value">{{ analytics.consistency.activity_score }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Overall score</div>
-                <div class="meta-item-value">{{ analytics.consistency.overall_score }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Active days</div>
-                <div class="meta-item-value">{{ analytics.summary.active_days }}</div>
-            </div>
+            {% for row in analytics.consistency_card.meta_rows %}
+                <div>
+                    <div class="meta-item-label">{{ row.label }}</div>
+                    <div class="meta-item-value">{{ row.value }}</div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<div class="overview-content-grid">
-    {% for item in analytics.secondary_insights %}
-        <div class="list-card panel-soft">
-            <div class="section-kicker">Secondary insight</div>
-            <div class="section-bar" style="margin-bottom: 8px;">
+<div class="overview-content-grid" style="margin-bottom: 8px;">
+    {% for card in analytics.secondary_insights %}
+        <div class="list-card {{ card.panel_class }}">
+            <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                 <div>
-                    <div class="list-card-title" style="margin-bottom: 2px;">{{ item.label }}</div>
-                    <div class="muted-compact">{{ item.note }}</div>
+                    <div class="section-kicker">{{ card.kicker }}</div>
+                    <div class="list-card-title" style="margin-bottom: 0;">{{ card.title }}</div>
                 </div>
-
-                {% if item.tone == "positive" %}
-                    <div class="status-chip status-chip-good">{{ item.value }}</div>
-                {% elif item.tone == "warning" %}
-                    <div class="status-chip status-chip-bad">{{ item.value }}</div>
-                {% else %}
-                    <div class="status-chip status-chip-warn">{{ item.value }}</div>
+                {% if card.badge %}
+                    <span class="link-button" style="pointer-events: none;">{{ card.badge }}</span>
                 {% endif %}
             </div>
+
+            <div class="muted">{{ card.body }}</div>
+
+            {% if card.supporting %}
+                <div class="muted-compact" style="margin-top: 6px;">{{ card.supporting }}</div>
+            {% endif %}
         </div>
     {% endfor %}
 </div>
@@ -189,10 +197,6 @@
             <div>
                 <div class="meta-item-label">Activity</div>
                 <div class="meta-item-value">{{ analytics.trends.activity }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Intake kcal</div>
-                <div class="meta-item-value">{{ analytics.trends.kcal }}</div>
             </div>
         </div>
     </div>
@@ -243,16 +247,6 @@
                 </div>
             </div>
             <div>
-                <div class="meta-item-label">Intake kcal delta</div>
-                <div class="meta-item-value">
-                    {% if analytics.deltas.avg_calories_actual is not None %}
-                        {{ analytics.deltas.avg_calories_actual|floatformat:0 }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </div>
-            </div>
-            <div>
                 <div class="meta-item-label">Distance delta</div>
                 <div class="meta-item-value">
                     {% if analytics.deltas.distance is not None %}
@@ -262,103 +256,11 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="overview-content-grid">
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Recent window</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">
-            {{ analytics.window.recent_start|date:"d.m.Y" }} — {{ analytics.window.recent_end|date:"d.m.Y" }}
-        </div>
-
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
             <div>
-                <div class="meta-item-label">Metric days</div>
-                <div class="meta-item-value">{{ analytics.summary.metric_days }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Activity entries</div>
-                <div class="meta-item-value">{{ analytics.summary.activity_entries }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Distance</div>
+                <div class="meta-item-label">Intake kcal delta</div>
                 <div class="meta-item-value">
-                    {% if analytics.summary.total_distance is not None %}
-                        {{ analytics.summary.total_distance|floatformat:2 }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </div>
-            </div>
-            <div>
-                <div class="meta-item-label">Activity calories</div>
-                <div class="meta-item-value">{{ analytics.summary.total_activity_calories }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Avg intake kcal</div>
-                <div class="meta-item-value">
-                    {% if analytics.summary.avg_calories_actual is not None %}
-                        {{ analytics.summary.avg_calories_actual|floatformat:0 }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Previous window</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">
-            {{ analytics.window.previous_start|date:"d.m.Y" }} — {{ analytics.window.previous_end|date:"d.m.Y" }}
-        </div>
-
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
-            <div>
-                <div class="meta-item-label">Metric days</div>
-                <div class="meta-item-value">{{ analytics.previous_summary.metric_days }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Active days</div>
-                <div class="meta-item-value">{{ analytics.previous_summary.active_days }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Avg weight</div>
-                <div class="meta-item-value">
-                    {% if analytics.previous_summary.avg_weight is not None %}
-                        {{ analytics.previous_summary.avg_weight|floatformat:2 }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </div>
-            </div>
-            <div>
-                <div class="meta-item-label">Avg sleep</div>
-                <div class="meta-item-value">
-                    {% if analytics.previous_summary.avg_sleep is not None %}
-                        {{ analytics.previous_summary.avg_sleep|floatformat:1 }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </div>
-            </div>
-            <div>
-                <div class="meta-item-label">Avg alcohol</div>
-                <div class="meta-item-value">
-                    {% if analytics.previous_summary.avg_alcohol is not None %}
-                        {{ analytics.previous_summary.avg_alcohol|floatformat:1 }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </div>
-            </div>
-            <div>
-                <div class="meta-item-label">Avg intake kcal</div>
-                <div class="meta-item-value">
-                    {% if analytics.previous_summary.avg_calories_actual is not None %}
-                        {{ analytics.previous_summary.avg_calories_actual|floatformat:0 }}
+                    {% if analytics.deltas.avg_calories_actual is not None %}
+                        {{ analytics.deltas.avg_calories_actual|floatformat:0 }}
                     {% else %}
                         -
                     {% endif %}

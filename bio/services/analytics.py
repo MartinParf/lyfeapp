@@ -44,46 +44,44 @@ def _trend_label(current: float | None, previous: float | None, tolerance: float
     return "up" if delta > 0 else "down"
 
 
-def _metric_signal(label: str, metric: str) -> str:
-    if label in {"no_data", "insufficient_data"}:
-        return "insufficient data"
-
-    if metric == "weight":
-        if label == "up":
-            return "increasing"
-        if label == "down":
-            return "decreasing"
+def _weight_signal(label: str) -> str:
+    if label == "down":
+        return "decreasing"
+    if label == "up":
+        return "increasing"
+    if label == "stable":
         return "stable"
+    return "no data"
 
-    if metric == "sleep":
-        if label == "up":
-            return "improving"
-        if label == "down":
-            return "worsening"
+
+def _sleep_signal(label: str) -> str:
+    if label == "up":
+        return "improving"
+    if label == "down":
+        return "worsening"
+    if label == "stable":
         return "stable"
+    return "no data"
 
-    if metric == "alcohol":
-        if label == "down":
-            return "improving"
-        if label == "up":
-            return "worsening"
+
+def _alcohol_signal(label: str) -> str:
+    if label == "down":
+        return "improving"
+    if label == "up":
+        return "worsening"
+    if label == "stable":
         return "stable"
+    return "no data"
 
-    if metric == "activity":
-        if label == "up":
-            return "increasing"
-        if label == "down":
-            return "decreasing"
+
+def _activity_signal(label: str) -> str:
+    if label == "up":
+        return "increasing"
+    if label == "down":
+        return "decreasing"
+    if label == "stable":
         return "stable"
-
-    if metric == "kcal":
-        if label == "up":
-            return "increasing"
-        if label == "down":
-            return "decreasing"
-        return "stable"
-
-    return "stable"
+    return "no data"
 
 
 def _signal_symbol(signal: str) -> str:
@@ -115,221 +113,344 @@ def _consistency_breakdown(metric_days: int, active_days: int, period_days: int)
     }
 
 
-def _has_metric_baseline(recent_metric_days: int, previous_metric_days: int) -> bool:
-    return recent_metric_days >= 2 and previous_metric_days >= 2
+def _panel_class(tone: str) -> str:
+    if tone == "good":
+        return "panel-success"
+    if tone == "warn":
+        return "panel-warning"
+    if tone == "danger":
+        return "panel-danger"
+    return "panel-soft"
 
 
-def _has_activity_baseline(recent_active_days: int, previous_active_days: int) -> bool:
-    return recent_active_days >= 1 and previous_active_days >= 1
-
-
-def _build_trend(
+def _build_card(
     *,
-    metric: str,
-    recent_value: float | None,
-    previous_value: float | None,
-    tolerance: float,
-    sufficient: bool,
+    kicker: str,
+    title: str,
+    body: str,
+    badge: str | None = None,
+    tone: str = "neutral",
+    supporting: str | None = None,
+    meta_rows: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    if not sufficient:
-        state = "insufficient_data"
-        signal = "insufficient data"
-        symbol = "–"
-        delta = None
-    else:
-        state = _trend_label(recent_value, previous_value, tolerance=tolerance)
-        signal = _metric_signal(state, metric)
-        symbol = _signal_symbol(signal)
-        delta = _safe_delta(recent_value, previous_value, 2)
-
     return {
-        "metric": metric,
-        "recent": recent_value,
-        "previous": previous_value,
-        "delta": delta,
-        "state": state,
-        "signal": signal,
-        "symbol": symbol,
-        "sufficient": sufficient,
+        "kicker": kicker,
+        "title": title,
+        "body": body,
+        "badge": badge,
+        "tone": tone,
+        "panel_class": _panel_class(tone),
+        "supporting": supporting,
+        "meta_rows": meta_rows or [],
     }
 
 
-def _fmt(value: float | None, digits: int = 1, suffix: str = "") -> str:
-    if value is None:
-        return "—"
-    return f"{value:.{digits}f}{suffix}"
-
-
-def _main_insight(
+def _build_main_insight(
     *,
     consistency_score: int,
-    weight_trend: dict[str, Any],
-    sleep_trend: dict[str, Any],
-    alcohol_trend: dict[str, Any],
-    activity_trend: dict[str, Any],
-    kcal_trend: dict[str, Any],
-    metric_days: int,
-) -> dict[str, str]:
-    if consistency_score < 50 or metric_days <= 2:
-        return {
-            "title": "Baseline is still thin",
-            "body": "Current tracking is not dense enough yet for confident interpretation. Keep logging daily metrics first.",
-            "tone": "neutral",
-        }
+    sleep_signal: str,
+    alcohol_signal: str,
+    activity_signal: str,
+    total_activity_minutes: int,
+) -> dict[str, Any]:
+    if consistency_score < 45:
+        return _build_card(
+            kicker="Main insight",
+            title="Tracking baseline is still thin",
+            body="The current window still has visible gaps, so interpretation confidence is limited.",
+            badge="LIMITED",
+            tone="warn",
+        )
 
-    if sleep_trend["signal"] == "worsening" and alcohol_trend["signal"] == "worsening":
-        return {
-            "title": "Recovery signal weakened",
-            "body": "Sleep quality worsened while alcohol trend also moved in the wrong direction versus the previous window.",
-            "tone": "warning",
-        }
+    if sleep_signal == "worsening" and alcohol_signal == "worsening":
+        return _build_card(
+            kicker="Main insight",
+            title="Recovery pressure is building",
+            body="Sleep quality and alcohol trend are both moving in the wrong direction versus the previous window.",
+            badge="DEGRADED",
+            tone="warn",
+        )
 
-    if kcal_trend["signal"] == "increasing" and weight_trend["signal"] == "increasing":
-        return {
-            "title": "Intake and bodyweight both moved up",
-            "body": "Average calorie intake is rising and bodyweight is moving up in the same window.",
-            "tone": "warning",
-        }
+    if activity_signal == "decreasing" and total_activity_minutes < 150:
+        return _build_card(
+            kicker="Main insight",
+            title="Movement rhythm is fading",
+            body="The recent window shows lower movement volume, so momentum looks weaker than before.",
+            badge="SOFTER",
+            tone="warn",
+        )
 
-    if activity_trend["signal"] == "decreasing" and consistency_score < 70:
-        return {
-            "title": "Routine momentum softened",
-            "body": "Movement volume dropped and tracking consistency is not yet strong enough to call this stable.",
-            "tone": "warning",
-        }
+    if sleep_signal == "improving" and alcohol_signal == "improving":
+        return _build_card(
+            kicker="Main insight",
+            title="Recovery signals are improving",
+            body="Sleep and alcohol direction both support a cleaner recent window than the previous one.",
+            badge="IMPROVING",
+            tone="good",
+        )
 
-    if sleep_trend["signal"] == "improving" and alcohol_trend["signal"] == "improving":
-        return {
-            "title": "Recovery trend improved",
-            "body": "Sleep improved while alcohol moved in the right direction compared with the previous window.",
-            "tone": "positive",
-        }
-
-    if activity_trend["signal"] == "increasing" and sleep_trend["signal"] in {"stable", "improving"}:
-        return {
-            "title": "Movement rhythm looks stronger",
-            "body": "Activity minutes increased without a visible negative recovery signal in sleep.",
-            "tone": "positive",
-        }
-
-    return {
-        "title": "Signals are mostly stable",
-        "body": "No dominant shift stands out in the current window, so the baseline looks relatively steady.",
-        "tone": "neutral",
-    }
+    return _build_card(
+        kicker="Main insight",
+        title="Signals are mostly stable",
+        body="No dominant shift stands out in the current window, so the baseline looks relatively steady.",
+        badge="NEUTRAL",
+        tone="neutral",
+    )
 
 
-def _secondary_insights(
+def _build_next_action(
     *,
-    weight_trend: dict[str, Any],
-    sleep_trend: dict[str, Any],
-    alcohol_trend: dict[str, Any],
-    activity_trend: dict[str, Any],
-    kcal_trend: dict[str, Any],
+    period_days: int,
+    metric_days: int,
+    active_days: int,
+    sleep_signal: str,
+    avg_alcohol: float | None,
+    activity_signal: str,
+) -> dict[str, Any]:
+    minimum_metric_days = max(4, round(period_days * 0.6))
+    minimum_active_days = max(2, round(period_days * 0.3))
+
+    if metric_days < minimum_metric_days:
+        return _build_card(
+            kicker="Next action",
+            title="Increase daily metric coverage",
+            body="Add more daily metric entries first. Better coverage will improve every downstream signal.",
+            badge="TRACKING",
+            tone="warn",
+        )
+
+    if active_days < minimum_active_days:
+        return _build_card(
+            kicker="Next action",
+            title="Add another movement day",
+            body="Movement frequency is still light for the selected window, so add one more active day before reading too much into trends.",
+            badge="ACTIVITY",
+            tone="warn",
+        )
+
+    if sleep_signal == "worsening" and (avg_alcohol is not None and avg_alcohol >= 4):
+        return _build_card(
+            kicker="Next action",
+            title="Protect sleep first",
+            body="Reduce alcohol exposure and stabilize evening routine before pushing volume or adding more variables.",
+            badge="RECOVERY",
+            tone="warn",
+        )
+
+    if activity_signal == "decreasing":
+        return _build_card(
+            kicker="Next action",
+            title="Rebuild movement rhythm",
+            body="Keep the baseline simple and bring movement minutes back up before changing anything more advanced.",
+            badge="RHYTHM",
+            tone="neutral",
+        )
+
+    return _build_card(
+        kicker="Next action",
+        title="Stabilize the routine",
+        body="The current baseline is usable, but more consistent tracking and movement rhythm will improve signal quality.",
+        badge="BASELINE",
+        tone="neutral",
+    )
+
+
+def _build_weekly_summary_card(
+    *,
+    period_days: int,
+    metric_days: int,
+    active_days: int,
+    total_activity_minutes: int,
+    avg_calories_actual: float | None,
+) -> dict[str, Any]:
+    summary = (
+        f"{metric_days}/{period_days} metric days, "
+        f"{active_days} active days, "
+        f"{total_activity_minutes} movement min"
+    )
+    if avg_calories_actual is not None:
+        summary += f", avg intake {int(avg_calories_actual)} kcal."
+
+    return _build_card(
+        kicker="Weekly summary",
+        title=f"{period_days}-day summary",
+        body=summary,
+        tone="neutral",
+    )
+
+
+def _build_consistency_card(
+    *,
+    consistency: dict[str, int],
+    active_days: int,
+) -> dict[str, Any]:
+    overall = consistency["overall_score"]
+    tone = "good" if overall >= 75 else "neutral" if overall >= 50 else "warn"
+    badge = "STRONG" if overall >= 75 else "USABLE" if overall >= 50 else "SPARSE"
+
+    return _build_card(
+        kicker="Consistency",
+        title="Score breakdown",
+        body="How reliable the current window is for interpretation.",
+        badge=badge,
+        tone=tone,
+        meta_rows=[
+            {"label": "Metric score", "value": consistency["metric_score"]},
+            {"label": "Activity score", "value": consistency["activity_score"]},
+            {"label": "Overall score", "value": consistency["overall_score"]},
+            {"label": "Active days", "value": active_days},
+        ],
+    )
+
+
+def _build_weight_card(
+    *,
     avg_weight: float | None,
     prev_avg_weight: float | None,
+    weight_signal: str,
+) -> dict[str, Any]:
+    if avg_weight is None or prev_avg_weight is None:
+        return _build_card(
+            kicker="Secondary insight",
+            title="Weight",
+            body="Not enough paired windows yet for a reliable weight comparison.",
+            badge="INSUFFICIENT DATA",
+            tone="warn",
+        )
+
+    badge_map = {
+        "increasing": "INCREASING",
+        "decreasing": "DECREASING",
+        "stable": "STABLE",
+    }
+
+    return _build_card(
+        kicker="Secondary insight",
+        title="Weight",
+        body=f"{avg_weight:.2f} kg vs {prev_avg_weight:.2f} kg",
+        badge=badge_map.get(weight_signal, "INSUFFICIENT DATA"),
+        tone="neutral" if weight_signal != "stable" else "good",
+    )
+
+
+def _build_recovery_card(
+    *,
     avg_sleep: float | None,
     prev_avg_sleep: float | None,
     avg_alcohol: float | None,
     prev_avg_alcohol: float | None,
+    sleep_signal: str,
+    alcohol_signal: str,
+) -> dict[str, Any]:
+    if (
+        avg_sleep is None
+        or prev_avg_sleep is None
+        or avg_alcohol is None
+        or prev_avg_alcohol is None
+    ):
+        return _build_card(
+            kicker="Secondary insight",
+            title="Recovery",
+            body="Not enough paired sleep and alcohol windows yet for a recovery comparison.",
+            badge="INSUFFICIENT DATA",
+            tone="warn",
+        )
+
+    if sleep_signal == "improving" and alcohol_signal == "improving":
+        badge = "IMPROVING"
+        tone = "good"
+    elif sleep_signal == "worsening" and alcohol_signal == "worsening":
+        badge = "DEGRADED"
+        tone = "warn"
+    elif sleep_signal == "stable" and alcohol_signal == "stable":
+        badge = "STABLE"
+        tone = "neutral"
+    else:
+        badge = "MIXED"
+        tone = "neutral"
+
+    return _build_card(
+        kicker="Secondary insight",
+        title="Recovery",
+        body=(
+            f"Sleep {avg_sleep:.1f} / Alcohol {avg_alcohol:.1f} "
+            f"vs {prev_avg_sleep:.1f} / {prev_avg_alcohol:.1f}"
+        ),
+        badge=badge,
+        tone=tone,
+    )
+
+
+def _build_activity_card(
+    *,
     total_activity_minutes: int,
     prev_total_activity_minutes: int,
+    activity_signal: str,
+) -> dict[str, Any]:
+    badge_map = {
+        "increasing": "INCREASING",
+        "decreasing": "DECREASING",
+        "stable": "STABLE",
+    }
+
+    tone = "good" if activity_signal == "increasing" else "warn" if activity_signal == "decreasing" else "neutral"
+
+    return _build_card(
+        kicker="Secondary insight",
+        title="Activity",
+        body=f"{total_activity_minutes} min vs {prev_total_activity_minutes} min",
+        badge=badge_map.get(activity_signal, "NO DATA"),
+        tone=tone,
+    )
+
+
+def _build_intake_card(
+    *,
     avg_calories_actual: float | None,
     prev_avg_calories_actual: float | None,
-) -> list[dict[str, str]]:
-    recovery_value = "mixed"
-    recovery_tone = "neutral"
+    intake_trend_raw: str,
+) -> dict[str, Any]:
+    if avg_calories_actual is None or prev_avg_calories_actual is None:
+        return _build_card(
+            kicker="Secondary insight",
+            title="Intake",
+            body="Not enough paired calorie windows yet for an intake comparison.",
+            badge="INSUFFICIENT DATA",
+            tone="warn",
+        )
 
-    if sleep_trend["signal"] == "improving" and alcohol_trend["signal"] == "improving":
-        recovery_value = "improving"
-        recovery_tone = "positive"
-    elif sleep_trend["signal"] == "worsening" or alcohol_trend["signal"] == "worsening":
-        recovery_value = "attention"
-        recovery_tone = "warning"
-    elif sleep_trend["signal"] == "stable" and alcohol_trend["signal"] == "stable":
-        recovery_value = "stable"
-        recovery_tone = "neutral"
+    badge_map = {
+        "up": "HIGHER",
+        "down": "LOWER",
+        "stable": "STABLE",
+    }
 
-    return [
-        {
-            "label": "Weight",
-            "value": weight_trend["signal"],
-            "note": f"{_fmt(avg_weight, 2, ' kg')} vs {_fmt(prev_avg_weight, 2, ' kg')}",
-            "tone": "neutral",
-        },
-        {
-            "label": "Recovery",
-            "value": recovery_value,
-            "note": f"Sleep {_fmt(avg_sleep, 1)} / Alcohol {_fmt(avg_alcohol, 1)} vs {_fmt(prev_avg_sleep, 1)} / {_fmt(prev_avg_alcohol, 1)}",
-            "tone": recovery_tone,
-        },
-        {
-            "label": "Activity",
-            "value": activity_trend["signal"],
-            "note": f"{total_activity_minutes} min vs {prev_total_activity_minutes} min",
-            "tone": "positive" if activity_trend["signal"] == "increasing" else "warning" if activity_trend["signal"] == "decreasing" else "neutral",
-        },
-        {
-            "label": "Intake",
-            "value": kcal_trend["signal"],
-            "note": f"{_fmt(avg_calories_actual, 0, ' kcal')} vs {_fmt(prev_avg_calories_actual, 0, ' kcal')}",
-            "tone": "neutral",
-        },
+    return _build_card(
+        kicker="Secondary insight",
+        title="Intake",
+        body=f"{int(avg_calories_actual)} kcal vs {int(prev_avg_calories_actual)} kcal",
+        badge=badge_map.get(intake_trend_raw, "INSUFFICIENT DATA"),
+        tone="neutral",
+    )
+
+
+def _build_legacy_insights(
+    *,
+    main_insight: dict[str, Any],
+    next_action: dict[str, Any],
+    weekly_summary_card: dict[str, Any],
+    secondary_insights: list[dict[str, Any]],
+) -> list[str]:
+    insights = [
+        f"{main_insight['title']}: {main_insight['body']}",
+        f"{next_action['title']}: {next_action['body']}",
+        f"{weekly_summary_card['title']}: {weekly_summary_card['body']}",
     ]
 
+    for card in secondary_insights:
+        insights.append(f"{card['title']}: {card['body']}")
 
-def _next_action(
-    *,
-    metric_days: int,
-    active_days: int,
-    avg_calories_actual: float | None,
-    sleep_trend: dict[str, Any],
-    alcohol_trend: dict[str, Any],
-    activity_trend: dict[str, Any],
-    kcal_trend: dict[str, Any],
-    weight_trend: dict[str, Any],
-    consistency_score: int,
-) -> dict[str, str]:
-    if metric_days < 4:
-        return {
-            "label": "Log more daily metrics",
-            "reason": "This week still needs more body and recovery entries before deeper trend interpretation becomes reliable.",
-        }
-
-    if avg_calories_actual is None:
-        return {
-            "label": "Track actual calorie intake more often",
-            "reason": "Calories are missing too often to connect intake with bodyweight, sleep, and recovery patterns.",
-        }
-
-    if sleep_trend["signal"] == "worsening" and alcohol_trend["signal"] == "worsening":
-        return {
-            "label": "Prioritize recovery this week",
-            "reason": "Sleep is worsening and alcohol trend also moved in the wrong direction.",
-        }
-
-    if weight_trend["signal"] == "increasing" and kcal_trend["signal"] == "increasing":
-        return {
-            "label": "Review intake trend",
-            "reason": "Average calorie intake and bodyweight are both moving up in the same window.",
-        }
-
-    if activity_trend["signal"] == "decreasing" and active_days < 3:
-        return {
-            "label": "Add one more activity day",
-            "reason": "Movement volume dropped and the current week would benefit from one more simple activity block.",
-        }
-
-    if consistency_score < 70:
-        return {
-            "label": "Stabilize the routine",
-            "reason": "The current baseline is usable, but more consistent tracking and movement rhythm will improve signal quality.",
-        }
-
-    return {
-        "label": "Stay consistent",
-        "reason": "Current signals do not show a major problem, so the best move is to maintain the routine for another week.",
-    }
+    return insights[:6]
 
 
 def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
@@ -362,11 +483,8 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
     )
 
     metric_days = recent_metrics.count()
-    previous_metric_days = previous_metrics.count()
-
     activity_entries = recent_activities.count()
     active_days = recent_activities.values("date").distinct().count()
-    previous_active_days = previous_activities.values("date").distinct().count()
 
     avg_weight = _round_or_none(recent_metrics.aggregate(value=Avg("weight_kg"))["value"])
     avg_sleep = _round_or_none(recent_metrics.aggregate(value=Avg("sleep_quality"))["value"], 1)
@@ -392,98 +510,81 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
     prev_total_activity_calories = previous_activities.aggregate(value=Sum("calories_burned_est"))["value"] or 0
     prev_total_distance = _round_or_none(previous_activities.aggregate(value=Sum("distance_km"))["value"])
 
-    metric_baseline_ok = _has_metric_baseline(metric_days, previous_metric_days)
-    activity_baseline_ok = _has_activity_baseline(active_days, previous_active_days)
-
-    weight_trend = _build_trend(
-        metric="weight",
-        recent_value=avg_weight,
-        previous_value=prev_avg_weight,
-        tolerance=0.25,
-        sufficient=metric_baseline_ok,
-    )
-    sleep_trend = _build_trend(
-        metric="sleep",
-        recent_value=avg_sleep,
-        previous_value=prev_avg_sleep,
-        tolerance=0.30,
-        sufficient=metric_baseline_ok,
-    )
-    alcohol_trend = _build_trend(
-        metric="alcohol",
-        recent_value=avg_alcohol,
-        previous_value=prev_avg_alcohol,
-        tolerance=0.50,
-        sufficient=metric_baseline_ok,
-    )
-    activity_trend = _build_trend(
-        metric="activity",
-        recent_value=float(total_activity_minutes),
-        previous_value=float(prev_total_activity_minutes),
-        tolerance=45.0,
-        sufficient=activity_baseline_ok,
-    )
-    kcal_trend = _build_trend(
-        metric="kcal",
-        recent_value=avg_calories_actual,
-        previous_value=prev_avg_calories_actual,
-        tolerance=150.0,
-        sufficient=metric_baseline_ok,
-    )
+    weight_trend_raw = _trend_label(avg_weight, prev_avg_weight, tolerance=0.15)
+    sleep_trend_raw = _trend_label(avg_sleep, prev_avg_sleep, tolerance=0.2)
+    alcohol_trend_raw = _trend_label(avg_alcohol, prev_avg_alcohol, tolerance=0.25)
+    activity_trend_raw = _trend_label(float(total_activity_minutes), float(prev_total_activity_minutes), tolerance=20.0)
+    intake_trend_raw = _trend_label(avg_calories_actual, prev_avg_calories_actual, tolerance=75.0)
 
     consistency = _consistency_breakdown(metric_days, active_days, period_days)
 
-    main_insight = _main_insight(
+    weight_signal = _weight_signal(weight_trend_raw)
+    sleep_signal = _sleep_signal(sleep_trend_raw)
+    alcohol_signal = _alcohol_signal(alcohol_trend_raw)
+    activity_signal = _activity_signal(activity_trend_raw)
+
+    main_insight = _build_main_insight(
         consistency_score=consistency["overall_score"],
-        weight_trend=weight_trend,
-        sleep_trend=sleep_trend,
-        alcohol_trend=alcohol_trend,
-        activity_trend=activity_trend,
-        kcal_trend=kcal_trend,
-        metric_days=metric_days,
-    )
-
-    secondary_insights = _secondary_insights(
-        weight_trend=weight_trend,
-        sleep_trend=sleep_trend,
-        alcohol_trend=alcohol_trend,
-        activity_trend=activity_trend,
-        kcal_trend=kcal_trend,
-        avg_weight=avg_weight,
-        prev_avg_weight=prev_avg_weight,
-        avg_sleep=avg_sleep,
-        prev_avg_sleep=prev_avg_sleep,
-        avg_alcohol=avg_alcohol,
-        prev_avg_alcohol=prev_avg_alcohol,
+        sleep_signal=sleep_signal,
+        alcohol_signal=alcohol_signal,
+        activity_signal=activity_signal,
         total_activity_minutes=total_activity_minutes,
-        prev_total_activity_minutes=prev_total_activity_minutes,
-        avg_calories_actual=avg_calories_actual,
-        prev_avg_calories_actual=prev_avg_calories_actual,
     )
 
-    next_action = _next_action(
+    next_action = _build_next_action(
+        period_days=period_days,
         metric_days=metric_days,
         active_days=active_days,
-        avg_calories_actual=avg_calories_actual,
-        sleep_trend=sleep_trend,
-        alcohol_trend=alcohol_trend,
-        activity_trend=activity_trend,
-        kcal_trend=kcal_trend,
-        weight_trend=weight_trend,
-        consistency_score=consistency["overall_score"],
+        sleep_signal=sleep_signal,
+        avg_alcohol=avg_alcohol,
+        activity_signal=activity_signal,
     )
 
-    weekly_summary = {
-        "title": f"{period_days}-day summary",
-        "body": (
-            f"{metric_days}/{period_days} metric days, "
-            f"{active_days} active days, "
-            f"{total_activity_minutes} movement min, "
-            f"avg intake {_fmt(avg_calories_actual, 0, ' kcal')}."
-        ),
-    }
+    weekly_summary_card = _build_weekly_summary_card(
+        period_days=period_days,
+        metric_days=metric_days,
+        active_days=active_days,
+        total_activity_minutes=total_activity_minutes,
+        avg_calories_actual=avg_calories_actual,
+    )
 
-    insights = [main_insight["body"]] + [item["note"] for item in secondary_insights]
+    consistency_card = _build_consistency_card(
+        consistency=consistency,
+        active_days=active_days,
+    )
+
+    secondary_insights = [
+        _build_weight_card(
+            avg_weight=avg_weight,
+            prev_avg_weight=prev_avg_weight,
+            weight_signal=weight_signal,
+        ),
+        _build_recovery_card(
+            avg_sleep=avg_sleep,
+            prev_avg_sleep=prev_avg_sleep,
+            avg_alcohol=avg_alcohol,
+            prev_avg_alcohol=prev_avg_alcohol,
+            sleep_signal=sleep_signal,
+            alcohol_signal=alcohol_signal,
+        ),
+        _build_activity_card(
+            total_activity_minutes=total_activity_minutes,
+            prev_total_activity_minutes=prev_total_activity_minutes,
+            activity_signal=activity_signal,
+        ),
+        _build_intake_card(
+            avg_calories_actual=avg_calories_actual,
+            prev_avg_calories_actual=prev_avg_calories_actual,
+            intake_trend_raw=intake_trend_raw,
+        ),
+    ]
+
+    insights = _build_legacy_insights(
+        main_insight=main_insight,
+        next_action=next_action,
+        weekly_summary_card=weekly_summary_card,
+        secondary_insights=secondary_insights,
+    )
 
     return {
         "period_days": period_days,
@@ -506,8 +607,6 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
             "total_distance": total_distance,
         },
         "previous_summary": {
-            "metric_days": previous_metric_days,
-            "active_days": previous_active_days,
             "avg_weight": prev_avg_weight,
             "avg_sleep": prev_avg_sleep,
             "avg_alcohol": prev_avg_alcohol,
@@ -525,30 +624,22 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
             "activity_calories": _safe_delta(float(total_activity_calories), float(prev_total_activity_calories), 0),
             "distance": _safe_delta(total_distance, prev_total_distance, 2),
         },
-        "trend_logic": {
-            "weight": weight_trend,
-            "sleep": sleep_trend,
-            "alcohol": alcohol_trend,
-            "activity": activity_trend,
-            "kcal": kcal_trend,
-        },
         "trends": {
-            "weight": weight_trend["signal"],
-            "sleep": sleep_trend["signal"],
-            "alcohol": alcohol_trend["signal"],
-            "activity": activity_trend["signal"],
-            "kcal": kcal_trend["signal"],
+            "weight": weight_signal,
+            "sleep": sleep_signal,
+            "alcohol": alcohol_signal,
+            "activity": activity_signal,
         },
         "signal_symbols": {
-            "weight": weight_trend["symbol"],
-            "sleep": sleep_trend["symbol"],
-            "alcohol": alcohol_trend["symbol"],
-            "kcal": kcal_trend["symbol"],
+            "weight": _signal_symbol(weight_signal),
+            "sleep": _signal_symbol(sleep_signal),
+            "alcohol": _signal_symbol(alcohol_signal),
         },
         "consistency": consistency,
-        "weekly_summary": weekly_summary,
         "main_insight": main_insight,
-        "secondary_insights": secondary_insights,
         "next_action": next_action,
+        "weekly_summary_card": weekly_summary_card,
+        "consistency_card": consistency_card,
+        "secondary_insights": secondary_insights,
         "insights": insights,
     }
