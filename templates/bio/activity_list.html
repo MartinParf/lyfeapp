@@ -76,75 +76,54 @@
 {% for activity in activities %}
     {% with activity_label=activity.get_activity_type_display %}
     <div class="list-card panel-soft">
-        <div class="activity-compact-card">
-            <div class="activity-compact-icon">
-                {% if activity_label == "Running" %}
-                    🏃
-                {% elif activity_label == "Cycling" %}
-                    🚴
-                {% elif activity_label == "Swimming" %}
-                    🏊
-                {% elif activity_label == "Walking" %}
-                    🚶
-                {% elif activity_label == "Hiking" %}
-                    🥾
-                {% elif activity_label == "Yoga" %}
-                    🧘
-                {% elif activity_label == "Gym" or activity_label == "Strength Training" %}
-                    🏋️
-                {% else %}
-                    •
-                {% endif %}
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
+            <div>
+                <div class="list-card-title" style="margin-bottom: 2px;">
+                    {% if activity_label == "Running" %}🏃
+                    {% elif activity_label == "Cycling" %}🚴
+                    {% elif activity_label == "Swimming" %}🏊
+                    {% elif activity_label == "Walking" %}🚶
+                    {% elif activity_label == "Hiking" %}🥾
+                    {% elif activity_label == "Yoga" %}🧘
+                    {% elif activity_label == "Gym" or activity_label == "Strength Training" %}🏋️
+                    {% endif %}
+                    {{ activity_label }}
+                </div>
+                <div class="muted-compact">{{ activity.date|date:"d.m.Y" }}</div>
             </div>
 
-            <div class="activity-compact-main">
-                <div class="activity-compact-head">
-                    <div class="activity-compact-head-main">
-                        <h3 class="activity-compact-title">{{ activity_label }}</h3>
-                        <div class="activity-compact-date">{{ activity.date|date:"d.m.Y" }}</div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px;">
+                <div style="text-align: right;">
+                    <div class="meta-item-label">Duration</div>
+                    <div style="font-size: 16px; font-weight: 800; color: var(--text);">
+                        {{ activity.duration_minutes }} <span style="font-size: 11px; color: var(--text-dim); font-weight: 700; text-transform: none;">min</span>
                     </div>
-
-                    <div class="activity-compact-duration">
-                        <div class="bio-compact-metric-label">Duration</div>
-                        <div class="activity-compact-duration-value">{{ activity.duration_minutes }} min</div>
-                    </div>
-                </div>
-
-                <div class="activity-compact-stats">
-                    <div>
-                        <div class="bio-compact-metric-label">Distance</div>
-                        <div class="bio-compact-metric-value">
-                            {{ activity.distance_km|default:"-"|floatformat:2 }}
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="bio-compact-metric-label">Calories</div>
-                        <div class="bio-compact-metric-value">
-                            {{ activity.calories_burned_est|default:"-" }}
-                        </div>
-                    </div>
-                </div>
-
-                {% if activity.notes %}
-                    <div class="bio-compact-note">{{ activity.notes }}</div>
-                {% endif %}
-
-                <div class="activity-compact-footer">
-                    <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
-                        Edit
-                    </a>
-
-                    <form
-                        method="post"
-                        action="{% url 'bio:activity-delete' activity.pk %}"
-                        onsubmit="return confirm('Delete this activity?');"
-                    >
-                        {% csrf_token %}
-                        <button type="submit" class="danger">Delete</button>
-                    </form>
                 </div>
             </div>
+        </div>
+
+        <div class="meta-grid two-col" style="margin-bottom: 10px;">
+            <div>
+                <div class="meta-item-label">Distance</div>
+                <div class="meta-item-value">{{ activity.distance_km|default:"-"|floatformat:2 }} km</div>
+            </div>
+            <div>
+                <div class="meta-item-label">Calories</div>
+                <div class="meta-item-value">{{ activity.calories_burned_est|default:"-" }} kcal</div>
+            </div>
+        </div>
+
+        {% if activity.notes %}
+            <div class="muted-compact" style="margin-bottom: 10px;">{{ activity.notes }}</div>
+        {% endif %}
+
+        <div class="action-group">
+            <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">Edit</a>
+
+            <form method="post" action="{% url 'bio:activity-delete' activity.pk %}" onsubmit="return confirm('Delete this activity?');">
+                {% csrf_token %}
+                <button type="submit" class="danger">Delete</button>
+            </form>
         </div>
     </div>
     {% endwith %}

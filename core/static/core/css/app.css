@@ -479,217 +479,7 @@ td {
     padding: 10px;
     color: var(--text-soft);
 }
-/* =========================================================
-   DAILY METRICS / ACTIVITIES CARD REWORK
-   ========================================================= */
 
-   .metric-history-card {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-.metric-history-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-}
-
-.metric-history-head-main {
-    min-width: 0;
-}
-
-.metric-history-date {
-    margin: 0 0 4px 0;
-    font-size: clamp(1.125rem, 2vw, 1.65rem);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    color: var(--text);
-}
-
-.metric-history-subline {
-    color: var(--text-soft);
-    font-size: 0.95rem;
-    line-height: 1.35;
-}
-
-.metric-history-weight {
-    flex: 0 0 auto;
-    min-width: 108px;
-    text-align: right;
-}
-
-.metric-history-weight-label {
-    margin-bottom: 2px;
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-}
-
-.metric-history-weight-value {
-    font-size: clamp(2.35rem, 5vw, 3.5rem);
-    font-weight: 900;
-    line-height: 0.9;
-    letter-spacing: -0.04em;
-    color: var(--text);
-}
-
-.metric-history-weight-unit {
-    margin-top: 2px;
-    font-size: 0.95rem;
-    color: var(--text-soft);
-}
-
-.metric-history-primary-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 18px;
-}
-
-.metric-history-item-label {
-    margin-bottom: 2px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-}
-
-.metric-history-item-value {
-    font-size: 1.12rem;
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--text);
-}
-
-.metric-history-secondary {
-    display: flex;
-    justify-content: flex-end;
-    align-items: baseline;
-    gap: 8px;
-    padding-top: 2px;
-}
-
-.metric-history-secondary .metric-history-item-label {
-    margin-bottom: 0;
-}
-
-.metric-history-secondary .metric-history-item-value {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-soft);
-}
-
-.metric-history-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 10px;
-}
-
-.activity-history-card {
-    display: grid;
-    grid-template-columns: 78px minmax(0, 1fr);
-    gap: 14px;
-    align-items: start;
-}
-
-.activity-history-icon {
-    width: 78px;
-    height: 78px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--line-2);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00)), var(--panel-3);
-    border-radius: var(--radius);
-    font-size: 2rem;
-    line-height: 1;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-.activity-history-main {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.activity-history-top {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: start;
-}
-
-.activity-history-title {
-    margin: 0 0 2px 0;
-    font-size: clamp(1.1rem, 2vw, 1.55rem);
-    font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    color: var(--text);
-}
-
-.activity-history-date {
-    color: var(--text-soft);
-    font-size: 0.95rem;
-    line-height: 1.3;
-}
-
-.activity-history-duration {
-    text-align: right;
-}
-
-.activity-history-duration .metric-history-item-value {
-    font-size: 1.45rem;
-}
-
-.activity-history-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 18px;
-}
-
-.activity-history-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 10px;
-}
-
-@media (max-width: 640px) {
-    .metric-history-head {
-        gap: 12px;
-    }
-
-    .metric-history-weight {
-        min-width: 92px;
-    }
-
-    .metric-history-weight-value {
-        font-size: 2.55rem;
-    }
-
-    .activity-history-card {
-        grid-template-columns: 70px minmax(0, 1fr);
-        gap: 12px;
-    }
-
-    .activity-history-icon {
-        width: 70px;
-        height: 70px;
-        font-size: 1.8rem;
-    }
-
-    .activity-history-top {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
-}
 /* =========================================================
    5) BUTTONS / INPUTS / FOCUS
    ========================================================= */
@@ -3038,238 +2828,105 @@ input[type="button"] {
     }
 }
 /* =========================================================
-   COMPACT BIO CARDS RESET
+   BIO RECORD CARDS / SESSION-LIKE PATTERN
    ========================================================= */
 
-   .bio-compact-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-}
-
-.bio-compact-head {
+   .bio-record-card {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 1rem;
-    align-items: start;
+    gap: 8px;
 }
 
-.bio-compact-head-main {
-    min-width: 0;
+.bio-record-meta {
+    margin-bottom: 0;
 }
 
-.bio-compact-title {
-    margin: 0;
-    font-size: clamp(1.05rem, 2vw, 1.45rem);
-    line-height: 1.08;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--text);
-}
-
-.bio-compact-subtitle {
-    margin-top: 0.18rem;
-    font-size: 0.98rem;
-    line-height: 1.25;
-    color: var(--text-soft);
-}
-
-.bio-compact-kpi {
+.bio-record-weight {
     text-align: right;
-    min-width: 88px;
+    min-width: 84px;
 }
 
-.bio-compact-kpi-label {
-    margin: 0 0 0.15rem 0;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-}
-
-.bio-compact-kpi-value {
-    margin: 0;
-    font-size: clamp(2rem, 5vw, 2.8rem);
-    line-height: 0.95;
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    color: var(--text);
-}
-
-.bio-compact-kpi-unit {
-    margin-top: 0.12rem;
-    font-size: 0.95rem;
-    color: var(--text-soft);
-}
-
-.bio-compact-metrics {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem 1.25rem;
-}
-
-.bio-compact-metric-label {
-    margin: 0 0 0.08rem 0;
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-}
-
-.bio-compact-metric-value {
-    margin: 0;
-    font-size: 1.02rem;
-    line-height: 1.15;
-    font-weight: 700;
-    color: var(--text);
-}
-
-.bio-compact-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    gap: 0.9rem;
-    flex-wrap: wrap;
-}
-
-.bio-compact-actions {
-    display: flex;
-    gap: 0.65rem;
-    flex-wrap: wrap;
-}
-
-.bio-compact-corner {
-    margin-left: auto;
-    text-align: right;
-}
-
-.bio-compact-note {
-    font-size: 0.95rem;
-    line-height: 1.4;
-    color: var(--text-soft);
-}
-
-/* Activity cards */
-
-.activity-compact-card {
-    display: grid;
-    grid-template-columns: 78px minmax(0, 1fr);
-    gap: 0.95rem;
-    align-items: start;
-}
-
-.activity-compact-icon {
-    width: 78px;
-    height: 78px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    border: 1px solid var(--line-2);
-    background:
-        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
-        var(--panel-3);
-    font-size: 2rem;
-    line-height: 1;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.activity-compact-main {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.activity-compact-head {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.9rem;
-    align-items: start;
-}
-
-.activity-compact-head-main {
-    min-width: 0;
-}
-
-.activity-compact-title {
-    margin: 0;
-    font-size: clamp(1.05rem, 2vw, 1.42rem);
-    line-height: 1.08;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--text);
-}
-
-.activity-compact-date {
-    margin-top: 0.16rem;
-    font-size: 0.98rem;
-    line-height: 1.2;
-    color: var(--text-soft);
-}
-
-.activity-compact-duration {
-    text-align: right;
-    min-width: 86px;
-}
-
-.activity-compact-duration .activity-compact-duration-value {
-    margin: 0;
-    font-size: clamp(1.55rem, 4vw, 2.2rem);
+.bio-record-weight-value {
+    font-size: 1.9rem;
     line-height: 0.95;
     font-weight: 900;
     letter-spacing: -0.03em;
     color: var(--text);
 }
 
-.activity-compact-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.7rem 1.25rem;
+.bio-record-note,
+.activity-record-note {
+    padding-top: 2px;
 }
 
-.activity-compact-footer {
-    display: flex;
-    justify-content: flex-start;
-    gap: 0.65rem;
-    flex-wrap: wrap;
+.bio-record-actions,
+.activity-record-actions {
+    padding-top: 2px;
+}
+
+.activity-record-card {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.activity-record-icon {
+    width: 72px;
+    height: 72px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    background: var(--panel-3);
+    font-size: 1.9rem;
+    line-height: 1;
+}
+
+.activity-record-main {
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.activity-record-meta {
+    margin-bottom: 0;
+}
+
+.activity-record-duration {
+    text-align: right;
+    min-width: 90px;
+}
+
+.activity-record-duration-value {
+    font-size: 1.65rem;
+    line-height: 0.95;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text);
 }
 
 @media (max-width: 640px) {
-    .bio-compact-head {
-        gap: 0.75rem;
+    .bio-record-weight-value {
+        font-size: 1.7rem;
     }
 
-    .bio-compact-kpi {
-        min-width: 76px;
+    .activity-record-card {
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: 10px;
     }
 
-    .bio-compact-kpi-value {
-        font-size: 2.15rem;
+    .activity-record-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.55rem;
     }
 
-    .bio-compact-metrics {
-        gap: 0.65rem 1rem;
+    .activity-record-duration {
+        min-width: 72px;
     }
 
-    .activity-compact-card {
-        grid-template-columns: 70px minmax(0, 1fr);
-        gap: 0.8rem;
-    }
-
-    .activity-compact-icon {
-        width: 70px;
-        height: 70px;
-        font-size: 1.75rem;
-    }
-
-    .activity-compact-duration {
-        min-width: 74px;
-    }
-
-    .activity-compact-duration .activity-compact-duration-value {
-        font-size: 1.95rem;
+    .activity-record-duration-value {
+        font-size: 1.35rem;
     }
 }
