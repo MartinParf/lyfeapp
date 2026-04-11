@@ -141,11 +141,11 @@
         <div class="muted">{{ analytics.weekly_summary_card.body }}</div>
     </div>
 
-    <div class="analytics-card analytics-card--consistency">
-        <div class="analytics-card-head">
+    <div class="list-card {% if analytics.consistency_card.panel_class %}{{ analytics.consistency_card.panel_class }}{% else %}panel-soft{% endif %} analytics-card--consistency">
+        <div class="action-group analytics-card-head" style="justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
             <div>
                 <div class="section-kicker">CONSISTENCY</div>
-                <h3 style="margin: 0; font-size: inherit;">Score breakdown</h3>
+                <div class="list-card-title" style="margin-bottom: 0;">Score breakdown</div>
             </div>
             {% if analytics.consistency.badge_label %}
                 <span class="analytics-badge analytics-badge--{{ analytics.consistency.badge_tone }}">
