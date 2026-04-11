@@ -11,6 +11,7 @@ from .views import (
     DailyMetricUpdateView,
     DailyMetricTodayView,
     BioOverviewView,
+    BioAnalyticsView,
 )
 
 app_name = "bio"
@@ -26,5 +27,6 @@ urlpatterns = [
     path("activities/create/", ActivityCreateView.as_view(), name="activity-create"),
     path("activities/<int:pk>/edit/", ActivityUpdateView.as_view(), name="activity-edit"),
     path("activities/<int:pk>/delete/", ActivityDeleteView.as_view(), name="activity-delete"),
+    path("analytics/", BioAnalyticsView.as_view(), name="analytics"),
     
 ]

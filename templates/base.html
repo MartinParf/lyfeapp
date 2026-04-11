@@ -153,6 +153,12 @@
                         Activities
                     </a>
                     <a
+                        href="{% url 'bio:analytics' %}"
+                        class="context-subnav-link {% if '/bio/analytics/' in request.path %}context-subnav-link-active{% endif %}"
+                    >
+                        Analytics
+                    </a>
+                    <a
                         href="{% url 'admin:index' %}"
                         class="context-subnav-link context-subnav-link-admin {% if '/admin/' in request.path %}context-subnav-link-active{% endif %}"
                     >
