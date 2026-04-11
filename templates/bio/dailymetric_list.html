@@ -30,7 +30,7 @@
             <div class="mode-bridge-kicker">Execution mode</div>
             <div class="mode-bridge-title">FITNESS / Session Work</div>
             <div class="mode-bridge-copy">
-                Switch over when it is time to log gym work rather than recovery state.
+                Switch over when it is time to log session work instead of recovery state.
             </div>
             <div class="mode-bridge-actions">
                 <a href="{% url 'fitness:session-list' %}" class="link-button">
@@ -113,119 +113,136 @@
 </div>
 
 <div class="list-card panel-soft">
-    <div class="metric-history-card">
-        <div class="metric-history-head">
-            <div class="metric-history-head-main">
-                <div class="metric-history-date">Today — {{ today }}</div>
-                <div class="metric-history-subline">Current recovery snapshot</div>
+    {% if today_metric %}
+        <div class="bio-compact-card">
+            <div class="bio-compact-head">
+                <div class="bio-compact-head-main">
+                    <h2 class="bio-compact-title">Today — {{ today }}</h2>
+                    <div class="bio-compact-subtitle">Current recovery snapshot</div>
+                </div>
+
+                <div class="bio-compact-kpi">
+                    <div class="bio-compact-kpi-label">Weight</div>
+                    <div class="bio-compact-kpi-value">{{ today_metric.weight_kg|floatformat:2 }}</div>
+                    <div class="bio-compact-kpi-unit">kg</div>
+                </div>
             </div>
 
-            {% if today_metric %}
-                <div class="metric-history-weight">
-                    <div class="metric-history-weight-label">Weight</div>
-                    <div class="metric-history-weight-value">{{ today_metric.weight_kg|default:"-" }}</div>
-                    <div class="metric-history-weight-unit">kg</div>
+            <div class="bio-compact-metrics">
+                <div>
+                    <div class="bio-compact-metric-label">Sleep</div>
+                    <div class="bio-compact-metric-value">{{ today_metric.get_sleep_quality_display|default:"-" }}</div>
                 </div>
+
+                <div>
+                    <div class="bio-compact-metric-label">Alcohol</div>
+                    <div class="bio-compact-metric-value">{{ today_metric.get_alcohol_units_display }}</div>
+                </div>
+
+                <div>
+                    <div class="bio-compact-metric-label">Diet</div>
+                    <div class="bio-compact-metric-value">{{ today_metric.get_diet_mode_display|default:"-" }}</div>
+                </div>
+
+                <div class="bio-compact-corner">
+                    <div class="bio-compact-metric-label">Calories</div>
+                    <div class="bio-compact-metric-value">{{ today_metric.calories_actual|default:"-" }}</div>
+                </div>
+            </div>
+
+            {% if today_metric.notes %}
+                <div class="bio-compact-note">{{ today_metric.notes }}</div>
             {% endif %}
+
+            <div class="bio-compact-footer">
+                <div class="bio-compact-actions">
+                    <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
+                        Edit today
+                    </a>
+                </div>
+            </div>
         </div>
-
-        {% if today_metric %}
-            <div class="metric-history-primary-grid">
-                <div>
-                    <div class="metric-history-item-label">Sleep</div>
-                    <div class="metric-history-item-value">{{ today_metric.get_sleep_quality_display|default:"-" }}</div>
+    {% else %}
+        <div class="bio-compact-card">
+            <div class="bio-compact-head">
+                <div class="bio-compact-head-main">
+                    <h2 class="bio-compact-title">Today — {{ today }}</h2>
+                    <div class="bio-compact-subtitle">No daily entry yet.</div>
                 </div>
+            </div>
 
-                <div>
-                    <div class="metric-history-item-label">Alcohol</div>
-                    <div class="metric-history-item-value">{{ today_metric.get_alcohol_units_display }}</div>
+            <div class="bio-compact-footer">
+                <div class="bio-compact-actions">
+                    <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
+                        Create today
+                    </a>
                 </div>
-
-                <div>
-                    <div class="metric-history-item-label">Diet</div>
-                    <div class="metric-history-item-value">{{ today_metric.get_diet_mode_display|default:"-" }}</div>
-                </div>
-
-                <div></div>
             </div>
-
-            <div class="metric-history-secondary">
-                <div class="metric-history-item-label">Calories</div>
-                <div class="metric-history-item-value">{{ today_metric.calories_actual|default:"-" }}</div>
-            </div>
-
-            <div class="metric-history-actions">
-                <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
-                    Edit today
-                </a>
-            </div>
-        {% else %}
-            <div class="metric-history-subline">No entry for today yet.</div>
-
-            <div class="metric-history-actions">
-                <a href="{% url 'bio:dailymetric-today' %}" class="link-button primary-button">
-                    Create today
-                </a>
-            </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
 </div>
 
 <h2 style="margin: 14px 0 8px 0;">History</h2>
 
 {% for metric in history_metrics %}
     <div class="list-card panel-soft">
-        <div class="metric-history-card">
-            <div class="metric-history-head">
-                <div class="metric-history-head-main">
-                    <div class="metric-history-date">{{ metric.date|date:"d.m.Y" }}</div>
-                    <div class="metric-history-subline">Sleep: {{ metric.get_sleep_quality_display|default:"-" }}</div>
+        <div class="bio-compact-card">
+            <div class="bio-compact-head">
+                <div class="bio-compact-head-main">
+                    <h3 class="bio-compact-title">{{ metric.date|date:"d.m.Y" }}</h3>
+                    <div class="bio-compact-subtitle">
+                        {{ metric.get_sleep_quality_display|default:"-" }}
+                    </div>
                 </div>
 
-                <div class="metric-history-weight">
-                    <div class="metric-history-weight-label">Weight</div>
-                    <div class="metric-history-weight-value">{{ metric.weight_kg|default:"-" }}</div>
-                    <div class="metric-history-weight-unit">kg</div>
-                </div>
-            </div>
-
-            <div class="metric-history-primary-grid">
-                <div>
-                    <div class="metric-history-item-label">Sleep</div>
-                    <div class="metric-history-item-value">{{ metric.get_sleep_quality_display|default:"-" }}</div>
-                </div>
-
-                <div>
-                    <div class="metric-history-item-label">Alcohol</div>
-                    <div class="metric-history-item-value">{{ metric.get_alcohol_units_display }}</div>
+                <div class="bio-compact-kpi">
+                    <div class="bio-compact-kpi-label">Weight</div>
+                    <div class="bio-compact-kpi-value">{{ metric.weight_kg|floatformat:2 }}</div>
+                    <div class="bio-compact-kpi-unit">kg</div>
                 </div>
             </div>
 
-            <div class="metric-history-secondary">
-                <div class="metric-history-item-label">Calories</div>
-                <div class="metric-history-item-value">{{ metric.calories_actual|default:"-" }}</div>
+            <div class="bio-compact-metrics">
+                <div>
+                    <div class="bio-compact-metric-label">Sleep</div>
+                    <div class="bio-compact-metric-value">{{ metric.get_sleep_quality_display|default:"-" }}</div>
+                </div>
+
+                <div>
+                    <div class="bio-compact-metric-label">Alcohol</div>
+                    <div class="bio-compact-metric-value">{{ metric.get_alcohol_units_display }}</div>
+                </div>
+
+                <div>
+                    <div class="bio-compact-metric-label">Diet</div>
+                    <div class="bio-compact-metric-value">{{ metric.get_diet_mode_display|default:"-" }}</div>
+                </div>
+
+                <div class="bio-compact-corner">
+                    <div class="bio-compact-metric-label">Calories</div>
+                    <div class="bio-compact-metric-value">{{ metric.calories_actual|default:"-" }}</div>
+                </div>
             </div>
 
             {% if metric.notes %}
-                <div>
-                    <div class="metric-history-item-label">Notes</div>
-                    <div class="metric-history-subline">{{ metric.notes }}</div>
-                </div>
+                <div class="bio-compact-note">{{ metric.notes }}</div>
             {% endif %}
 
-            <div class="metric-history-actions">
-                <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
-                    Edit
-                </a>
+            <div class="bio-compact-footer">
+                <div class="bio-compact-actions">
+                    <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
+                        Edit
+                    </a>
 
-                <form
-                    method="post"
-                    action="{% url 'bio:dailymetric-delete' metric.pk %}"
-                    onsubmit="return confirm('Delete this daily metric?');"
-                >
-                    {% csrf_token %}
-                    <button type="submit" class="danger">Delete</button>
-                </form>
+                    <form
+                        method="post"
+                        action="{% url 'bio:dailymetric-delete' metric.pk %}"
+                        onsubmit="return confirm('Delete this daily metric?');"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="danger">Delete</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

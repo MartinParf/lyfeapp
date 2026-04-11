@@ -30,7 +30,7 @@
             <div class="mode-bridge-kicker">Execution mode</div>
             <div class="mode-bridge-title">FITNESS / Session Work</div>
             <div class="mode-bridge-copy">
-                Jump to the gym-side execution flow when you want training detail instead of daily context.
+                Jump to session execution when you want gym logging rather than daily movement context.
             </div>
             <div class="mode-bridge-actions">
                 <a href="{% url 'fitness:session-list' %}" class="link-button">
@@ -76,8 +76,8 @@
 {% for activity in activities %}
     {% with activity_label=activity.get_activity_type_display %}
     <div class="list-card panel-soft">
-        <div class="activity-history-card">
-            <div class="activity-history-icon">
+        <div class="activity-compact-card">
+            <div class="activity-compact-icon">
                 {% if activity_label == "Running" %}
                     🏃
                 {% elif activity_label == "Cycling" %}
@@ -97,39 +97,40 @@
                 {% endif %}
             </div>
 
-            <div class="activity-history-main">
-                <div class="activity-history-top">
-                    <div>
-                        <div class="activity-history-title">{{ activity_label }}</div>
-                        <div class="activity-history-date">{{ activity.date|date:"d.m.Y" }}</div>
+            <div class="activity-compact-main">
+                <div class="activity-compact-head">
+                    <div class="activity-compact-head-main">
+                        <h3 class="activity-compact-title">{{ activity_label }}</h3>
+                        <div class="activity-compact-date">{{ activity.date|date:"d.m.Y" }}</div>
                     </div>
 
-                    <div class="activity-history-duration">
-                        <div class="metric-history-item-label">Duration</div>
-                        <div class="metric-history-item-value">{{ activity.duration_minutes }} min</div>
+                    <div class="activity-compact-duration">
+                        <div class="bio-compact-metric-label">Duration</div>
+                        <div class="activity-compact-duration-value">{{ activity.duration_minutes }} min</div>
                     </div>
                 </div>
 
-                <div class="activity-history-stats">
+                <div class="activity-compact-stats">
                     <div>
-                        <div class="metric-history-item-label">Distance</div>
-                        <div class="metric-history-item-value">{{ activity.distance_km|default:"-" }}</div>
+                        <div class="bio-compact-metric-label">Distance</div>
+                        <div class="bio-compact-metric-value">
+                            {{ activity.distance_km|default:"-"|floatformat:2 }}
+                        </div>
                     </div>
 
                     <div>
-                        <div class="metric-history-item-label">Calories</div>
-                        <div class="metric-history-item-value">{{ activity.calories_burned_est|default:"-" }}</div>
+                        <div class="bio-compact-metric-label">Calories</div>
+                        <div class="bio-compact-metric-value">
+                            {{ activity.calories_burned_est|default:"-" }}
+                        </div>
                     </div>
                 </div>
 
                 {% if activity.notes %}
-                    <div>
-                        <div class="metric-history-item-label">Notes</div>
-                        <div class="metric-history-subline">{{ activity.notes }}</div>
-                    </div>
+                    <div class="bio-compact-note">{{ activity.notes }}</div>
                 {% endif %}
 
-                <div class="activity-history-actions">
+                <div class="activity-compact-footer">
                     <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">
                         Edit
                     </a>
