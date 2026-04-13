@@ -6,4 +6,4 @@ class BioConfig(AppConfig):
     name = "bio"
 
     def ready(self):
-        import bio.signals  # noqa: F401
+        from . import tasks  # noqa: F401

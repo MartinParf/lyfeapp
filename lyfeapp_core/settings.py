@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "huey.contrib.djhuey",
     "core",
     "bio.apps.BioConfig",
     "fitness",
@@ -144,3 +145,28 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=False)
+
+# ASGI HUEY
+
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+
+HUEY = {
+    "huey_class": "huey.RedisHuey",
+    "name": "lyfeapp",
+    "results": True,
+    "store_none": False,
+    "immediate": False,
+    "utc": True,
+    "connection": {
+        "host": REDIS_HOST,
+        "port": REDIS_PORT,
+    },
+    "consumer": {
+        "workers": 2,
+        "worker_type": "thread",
+        "initial_delay": 0.1,
+        "backoff": 1.15,
+        "max_delay": 10.0,
+    },
+}

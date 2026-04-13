@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -8,7 +8,13 @@ from django.contrib.auth import get_user_model
 from django.db.models import Avg, Sum
 from django.utils import timezone
 
-from bio.models import Activity, DailyMetric
+from bio.models import (
+    Activity,
+    AnalyticsSnapshot,
+    AnalyticsSnapshotStatus,
+    AnalyticsSnapshotType,
+    DailyMetric,
+)
 
 User = get_user_model()
 
@@ -763,3 +769,110 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
         "secondary_insights": secondary_insights,
         "insights": insights,
     }
+
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _json_safe(val) for key, val in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    return value
+
+
+SNAPSHOT_REFRESH_COOLDOWN_MINUTES = 5
+
+
+def get_snapshot_max_age_hours(snapshot_type: str) -> int:
+    if snapshot_type == AnalyticsSnapshotType.OVERVIEW:
+        return 6
+    return 12
+
+
+def queue_snapshot_refresh(*, user: User, period_days: int, snapshot_type: str) -> AnalyticsSnapshot:
+    now = timezone.now()
+    today = timezone.localdate()
+
+    snapshot, _ = AnalyticsSnapshot.objects.update_or_create(
+        user=user,
+        snapshot_type=snapshot_type,
+        window_days=period_days,
+        defaults={
+            "as_of_date": today,
+            "status": AnalyticsSnapshotStatus.QUEUED,
+            "last_enqueued_at": now,
+            "last_error": "",
+        },
+    )
+    return snapshot
+
+
+def mark_snapshot_error(*, user: User, period_days: int, snapshot_type: str, error: str) -> AnalyticsSnapshot:
+    snapshot, _ = AnalyticsSnapshot.objects.update_or_create(
+        user=user,
+        snapshot_type=snapshot_type,
+        window_days=period_days,
+        defaults={
+            "as_of_date": timezone.localdate(),
+        },
+    )
+    snapshot.status = AnalyticsSnapshotStatus.ERROR
+    snapshot.last_error = error[:2000]
+    snapshot.save(update_fields=["status", "last_error", "updated_at"])
+    return snapshot
+
+
+def store_bio_analytics_snapshot(*, user: User, period_days: int, snapshot_type: str) -> AnalyticsSnapshot:
+    payload = build_bio_analytics(user=user, period_days=period_days)
+    now = timezone.now()
+
+    snapshot, _ = AnalyticsSnapshot.objects.update_or_create(
+        user=user,
+        snapshot_type=snapshot_type,
+        window_days=period_days,
+        defaults={
+            "as_of_date": timezone.localdate(),
+            "payload": _json_safe(payload),
+            "status": AnalyticsSnapshotStatus.FRESH,
+            "last_success_at": now,
+            "last_error": "",
+        },
+    )
+    return snapshot
+
+
+def get_bio_analytics_snapshot(*, user: User, period_days: int, snapshot_type: str) -> AnalyticsSnapshot | None:
+    return (
+        AnalyticsSnapshot.objects
+        .filter(
+            user=user,
+            snapshot_type=snapshot_type,
+            window_days=period_days,
+        )
+        .first()
+    )
+
+
+def get_bio_analytics_payload(*, user: User, period_days: int, snapshot_type: str) -> dict[str, Any] | None:
+    snapshot = get_bio_analytics_snapshot(
+        user=user,
+        period_days=period_days,
+        snapshot_type=snapshot_type,
+    )
+    return snapshot.payload if snapshot else None
+
+
+def get_cached_bio_analytics(*, user: User, period_days: int, snapshot_type: str) -> dict[str, Any]:
+    cached = get_bio_analytics_payload(
+        user=user,
+        period_days=period_days,
+        snapshot_type=snapshot_type,
+    )
+    if cached:
+        return cached
+
+    return build_bio_analytics(user=user, period_days=period_days)

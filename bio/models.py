@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from datetime import timedelta
+from django.utils import timezone
+
 
 
 class TimeStampedModel(models.Model):
@@ -141,3 +144,87 @@ class Activity(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"Activity<{self.user_id} {self.activity_type} {self.date}>"
+
+class AnalyticsSnapshotType(models.TextChoices):
+    OVERVIEW = "OVERVIEW", "Overview"
+    ANALYTICS = "ANALYTICS", "Analytics"
+
+class AnalyticsSnapshotStatus(models.TextChoices):
+    FRESH = "FRESH", "Fresh"
+    QUEUED = "QUEUED", "Queued"
+    ERROR = "ERROR", "Error"
+
+class AnalyticsSnapshot(TimeStampedModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="analytics_snapshots",
+    )
+    snapshot_type = models.CharField(
+        max_length=20,
+        choices=AnalyticsSnapshotType.choices,
+    )
+    window_days = models.PositiveSmallIntegerField()
+    as_of_date = models.DateField()
+    payload = models.JSONField(default=dict, blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=AnalyticsSnapshotStatus.choices,
+        default=AnalyticsSnapshotStatus.QUEUED,
+    )
+    last_enqueued_at = models.DateTimeField(null=True, blank=True)
+    last_success_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["user_id", "snapshot_type", "window_days"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "snapshot_type", "window_days"],
+                name="uniq_analytics_snapshot_user_type_window",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["user", "snapshot_type", "window_days"],
+                name="idx_analytics_snapshot_lookup",
+            ),
+            models.Index(fields=["as_of_date"], name="idx_analytics_snapshot_as_of"),
+            models.Index(fields=["status"], name="idx_analytics_snapshot_status"),
+        ]
+
+    def __str__(self) -> str:
+        return f"AnalyticsSnapshot<{self.user_id} {self.snapshot_type} {self.window_days}d>"
+
+    @property
+    def has_payload(self) -> bool:
+        return bool(self.payload)
+
+    def is_stale(self, *, max_age_hours: int) -> bool:
+        now = timezone.now()
+
+        if self.status in {AnalyticsSnapshotStatus.ERROR, AnalyticsSnapshotStatus.QUEUED}:
+            return True
+        if self.last_success_at is None:
+            return True
+        if not self.payload:
+            return True
+        if self.as_of_date < timezone.localdate():
+            return True
+        if self.updated_at <= now - timedelta(hours=max_age_hours):
+            return True
+
+        return False
+
+    def can_enqueue_refresh(self, *, cooldown_minutes: int = 5) -> bool:
+        now = timezone.now()
+
+        if (
+            self.status == AnalyticsSnapshotStatus.QUEUED
+            and self.last_enqueued_at
+            and self.last_enqueued_at >= now - timedelta(minutes=cooldown_minutes)
+        ):
+            return False
+
+        return True

@@ -54,14 +54,15 @@ jobs:
             set -e
             cd "$DEPLOY_PATH"
 
-            docker compose up -d db
+            docker compose up -d db redis
             docker compose build web
             docker compose run --rm --interactive=false -T web python manage.py check
             docker compose run --rm --interactive=false -T web python manage.py migrate --noinput
             docker compose run --rm --interactive=false -T web python manage.py collectstatic --noinput
-            docker compose up -d web
+            docker compose up -d web worker
 
             sleep 5
             docker compose ps
             docker compose logs --tail=50 web
+            docker compose logs --tail=50 worker
           EOF

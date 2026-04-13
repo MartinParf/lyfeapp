@@ -1,15 +1,91 @@
+from datetime import timedelta
+
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
-from django.utils import timezone
-from datetime import timedelta
-from django.db.models import Avg
-from django.urls import reverse
-from .services.analytics import build_bio_analytics
 
 from .forms import ActivityForm, DailyMetricForm
-from .models import Activity, DailyMetric
+from .models import Activity, AnalyticsSnapshotType, DailyMetric
+from .services.analytics import (
+    get_bio_analytics_snapshot,
+    get_cached_bio_analytics,
+    get_snapshot_max_age_hours,
+    queue_snapshot_refresh,
+)
+from .tasks import (
+    ensure_user_snapshots_exist,
+    recompute_analytics_snapshot,
+    recompute_overview_snapshot,
+    recompute_recent_snapshots_for_user,
+)
+
+
+def _queue_snapshot_refresh_if_needed(*, user, snapshot_type: str, period_days: int) -> None:
+    snapshot = get_bio_analytics_snapshot(
+        user=user,
+        period_days=period_days,
+        snapshot_type=snapshot_type,
+    )
+
+    if snapshot is None:
+        queue_snapshot_refresh(
+            user=user,
+            period_days=period_days,
+            snapshot_type=snapshot_type,
+        )
+        if snapshot_type == AnalyticsSnapshotType.OVERVIEW:
+            recompute_overview_snapshot(user.id)
+        else:
+            recompute_analytics_snapshot(user.id, period_days)
+        return
+
+    max_age_hours = get_snapshot_max_age_hours(snapshot_type)
+    if snapshot.is_stale(max_age_hours=max_age_hours) and snapshot.can_enqueue_refresh():
+        queue_snapshot_refresh(
+            user=user,
+            period_days=period_days,
+            snapshot_type=snapshot_type,
+        )
+        if snapshot_type == AnalyticsSnapshotType.OVERVIEW:
+            recompute_overview_snapshot(user.id)
+        else:
+            recompute_analytics_snapshot(user.id, period_days)
+
+
+def _get_snapshot_or_fallback(*, user, snapshot_type: str, period_days: int) -> dict:
+    snapshot = get_bio_analytics_snapshot(
+        user=user,
+        period_days=period_days,
+        snapshot_type=snapshot_type,
+    )
+
+    if snapshot is None:
+        ensure_user_snapshots_exist(user.id)
+        return get_cached_bio_analytics(
+            user=user,
+            period_days=period_days,
+            snapshot_type=snapshot_type,
+        )
+
+    _queue_snapshot_refresh_if_needed(
+        user=user,
+        snapshot_type=snapshot_type,
+        period_days=period_days,
+    )
+
+    if snapshot.payload:
+        return snapshot.payload
+
+    return get_cached_bio_analytics(
+        user=user,
+        period_days=period_days,
+        snapshot_type=snapshot_type,
+    )
 
 
 class DailyMetricListView(LoginRequiredMixin, ListView):
@@ -107,6 +183,10 @@ class DailyMetricCreateView(LoginRequiredMixin, View):
             metric = form.save(commit=False)
             metric.user = request.user
             metric.save()
+
+            user_id = request.user.id
+            transaction.on_commit(lambda: recompute_recent_snapshots_for_user(user_id))
+
             return redirect("bio:dailymetric-list")
 
         return render(
@@ -146,6 +226,10 @@ class DailyMetricUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
+
+            user_id = request.user.id
+            transaction.on_commit(lambda: recompute_recent_snapshots_for_user(user_id))
+
             return redirect("bio:dailymetric-list")
 
         return render(
@@ -163,8 +247,12 @@ class DailyMetricUpdateView(LoginRequiredMixin, View):
 class DailyMetricDeleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
         metric = get_object_or_404(DailyMetric, pk=pk, user=request.user)
+        
+        user_id = request.user.id
         metric.delete()
+        transaction.on_commit(lambda: recompute_recent_snapshots_for_user(user_id))
         return redirect("bio:dailymetric-list")
+
 
 class DailyMetricTodayView(LoginRequiredMixin, View):
     def get(self, request):
@@ -232,6 +320,10 @@ class ActivityCreateView(LoginRequiredMixin, View):
             activity = form.save(commit=False)
             activity.user = request.user
             activity.save()
+
+            user_id = request.user.id
+            transaction.on_commit(lambda: recompute_recent_snapshots_for_user(user_id))
+
             return redirect("bio:activity-list")
 
         return render(
@@ -271,6 +363,10 @@ class ActivityUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
+
+            user_id = request.user.id
+            transaction.on_commit(lambda: recompute_recent_snapshots_for_user(user_id))
+
             return redirect("bio:activity-list")
 
         return render(
@@ -288,7 +384,10 @@ class ActivityUpdateView(LoginRequiredMixin, View):
 class ActivityDeleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
         activity = get_object_or_404(Activity, pk=pk, user=request.user)
+
+        user_id = request.user.id
         activity.delete()
+        transaction.on_commit(lambda: recompute_recent_snapshots_for_user(user_id))
         return redirect("bio:activity-list")
 
 class BioOverviewView(LoginRequiredMixin, View):
@@ -299,7 +398,11 @@ class BioOverviewView(LoginRequiredMixin, View):
         today = timezone.localdate()
         cutoff = today - timedelta(days=7)
 
-        overview_analytics = build_bio_analytics(user=request.user, period_days=7)
+        overview_analytics = _get_snapshot_or_fallback(
+            user=request.user,
+            period_days=7,
+            snapshot_type=AnalyticsSnapshotType.OVERVIEW,
+        )
 
         today_metric = (
             DailyMetric.objects
@@ -395,7 +498,11 @@ class BioAnalyticsView(LoginRequiredMixin, View):
         }
         period_days = period_map.get(period_param, 7)
 
-        analytics = build_bio_analytics(user=request.user, period_days=period_days)
+        analytics = _get_snapshot_or_fallback(
+            user=request.user,
+            period_days=period_days,
+            snapshot_type=AnalyticsSnapshotType.ANALYTICS,
+        )
 
         context = {
             "period": period_param,

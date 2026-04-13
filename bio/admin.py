@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import Activity, DailyMetric, Profile
+from .models import (
+    Activity,
+    AnalyticsSnapshot,
+    DailyMetric,
+    Profile,
+)
 
 
 @admin.register(Profile)
@@ -49,3 +54,66 @@ class ActivityAdmin(admin.ModelAdmin):
     search_fields = ("user__username", "notes")
     date_hierarchy = "date"
     ordering = ("-date", "-id")
+
+
+@admin.register(AnalyticsSnapshot)
+class AnalyticsSnapshotAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "snapshot_type",
+        "window_days",
+        "status",
+        "as_of_date",
+        "last_enqueued_at",
+        "last_success_at",
+        "updated_at",
+        "payload_present",
+    )
+    list_filter = (
+        "snapshot_type",
+        "window_days",
+        "status",
+        "as_of_date",
+    )
+    search_fields = ("user__username", "user__email", "last_error")
+    ordering = ("user__username", "snapshot_type", "window_days")
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "last_enqueued_at",
+        "last_success_at",
+        "payload_preview",
+    )
+
+    fieldsets = (
+        ("Snapshot", {
+            "fields": (
+                "user",
+                "snapshot_type",
+                "window_days",
+                "status",
+                "as_of_date",
+            )
+        }),
+        ("Runtime", {
+            "fields": (
+                "last_enqueued_at",
+                "last_success_at",
+                "last_error",
+            )
+        }),
+        ("Payload", {
+            "fields": ("payload_preview",)
+        }),
+        ("Timestamps", {
+            "fields": ("created_at", "updated_at")
+        }),
+    )
+
+    @admin.display(boolean=True, description="Payload")
+    def payload_present(self, obj):
+        return bool(obj.payload)
+
+    @admin.display(description="Payload preview")
+    def payload_preview(self, obj):
+        return obj.payload

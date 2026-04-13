@@ -18,6 +18,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: lyfeapp_redis
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning
+    networks:
+      - lyfeapp_internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     build: .
     image: lyfeapp_image:latest
@@ -34,18 +48,23 @@ services:
       - .env
     environment:
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PYTHONUNBUFFERED: "1"
     networks:
       - lyfeapp_internal
       - web_network
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
   worker:
     image: lyfeapp_image:latest
     container_name: lyfeapp_huey
     restart: always
-    command: python manage.py run_huey -w 1
+    command: python manage.py run_huey -w 2 -k thread
     volumes:
       - .:/code
       - media_volume:/code/media
@@ -53,11 +72,15 @@ services:
       - .env
     environment:
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       PYTHONUNBUFFERED: "1"
     networks:
       - lyfeapp_internal
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     mem_limit: 1024m
     memswap_limit: 1024m
