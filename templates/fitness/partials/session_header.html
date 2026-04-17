@@ -1,89 +1,121 @@
-<div id="session-header" class="list-card panel-soft">
-    <div class="section-bar">
-        <div class="section-bar-title">
-            <div class="section-kicker">Session setup</div>
-            <h3 class="list-card-title" style="margin-bottom: 0;">Header & actions</h3>
-        </div>
+<div id="session-header" class="list-card panel-soft session-header-shell">
+    <div class="session-header-strip">
+        <div class="session-header-summary">
+            <div class="session-header-summary-main">
+                <div class="session-focus-chip">{{ session.get_focus_display }}</div>
 
-        <div class="action-group">
-            <form
-                method="post"
-                action="{% url 'fitness:session-clone' session.pk %}"
-            >
-                {% csrf_token %}
-                <button type="submit">Clone</button>
-            </form>
+                <div class="muted-compact">
+                    {{ session.scheduled_date|date:"d.m.Y"|default:"-" }}
+                </div>
 
-            <form
-                method="post"
-                action="{% url 'fitness:session-delete' session.pk %}"
-                onsubmit="return confirm('Delete this workout session?');"
-            >
-                {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
-            </form>
-        </div>
-    </div>
+                <div class="muted-compact">
+                    {% if session.source_pool %}
+                        {{ session.source_pool }}
+                    {% else %}
+                        No pool
+                    {% endif %}
+                </div>
 
-    <div class="meta-grid two-col" style="margin-bottom: 8px;">
-        <div>
-            <div class="meta-item-label">Focus</div>
-            <div class="meta-item-value">{{ session.get_focus_display }}</div>
-        </div>
+                <div class="muted-compact">
+                    Duration:
+                    <strong style="color: var(--text);">{{ session.duration_label }}</strong>
+                </div>
+            </div>
 
-        <div>
-            <div class="meta-item-label">Status</div>
-            <div class="meta-item-value">{{ session.get_status_display }}</div>
-        </div>
+            <div class="session-icon-actions">
+                <details class="session-header-edit-toggle" {% if header_form.errors %}open{% endif %}>
+                    <summary class="icon-button" title="Edit header" aria-label="Edit header">
+                        <span class="material-symbols-rounded">edit</span>
+                    </summary>
+                </details>
 
-        <div>
-            <div class="meta-item-label">Source pool</div>
-            <div class="meta-item-value">{{ session.source_pool|default:"-" }}</div>
-        </div>
+                <form method="post" action="{% url 'fitness:session-clone' session.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-button" aria-label="Clone session" title="Clone">
+                        <span class="material-symbols-rounded">content_copy</span>
+                    </button>
+                </form>
 
-        <div>
-            <div class="meta-item-label">Scheduled</div>
-            <div class="meta-item-value">
-                {% if session.scheduled_date %}
-                    {{ session.scheduled_date|date:"d.m.Y" }}
-                {% else %}
-                    -
-                {% endif %}
+                <form
+                    method="post"
+                    action="{% url 'fitness:session-delete' session.pk %}"
+                    onsubmit="return confirm('Delete this workout session?');"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="icon-button icon-button-danger" aria-label="Delete session" title="Delete">
+                        <span class="material-symbols-rounded">delete</span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-    <details class="session-collapsible">
-        <summary>
-            <span class="session-section-heading">Edit header</span>
-            <span class="muted-compact">Open form</span>
+    <details class="session-header-editor" {% if header_form.errors %}open{% endif %}>
+        <summary class="session-header-editor-summary">
+            <span class="material-symbols-rounded">tune</span>
+            <span>Edit header</span>
         </summary>
 
-        <div class="session-set-content">
+        <div class="session-header-editor-body">
             <form
                 method="post"
                 hx-post="{% url 'fitness:htmx-session-update-header' session.pk %}"
                 hx-target="#session-header"
                 hx-swap="outerHTML"
-                class="preserve-scroll form-shell"
+                class="preserve-scroll form-shell session-compact-form"
             >
                 {% csrf_token %}
 
-                <div class="form-section panel-soft">
-                    {% for field in header_form %}
-                        <div class="form-row">
-                            <div>{{ field.label_tag }}</div>
-                            <div>{{ field }}</div>
-                            {% if field.help_text %}
-                                <div class="form-help">{{ field.help_text }}</div>
-                            {% endif %}
-                            {{ field.errors }}
-                        </div>
-                    {% endfor %}
+                <div class="session-form-grid">
+                    <div class="form-row compact">
+                        <div>{{ header_form.focus.label_tag }}</div>
+                        <div>{{ header_form.focus }}</div>
+                        {{ header_form.focus.errors }}
+                    </div>
+
+                    <div class="form-row compact">
+                        <div>{{ header_form.source_pool.label_tag }}</div>
+                        <div>{{ header_form.source_pool }}</div>
+                        {{ header_form.source_pool.errors }}
+                    </div>
+
+                    <div class="form-row compact session-planned-row">
+                        <label class="session-toggle-control">
+                            {{ header_form.planned }}
+                            <span>Planned</span>
+                        </label>
+                        {{ header_form.planned.errors }}
+                    </div>
+
+                    <div class="form-row compact">
+                        <div>{{ header_form.session_date.label_tag }}</div>
+                        <div>{{ header_form.session_date }}</div>
+                        {{ header_form.session_date.errors }}
+                    </div>
+
+                    <div class="form-row compact">
+                        <div>{{ header_form.duration_minutes.label_tag }}</div>
+                        <div>{{ header_form.duration_minutes }}</div>
+                        <div class="form-help">Required only when the session is completed now.</div>
+                        {{ header_form.duration_minutes.errors }}
+                    </div>
+
+                    <div class="form-row compact">
+                        <details class="session-inline-details" {% if header_form.notes.value %}open{% endif %}>
+                            <summary class="session-inline-details-summary">
+                                <span class="material-symbols-rounded">note_stack</span>
+                                <span>Notes</span>
+                            </summary>
+                            <div class="session-inline-details-body">
+                                {{ header_form.notes }}
+                                {{ header_form.notes.errors }}
+                            </div>
+                        </details>
+                    </div>
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="primary-button">Save header</button>
+                <div class="form-actions session-form-actions">
+                    <button type="submit" class="primary-button session-primary-submit">Save header</button>
                 </div>
             </form>
         </div>

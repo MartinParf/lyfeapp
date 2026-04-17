@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Create Workout Session</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Start a new session and define the execution context before training starts.
+    Start a new session with a compact setup. Keep the date obvious and the rest lightweight.
 </p>
 
 <div class="form-hero">
@@ -18,7 +18,7 @@
 
             <div class="form-hero-title">Create Session</div>
             <div class="form-hero-copy">
-                Set the training context now. Exercises and details can be adjusted later.
+                Focus, pool, date and duration first. Everything else can stay quiet.
             </div>
 
             <div class="action-group">
@@ -27,44 +27,81 @@
                 </a>
             </div>
         </div>
-
-        <div class="form-hero-card">
-            <div class="form-hero-mini-grid">
-                <div class="form-hero-mini-tile">
-                    <div class="form-hero-mini-label">Goal</div>
-                    <div class="form-hero-mini-value">Fast setup</div>
-                </div>
-                <div class="form-hero-mini-tile">
-                    <div class="form-hero-mini-label">Flow</div>
-                    <div class="form-hero-mini-value">Create → add work</div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
-<form method="post" class="form-shell">
+<form method="post" class="form-shell session-compact-form">
     {% csrf_token %}
 
+    {% if form.non_field_errors %}
+        <div class="form-section panel-soft">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
     <div class="form-section panel-soft">
-        <h3 class="form-section-title">Session Details</h3>
-
-        {% for field in form %}
-            <div class="form-row">
-                <div>{{ field.label_tag }}</div>
-                <div>{{ field }}</div>
-
-                {% if field.help_text %}
-                    <div class="form-help">{{ field.help_text }}</div>
-                {% endif %}
-
-                {{ field.errors }}
+        <div class="section-bar" style="margin-bottom: 10px;">
+            <div class="section-bar-title">
+                <div class="section-kicker">Session setup</div>
+                <h3 class="list-card-title" style="margin-bottom: 0;">Details</h3>
             </div>
-        {% endfor %}
+        </div>
+
+        <div class="session-form-grid">
+            <div class="form-row compact">
+                <div>{{ form.focus.label_tag }}</div>
+                <div>{{ form.focus }}</div>
+                {{ form.focus.errors }}
+            </div>
+
+            <div class="form-row compact">
+                <div>{{ form.source_pool.label_tag }}</div>
+                <div>{{ form.source_pool }}</div>
+                {{ form.source_pool.errors }}
+            </div>
+
+            <div class="form-row compact session-planned-row">
+                <label class="session-toggle-control">
+                    {{ form.planned }}
+                    <span>Planned</span>
+                </label>
+                {{ form.planned.errors }}
+            </div>
+
+            <div class="form-row compact">
+                <div>{{ form.session_date.label_tag }}</div>
+                <div>{{ form.session_date }}</div>
+                {{ form.session_date.errors }}
+            </div>
+
+            <div class="form-row compact">
+                <div>{{ form.duration_minutes.label_tag }}</div>
+                <div>{{ form.duration_minutes }}</div>
+                <div class="form-help">Required only when the session is completed now.</div>
+                {{ form.duration_minutes.errors }}
+            </div>
+
+            <div class="form-row compact">
+                <details class="session-inline-details" {% if form.notes.value %}open{% endif %}>
+                    <summary class="session-inline-details-summary">
+                        <span class="material-symbols-rounded">note_stack</span>
+                        <span>Notes</span>
+                    </summary>
+                    <div class="session-inline-details-body">
+                        {{ form.notes }}
+                        {{ form.notes.errors }}
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div class="form-help" style="margin-top: 8px;">
+            Date stays explicit. Detailed time stays internal for now and is derived from duration.
+        </div>
     </div>
 
-    <div class="form-actions">
-        <button type="submit" class="primary-button">Create session</button>
+    <div class="form-actions session-form-actions">
+        <button type="submit" class="primary-button session-primary-submit">Create session</button>
     </div>
 </form>
 {% endblock %}

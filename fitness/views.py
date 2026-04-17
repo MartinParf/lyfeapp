@@ -489,6 +489,8 @@ class WorkoutSessionCreateView(LoginRequiredMixin, View):
                 if session_exercises:
                     WorkoutSessionExercise.objects.bulk_create(session_exercises)
 
+            if session.status == WorkoutSessionStatus.PLANNED:
+                return redirect("fitness:session-list")
             return redirect("fitness:session-detail", pk=session.pk)
 
         return render(request, self.template_name, {"form": form})
