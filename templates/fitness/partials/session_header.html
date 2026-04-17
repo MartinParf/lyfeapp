@@ -1,52 +1,29 @@
 <div id="session-header" class="list-card panel-soft session-header-shell">
-    <div class="session-header-strip">
-        <div class="session-header-summary">
-            <div class="session-header-summary-main">
-                <div class="session-focus-chip">{{ session.get_focus_display }}</div>
+    <div class="session-header-action-strip">
+        <div class="session-icon-actions">
+            <details class="session-header-edit-toggle" {% if header_form.errors %}open{% endif %}>
+                <summary class="icon-button" title="Edit header" aria-label="Edit header">
+                    <span class="material-symbols-rounded">edit</span>
+                </summary>
+            </details>
 
-                <div class="muted-compact">
-                    {{ session.scheduled_date|date:"d.m.Y"|default:"-" }}
-                </div>
+            <form method="post" action="{% url 'fitness:session-clone' session.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="icon-button" aria-label="Clone session" title="Clone">
+                    <span class="material-symbols-rounded">content_copy</span>
+                </button>
+            </form>
 
-                <div class="muted-compact">
-                    {% if session.source_pool %}
-                        {{ session.source_pool }}
-                    {% else %}
-                        No pool
-                    {% endif %}
-                </div>
-
-                <div class="muted-compact">
-                    Duration:
-                    <strong style="color: var(--text);">{{ session.duration_label }}</strong>
-                </div>
-            </div>
-
-            <div class="session-icon-actions">
-                <details class="session-header-edit-toggle" {% if header_form.errors %}open{% endif %}>
-                    <summary class="icon-button" title="Edit header" aria-label="Edit header">
-                        <span class="material-symbols-rounded">edit</span>
-                    </summary>
-                </details>
-
-                <form method="post" action="{% url 'fitness:session-clone' session.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="icon-button" aria-label="Clone session" title="Clone">
-                        <span class="material-symbols-rounded">content_copy</span>
-                    </button>
-                </form>
-
-                <form
-                    method="post"
-                    action="{% url 'fitness:session-delete' session.pk %}"
-                    onsubmit="return confirm('Delete this workout session?');"
-                >
-                    {% csrf_token %}
-                    <button type="submit" class="icon-button icon-button-danger" aria-label="Delete session" title="Delete">
-                        <span class="material-symbols-rounded">delete</span>
-                    </button>
-                </form>
-            </div>
+            <form
+                method="post"
+                action="{% url 'fitness:session-delete' session.pk %}"
+                onsubmit="return confirm('Delete this workout session?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="icon-button icon-button-danger" aria-label="Delete session" title="Delete">
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
+            </form>
         </div>
     </div>
 

@@ -3146,3 +3146,312 @@ body.mode-fitness .session-calendar-day.has-completed {
         gap: 6px;
     }
 }
+/* =========================================================
+   F12.UX.S4.A + S4.B / SESSION DETAIL HEAD + EXERCISE PICKER
+   ========================================================= */
+
+   .session-detail-head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 12px;
+}
+
+.session-detail-head-main {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.session-detail-head-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+}
+
+.session-page-head .session-mini-grid {
+    margin-top: 10px;
+}
+
+.session-header-shell {
+    display: grid;
+    gap: 8px;
+}
+
+.session-header-action-strip {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.session-header-edit-toggle {
+    display: inline-flex;
+}
+
+.session-header-edit-toggle > summary {
+    list-style: none;
+}
+
+.session-header-edit-toggle > summary::-webkit-details-marker {
+    display: none;
+}
+
+.session-header-editor {
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+}
+
+.session-header-editor-summary {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: var(--text-soft);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.session-header-editor-summary::-webkit-details-marker {
+    display: none;
+}
+
+.session-header-editor-body {
+    margin-top: 10px;
+}
+
+.session-exercise-add-card .form-actions {
+    margin-top: 10px;
+}
+
+.session-exercise-add-card select optgroup {
+    color: var(--text-soft);
+    font-style: normal;
+}
+
+@media (max-width: 768px) {
+    .session-detail-head-row {
+        display: grid;
+        gap: 10px;
+    }
+
+    .session-header-action-strip {
+        justify-content: flex-start;
+    }
+}
+/* =========================================================
+   F12.UX.S4.C + S4.D / EXERCISE CARDS + SET LOGGER
+   ========================================================= */
+
+   .exercise-entry-card summary,
+   .session-set-block summary,
+   .session-add-set-block summary,
+   .session-secondary-details summary {
+       list-style: none;
+       cursor: pointer;
+   }
+   
+   .exercise-entry-card summary::-webkit-details-marker,
+   .session-set-block summary::-webkit-details-marker,
+   .session-add-set-block summary::-webkit-details-marker,
+   .session-secondary-details summary::-webkit-details-marker {
+       display: none;
+   }
+   
+   .exercise-entry-card > summary,
+   .session-set-block > summary,
+   .session-add-set-block > summary {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       gap: 10px;
+   }
+   
+   .exercise-entry-title {
+       font-size: 16px;
+       line-height: 1.1;
+   }
+   
+   .session-collapse-indicator {
+       font-size: 18px;
+       color: var(--text-dim);
+       flex: 0 0 auto;
+   }
+   
+   .exercise-entry-card[open] .session-collapse-indicator,
+   .session-set-block[open] .session-collapse-indicator,
+   .session-add-set-block[open] .session-collapse-indicator {
+       transform: rotate(180deg);
+   }
+   
+   .exercise-entry-content {
+       margin-top: 10px;
+       display: grid;
+       gap: 10px;
+   }
+   
+   .session-toolbar-icons {
+       display: flex;
+       gap: 6px;
+       align-items: center;
+   }
+   
+   .session-toolbar-icons form {
+       display: inline-flex;
+       margin: 0;
+   }
+   
+   .session-set-title {
+       font-size: 13px;
+       line-height: 1.05;
+   }
+   
+   .session-set-content {
+       margin-top: 10px;
+       display: grid;
+       gap: 10px;
+   }
+   
+   .session-set-form-grid {
+       display: grid;
+       grid-template-columns: 1.2fr 1fr 1fr;
+       gap: 8px;
+   }
+   
+   .session-set-type-row {
+       grid-column: 1 / -1;
+   }
+   
+   .session-set-type-chips {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 6px;
+   }
+   
+   .session-set-type-chip {
+       position: relative;
+       display: inline-flex;
+       align-items: center;
+   }
+   
+   .session-set-type-chip input {
+       position: absolute;
+       inset: 0;
+       opacity: 0;
+       cursor: pointer;
+   }
+   
+   .session-set-type-chip span {
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       min-height: 34px;
+       padding: 0 12px;
+       border-radius: 999px;
+       border: 1px solid var(--line);
+       background: linear-gradient(180deg, var(--panel-3) 0%, var(--panel-2) 100%);
+       color: var(--text);
+       font-size: 12px;
+       font-weight: 700;
+       white-space: nowrap;
+   }
+   
+   .session-set-type-chip input:checked + span {
+       border-color: color-mix(in srgb, var(--mode) 56%, var(--line-2));
+       background:
+           linear-gradient(
+               180deg,
+               color-mix(in srgb, var(--mode) 14%, var(--panel-3)) 0%,
+               color-mix(in srgb, var(--mode) 8%, var(--panel-2)) 100%
+           );
+       color: #ffffff;
+   }
+   
+   .session-set-type-chip-secondary span {
+       min-height: 32px;
+       padding: 0 10px;
+       font-size: 11px;
+   }
+   
+   .session-set-type-more {
+       margin-top: 6px;
+   }
+   
+   .session-set-type-more summary {
+       display: inline-flex;
+       align-items: center;
+       gap: 6px;
+       color: var(--text-soft);
+       font-size: 11px;
+       font-weight: 700;
+   }
+   
+   .session-set-type-more-grid {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 6px;
+       margin-top: 8px;
+   }
+   
+   .session-rpe-row {
+       margin-top: 2px;
+   }
+   
+   .session-rpe-shell {
+       display: grid;
+       grid-template-columns: 1fr auto;
+       gap: 10px;
+       align-items: center;
+   }
+   
+   .session-rpe-shell input[type="range"] {
+       width: 100%;
+       accent-color: var(--mode);
+   }
+   
+   .session-rpe-value {
+       min-width: 36px;
+       text-align: center;
+       padding: 6px 8px;
+       border-radius: 10px;
+       border: 1px solid var(--line);
+       background: var(--panel-3);
+       color: var(--text);
+       font-size: 12px;
+       font-weight: 800;
+   }
+   
+   .session-set-notes-details {
+       margin-top: 2px;
+   }
+   
+   .session-set-notes-details summary {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       gap: 8px;
+   }
+   
+   .session-empty-tight {
+       padding: 10px 12px;
+       border: 1px dashed var(--line);
+       border-radius: 12px;
+       color: var(--text-soft);
+       font-size: 12px;
+   }
+   
+   @media (max-width: 768px) {
+       .session-set-form-grid {
+           grid-template-columns: 1fr 1fr;
+       }
+   
+       .session-set-type-row {
+           grid-column: 1 / -1;
+       }
+   
+       .exercise-entry-title {
+           font-size: 15px;
+       }
+   }

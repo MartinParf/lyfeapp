@@ -173,18 +173,123 @@ class WorkoutSessionExerciseForm(forms.ModelForm):
     class Meta:
         model = WorkoutSessionExercise
         fields = ["exercise", "notes"]
+        widgets = {
+            "notes": forms.Textarea(
+                attrs={
+                    "rows": 2,
+                    "placeholder": "Optional exercise notes",
+                }
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
-        kwargs.pop("session", None)
+        session = kwargs.pop("session", None)
         super().__init__(*args, **kwargs)
-        self.fields["exercise"].queryset = Exercise.objects.filter(is_active=True).order_by("name")
+
+        queryset = Exercise.objects.filter(is_active=True).order_by("name")
+        self.fields["exercise"].queryset = queryset
+        self.fields["notes"].required = False
+        self.fields["exercise"].choices = self._build_grouped_exercise_choices(
+            queryset=queryset,
+            session=session,
+        )
+
+    def _exercise_choice(self, exercise):
+        return (exercise.pk, exercise.name)
+
+    def _build_grouped_exercise_choices(self, queryset, session):
+        grouped_choices = [("", "Select exercise")]
+        used_ids = set()
+
+        if session is not None:
+            suggested_qs = Exercise.objects.none()
+
+            if session.source_pool_id:
+                pool_exercise_ids = list(
+                    session.source_pool.items.filter(is_active=True).values_list("exercise_id", flat=True)
+                )
+                if pool_exercise_ids:
+                    suggested_qs = queryset.filter(pk__in=pool_exercise_ids).order_by("name")
+
+            if suggested_qs.exists():
+                grouped_choices.append(
+                    ("Suggested", [self._exercise_choice(ex) for ex in suggested_qs])
+                )
+                used_ids.update(suggested_qs.values_list("pk", flat=True))
+
+            same_focus_qs = queryset.filter(
+                primary_pattern=session.focus
+            ).exclude(pk__in=used_ids).order_by("name")
+
+            if same_focus_qs.exists():
+                grouped_choices.append(
+                    ("Same focus", [self._exercise_choice(ex) for ex in same_focus_qs])
+                )
+                used_ids.update(same_focus_qs.values_list("pk", flat=True))
+
+        remaining_qs = queryset.exclude(pk__in=used_ids)
+        pattern_choices = list(Exercise._meta.get_field("primary_pattern").choices)
+
+        for value, label in pattern_choices:
+            pattern_qs = remaining_qs.filter(primary_pattern=value).order_by("name")
+            if pattern_qs.exists():
+                grouped_choices.append(
+                    (f"All · {label}", [self._exercise_choice(ex) for ex in pattern_qs])
+                )
+
+        other_qs = remaining_qs.exclude(
+            primary_pattern__in=[value for value, _ in pattern_choices]
+        ).order_by("name")
+        if other_qs.exists():
+            grouped_choices.append(
+                ("All · Other", [self._exercise_choice(ex) for ex in other_qs])
+            )
+
+        return grouped_choices
 
 
 class WorkoutSetForm(forms.ModelForm):
     class Meta:
         model = WorkoutSet
         fields = ["set_type", "weight_kg", "reps", "rpe", "notes"]
+        widgets = {
+            "set_type": forms.RadioSelect,
+            "weight_kg": forms.NumberInput(
+                attrs={
+                    "step": "0.5",
+                    "inputmode": "decimal",
+                    "placeholder": "40",
+                }
+            ),
+            "reps": forms.NumberInput(
+                attrs={
+                    "step": "1",
+                    "inputmode": "numeric",
+                    "placeholder": "8",
+                }
+            ),
+            "rpe": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": "4",
+                    "max": "10",
+                    "step": "0.5",
+                }
+            ),
+            "notes": forms.Textarea(
+                attrs={
+                    "rows": 2,
+                    "placeholder": "Optional set notes",
+                }
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         kwargs.pop("session_exercise", None)
         super().__init__(*args, **kwargs)
+
+        self.fields["set_type"].required = False
+        self.fields["weight_kg"].required = False
+        self.fields["reps"].required = False
+        self.fields["rpe"].required = False
+        self.fields["notes"].required = False

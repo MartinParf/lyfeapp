@@ -1,5 +1,5 @@
 <div id="session-exercises" class="session-exercises-block">
-    <div class="list-card panel-accent">
+    <div class="list-card panel-accent session-exercise-add-card">
         <div class="section-bar">
             <div class="section-bar-title">
                 <div class="section-kicker">Exercises</div>
@@ -19,6 +19,10 @@
             </div>
         </div>
 
+        <div class="muted" style="margin-bottom: 8px;">
+            Suggested first, then same focus, then the grouped exercise library.
+        </div>
+
         <form
             method="post"
             hx-post="{% url 'fitness:htmx-session-add-exercise' session.pk %}"
@@ -28,15 +32,12 @@
         >
             {% csrf_token %}
 
-            {% for field in session.add_exercise_form %}
-                {% if field.name != "notes" %}
-                    <div class="form-row">
-                        <div>{{ field.label_tag }}</div>
-                        <div>{{ field }}</div>
-                        {{ field.errors }}
-                    </div>
-                {% endif %}
-            {% endfor %}
+            <div class="form-row compact" style="margin-bottom: 0;">
+                <div>{{ session.add_exercise_form.exercise.label_tag }}</div>
+                <div>{{ session.add_exercise_form.exercise }}</div>
+                <div class="form-help">Use Suggested / Same focus / All groups in the dropdown.</div>
+                {{ session.add_exercise_form.exercise.errors }}
+            </div>
 
             {% if session.add_exercise_form.notes %}
                 <details class="session-secondary-details">
@@ -55,14 +56,14 @@
                 </details>
             {% endif %}
 
-            <div class="form-actions">
-                <button type="submit" class="primary-button">Add exercise</button>
+            <div class="form-actions session-form-actions">
+                <button type="submit" class="primary-button session-primary-submit">Add exercise</button>
             </div>
         </form>
     </div>
 
     {% for entry in session.session_exercises.all %}
-        {% include "fitness/partials/session_exercise_card.html" with entry=entry session=session is_first=forloop.first %}
+        {% include "fitness/partials/session_exercise_card.html" with entry=entry session=session is_first=False %}
     {% empty %}
         <div class="list-card panel-soft">
             <div class="list-card-title">No exercises in this session yet</div>

@@ -5,22 +5,26 @@
 {% block content %}
 <h1>Session #{{ session.id }}</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Compact execution view. Keep the next training action near the top.
+    Execution view. Keep logging compact and the next action obvious.
 </p>
 
 <div class="list-card panel-accent session-page-head">
-    <div class="session-top-grid">
-        <div>
+    <div class="session-detail-head-row">
+        <div class="session-detail-head-main">
             <div class="section-kicker">Execution</div>
-            <div class="list-card-title" style="margin-bottom: 4px;">Workout session</div>
-            <div class="muted">
-                Fast logging, compact exercise cards, and less scroll pressure.
-            </div>
 
-            <div class="session-top-meta" style="margin-top: 8px;">
-                <div class="execution-badge">Session #{{ session.id }}</div>
-                <div class="execution-badge">{{ session.get_focus_display }}</div>
-                <div class="execution-badge">{{ session.get_status_display }}</div>
+            <div class="session-detail-head-meta">
+                <div class="session-focus-chip">{{ session.get_focus_display }}</div>
+
+                <span class="session-inline-state" title="{{ session.ui_status|title }}">
+                    <span class="material-symbols-rounded session-state-icon">
+                        {% if session.is_ui_completed %}check_circle{% else %}event{% endif %}
+                    </span>
+                </span>
+
+                <div class="muted-compact">
+                    {{ session.source_pool|default:"No pool" }}
+                </div>
             </div>
         </div>
 
@@ -36,30 +40,13 @@
 
     <div class="session-mini-grid">
         <div class="session-mini-tile">
-            <div class="meta-item-label">Source pool</div>
-            <div class="meta-item-value">{{ session.source_pool|default:"-" }}</div>
+            <div class="meta-item-label">Date</div>
+            <div class="meta-item-value">{{ session.effective_date|date:"d.m.Y" }}</div>
         </div>
 
         <div class="session-mini-tile">
-            <div class="meta-item-label">Scheduled</div>
-            <div class="meta-item-value">
-                {% if session.scheduled_date %}
-                    {{ session.scheduled_date|date:"d.m.Y" }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="session-mini-tile">
-            <div class="meta-item-label">Started</div>
-            <div class="meta-item-value">
-                {% if session.started_at %}
-                    {{ session.started_at|date:"d.m.Y H:i" }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
+            <div class="meta-item-label">Duration</div>
+            <div class="meta-item-value">{{ session.duration_label }}</div>
         </div>
 
         <div class="session-mini-tile">

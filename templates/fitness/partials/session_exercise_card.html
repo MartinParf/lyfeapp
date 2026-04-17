@@ -1,11 +1,13 @@
-<details class="exercise-entry-card list-card panel-soft" {% if is_first %}open{% endif %}>
+<details class="exercise-entry-card list-card panel-soft">
     <summary>
         <div class="exercise-entry-meta">
             <div class="exercise-entry-subline">
                 Exercise #{{ entry.sequence }}{% if entry.source_pool_item %} • From pool{% endif %}
             </div>
 
-            <div class="list-card-title" style="margin-bottom: 0;">{{ entry.exercise.name }}</div>
+            <div class="list-card-title exercise-entry-title" style="margin-bottom: 0;">
+                {{ entry.exercise.name }}
+            </div>
 
             <div class="muted-compact">
                 {{ entry.sets.count }} set{{ entry.sets.count|pluralize }}
@@ -17,11 +19,11 @@
             </div>
         </div>
 
-        <div class="muted-compact">Open</div>
+        <span class="material-symbols-rounded session-collapse-indicator">expand_more</span>
     </summary>
 
     <div class="exercise-entry-content">
-        <div class="session-toolbar">
+        <div class="session-toolbar session-toolbar-icons">
             <form
                 method="post"
                 hx-post="{% url 'fitness:htmx-session-move-exercise' session.pk entry.pk 'up' %}"
@@ -30,7 +32,9 @@
                 class="preserve-scroll"
             >
                 {% csrf_token %}
-                <button type="submit">↑</button>
+                <button type="submit" class="icon-button" title="Move up" aria-label="Move exercise up">
+                    <span class="material-symbols-rounded">arrow_upward</span>
+                </button>
             </form>
 
             <form
@@ -41,7 +45,9 @@
                 class="preserve-scroll"
             >
                 {% csrf_token %}
-                <button type="submit">↓</button>
+                <button type="submit" class="icon-button" title="Move down" aria-label="Move exercise down">
+                    <span class="material-symbols-rounded">arrow_downward</span>
+                </button>
             </form>
 
             <form
@@ -53,60 +59,78 @@
                 class="preserve-scroll"
             >
                 {% csrf_token %}
-                <button type="submit" class="danger">Remove</button>
+                <button type="submit" class="icon-button icon-button-danger" title="Remove exercise" aria-label="Remove exercise">
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
             </form>
         </div>
 
         {% if entry.notes %}
-            <div class="session-history-card">
-                <div class="meta-item-label">Notes</div>
-                <div class="muted">{{ entry.notes }}</div>
-            </div>
+            <details class="session-secondary-details">
+                <summary>
+                    <span class="session-section-heading">Exercise notes</span>
+                    <span class="muted-compact">Open</span>
+                </summary>
+                <div class="session-set-content">
+                    <div class="muted">{{ entry.notes }}</div>
+                </div>
+            </details>
         {% endif %}
 
         {% if entry.last_set or entry.best_set or entry.try_weight_kg %}
-            <div class="session-history-grid">
-                {% if entry.last_set or entry.best_set %}
-                    <div class="session-history-card">
-                        <div class="meta-item-label">Performance history</div>
+            <details class="session-secondary-details">
+                <summary>
+                    <span class="session-section-heading">History & suggestion</span>
+                    <span class="muted-compact">Open</span>
+                </summary>
 
-                        {% if entry.last_set %}
-                            <div class="muted" style="margin-top: 6px;">
-                                Previous:
-                                <strong>{{ entry.last_set.weight_kg|default:"-" }} kg × {{ entry.last_set.reps|default:"-" }}</strong>
+                <div class="session-set-content">
+                    <div class="session-history-grid">
+                        {% if entry.last_set or entry.best_set %}
+                            <div class="session-history-card">
+                                <div class="meta-item-label">Performance history</div>
+
+                                {% if entry.last_set %}
+                                    <div class="muted" style="margin-top: 6px;">
+                                        Previous:
+                                        <strong>{{ entry.last_set.weight_kg|default:"-" }} kg × {{ entry.last_set.reps|default:"-" }}</strong>
+                                    </div>
+                                {% endif %}
+
+                                {% if entry.best_set %}
+                                    <div class="muted" style="margin-top: 4px;">
+                                        Best:
+                                        <strong>{{ entry.best_set.weight_kg|default:"-" }} kg × {{ entry.best_set.reps|default:"-" }}</strong>
+                                    </div>
+                                {% endif %}
                             </div>
                         {% endif %}
 
-                        {% if entry.best_set %}
-                            <div class="muted" style="margin-top: 4px;">
-                                Best:
-                                <strong>{{ entry.best_set.weight_kg|default:"-" }} kg × {{ entry.best_set.reps|default:"-" }}</strong>
+                        {% if entry.try_weight_kg %}
+                            <div class="session-history-card session-history-card-accent">
+                                <div class="meta-item-label">Suggested next set</div>
+                                <div class="meta-item-value" style="margin-top: 6px;">
+                                    {{ entry.try_weight_kg }} kg × {{ entry.try_reps|default:"-" }}
+                                </div>
+
+                                <form
+                                    method="post"
+                                    hx-post="{% url 'fitness:htmx-set-apply-suggestion' session.pk entry.pk %}"
+                                    hx-target="#session-exercises"
+                                    hx-swap="outerHTML"
+                                    class="preserve-scroll"
+                                    style="margin-top: 8px;"
+                                >
+                                    {% csrf_token %}
+                                    <button type="submit" class="primary-button session-primary-submit">
+                                        Apply suggestion
+                                    </button>
+                                </form>
                             </div>
                         {% endif %}
                     </div>
-                {% endif %}
-
-                {% if entry.try_weight_kg %}
-                    <div class="session-history-card session-history-card-accent">
-                        <div class="meta-item-label">Suggested next set</div>
-                        <div class="meta-item-value" style="margin-top: 6px;">
-                            {{ entry.try_weight_kg }} kg × {{ entry.try_reps|default:"-" }}
-                        </div>
-
-                        <form
-                            method="post"
-                            hx-post="{% url 'fitness:htmx-set-apply-suggestion' session.pk entry.pk %}"
-                            hx-target="#session-exercises"
-                            hx-swap="outerHTML"
-                            class="preserve-scroll"
-                            style="margin-top: 8px;"
-                        >
-                            {% csrf_token %}
-                            <button type="submit" class="primary-button">Apply suggestion</button>
-                        </form>
-                    </div>
-                {% endif %}
-            </div>
+                </div>
+            </details>
         {% endif %}
 
         <div>
@@ -116,7 +140,7 @@
                 <details class="session-set-block">
                     <summary>
                         <div class="exercise-entry-meta">
-                            <div class="list-card-title" style="margin-bottom: 0; font-size: 13px;">
+                            <div class="list-card-title session-set-title" style="margin-bottom: 0;">
                                 Set #{{ workout_set.set_order }}
                             </div>
 
@@ -127,11 +151,11 @@
                             </div>
                         </div>
 
-                        <div class="muted-compact">Edit</div>
+                        <span class="material-symbols-rounded session-collapse-indicator">expand_more</span>
                     </summary>
 
                     <div class="session-set-content">
-                        <div class="session-toolbar">
+                        <div class="session-toolbar session-toolbar-icons">
                             <form
                                 method="post"
                                 hx-post="{% url 'fitness:htmx-set-move' session.pk workout_set.pk 'up' %}"
@@ -140,7 +164,9 @@
                                 class="preserve-scroll"
                             >
                                 {% csrf_token %}
-                                <button type="submit">↑</button>
+                                <button type="submit" class="icon-button" title="Move set up" aria-label="Move set up">
+                                    <span class="material-symbols-rounded">arrow_upward</span>
+                                </button>
                             </form>
 
                             <form
@@ -151,7 +177,9 @@
                                 class="preserve-scroll"
                             >
                                 {% csrf_token %}
-                                <button type="submit">↓</button>
+                                <button type="submit" class="icon-button" title="Move set down" aria-label="Move set down">
+                                    <span class="material-symbols-rounded">arrow_downward</span>
+                                </button>
                             </form>
 
                             <form
@@ -163,7 +191,9 @@
                                 class="preserve-scroll"
                             >
                                 {% csrf_token %}
-                                <button type="submit" class="danger">Delete</button>
+                                <button type="submit" class="icon-button icon-button-danger" title="Delete set" aria-label="Delete set">
+                                    <span class="material-symbols-rounded">delete</span>
+                                </button>
                             </form>
                         </div>
 
@@ -176,40 +206,76 @@
                         >
                             {% csrf_token %}
 
-                            <div class="session-compact-form-grid">
-                                <div class="form-row" style="margin-bottom: 0;">
-                                    <div class="compact-label">{{ workout_set.edit_form.set_type.label }}</div>
-                                    {{ workout_set.edit_form.set_type }}
+                            <div class="session-set-form-grid">
+                                <div class="form-row compact session-set-type-row">
+                                    <div class="compact-label">Set type</div>
+
+                                    <div class="session-set-type-chips">
+                                        {% for radio in workout_set.edit_form.set_type %}
+                                            {% if forloop.counter <= 3 %}
+                                                <label class="session-set-type-chip">
+                                                    {{ radio.tag }}
+                                                    <span>{{ radio.choice_label }}</span>
+                                                </label>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                    <details class="session-set-type-more">
+                                        <summary>More types</summary>
+                                        <div class="session-set-type-more-grid">
+                                            {% for radio in workout_set.edit_form.set_type %}
+                                                {% if forloop.counter > 3 %}
+                                                    <label class="session-set-type-chip session-set-type-chip-secondary">
+                                                        {{ radio.tag }}
+                                                        <span>{{ radio.choice_label }}</span>
+                                                    </label>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+
                                     {{ workout_set.edit_form.set_type.errors }}
                                 </div>
 
-                                <div class="form-row" style="margin-bottom: 0;">
+                                <div class="form-row compact">
                                     <div class="compact-label">{{ workout_set.edit_form.weight_kg.label }}</div>
                                     {{ workout_set.edit_form.weight_kg }}
                                     {{ workout_set.edit_form.weight_kg.errors }}
                                 </div>
 
-                                <div class="form-row" style="margin-bottom: 0;">
+                                <div class="form-row compact">
                                     <div class="compact-label">{{ workout_set.edit_form.reps.label }}</div>
                                     {{ workout_set.edit_form.reps }}
                                     {{ workout_set.edit_form.reps.errors }}
                                 </div>
+                            </div>
 
-                                <div class="form-row" style="margin-bottom: 0;">
-                                    <div class="compact-label">{{ workout_set.edit_form.rpe.label }}</div>
+                            <div class="form-row compact session-rpe-row">
+                                <div class="compact-label">RPE</div>
+                                <div class="session-rpe-shell">
                                     {{ workout_set.edit_form.rpe }}
-                                    {{ workout_set.edit_form.rpe.errors }}
+                                    <div class="session-rpe-value">
+                                        {{ workout_set.edit_form.rpe.value|default:"7" }}
+                                    </div>
                                 </div>
+                                {{ workout_set.edit_form.rpe.errors }}
                             </div>
 
-                            <div class="form-row" style="margin: 8px 0 0 0;">
-                                <div class="compact-label">{{ workout_set.edit_form.notes.label }}</div>
-                                {{ workout_set.edit_form.notes }}
-                                {{ workout_set.edit_form.notes.errors }}
-                            </div>
+                            <details class="session-secondary-details session-set-notes-details">
+                                <summary>
+                                    <span class="session-section-heading">Set notes</span>
+                                    <span class="muted-compact">Open</span>
+                                </summary>
 
-                            <div class="form-actions">
-                                <button type="submit">Save set</button>
+                                <div class="session-set-content">
+                                    {{ workout_set.edit_form.notes }}
+                                    {{ workout_set.edit_form.notes.errors }}
+                                </div>
+                            </details>
+
+                            <div class="form-actions session-form-actions">
+                                <button type="submit" class="primary-button session-primary-submit">Save set</button>
                             </div>
                         </form>
                     </div>
@@ -221,8 +287,8 @@
 
         <details class="session-add-set-block">
             <summary>
-                <span class="session-section-heading">Add new set</span>
-                <span class="muted-compact">Open</span>
+                <span class="session-section-heading">Add set</span>
+                <span class="material-symbols-rounded session-collapse-indicator">expand_more</span>
             </summary>
 
             <div class="session-set-content">
@@ -235,7 +301,7 @@
                         class="preserve-scroll"
                     >
                         {% csrf_token %}
-                        <button type="submit">Repeat last set</button>
+                        <button type="submit" class="link-button">Repeat last set</button>
                     </form>
                 </div>
 
@@ -248,40 +314,76 @@
                 >
                     {% csrf_token %}
 
-                    <div class="session-compact-form-grid">
-                        <div class="form-row" style="margin-bottom: 0;">
-                            <div class="compact-label">{{ entry.add_set_form.set_type.label }}</div>
-                            {{ entry.add_set_form.set_type }}
+                    <div class="session-set-form-grid">
+                        <div class="form-row compact session-set-type-row">
+                            <div class="compact-label">Set type</div>
+
+                            <div class="session-set-type-chips">
+                                {% for radio in entry.add_set_form.set_type %}
+                                    {% if forloop.counter <= 3 %}
+                                        <label class="session-set-type-chip">
+                                            {{ radio.tag }}
+                                            <span>{{ radio.choice_label }}</span>
+                                        </label>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
+                            <details class="session-set-type-more">
+                                <summary>More types</summary>
+                                <div class="session-set-type-more-grid">
+                                    {% for radio in entry.add_set_form.set_type %}
+                                        {% if forloop.counter > 3 %}
+                                            <label class="session-set-type-chip session-set-type-chip-secondary">
+                                                {{ radio.tag }}
+                                                <span>{{ radio.choice_label }}</span>
+                                            </label>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </details>
+
                             {{ entry.add_set_form.set_type.errors }}
                         </div>
 
-                        <div class="form-row" style="margin-bottom: 0;">
+                        <div class="form-row compact">
                             <div class="compact-label">{{ entry.add_set_form.weight_kg.label }}</div>
                             {{ entry.add_set_form.weight_kg }}
                             {{ entry.add_set_form.weight_kg.errors }}
                         </div>
 
-                        <div class="form-row" style="margin-bottom: 0;">
+                        <div class="form-row compact">
                             <div class="compact-label">{{ entry.add_set_form.reps.label }}</div>
                             {{ entry.add_set_form.reps }}
                             {{ entry.add_set_form.reps.errors }}
                         </div>
+                    </div>
 
-                        <div class="form-row" style="margin-bottom: 0;">
-                            <div class="compact-label">{{ entry.add_set_form.rpe.label }}</div>
+                    <div class="form-row compact session-rpe-row">
+                        <div class="compact-label">RPE</div>
+                        <div class="session-rpe-shell">
                             {{ entry.add_set_form.rpe }}
-                            {{ entry.add_set_form.rpe.errors }}
+                            <div class="session-rpe-value">
+                                {{ entry.add_set_form.rpe.value|default:"7" }}
+                            </div>
                         </div>
+                        {{ entry.add_set_form.rpe.errors }}
                     </div>
 
-                    <div class="form-row" style="margin: 8px 0 0 0;">
-                        <div class="compact-label">{{ entry.add_set_form.notes.label }}</div>
-                        {{ entry.add_set_form.notes }}
-                        {{ entry.add_set_form.notes.errors }}
-                    </div>
+                    <details class="session-secondary-details session-set-notes-details">
+                        <summary>
+                            <span class="session-section-heading">Set notes</span>
+                            <span class="muted-compact">Open</span>
+                        </summary>
 
-                    <div class="form-actions">
-                        <button type="submit" class="primary-button">Add set</button>
+                        <div class="session-set-content">
+                            {{ entry.add_set_form.notes }}
+                            {{ entry.add_set_form.notes.errors }}
+                        </div>
+                    </details>
+
+                    <div class="form-actions session-form-actions">
+                        <button type="submit" class="primary-button session-primary-submit">Add set</button>
                     </div>
                 </form>
             </div>
