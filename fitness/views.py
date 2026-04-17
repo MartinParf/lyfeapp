@@ -6,6 +6,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import ListView
 from decimal import Decimal
+import calendar
+from datetime import datetime
+from django.utils import timezone
 
 from .forms import (
     ExerciseForm,
@@ -140,6 +143,81 @@ def render_session_header_partial(request, session):
             "header_form": header_form,
         },
     )
+
+def _parse_month_param(raw_value: str | None):
+    today = timezone.localdate().replace(day=1)
+    if not raw_value:
+        return today
+    try:
+        parsed = datetime.strptime(raw_value, "%Y-%m").date()
+        return parsed.replace(day=1)
+    except ValueError:
+        return today
+
+
+def _parse_day_param(raw_value: str | None):
+    if not raw_value:
+        return None
+    try:
+        return datetime.strptime(raw_value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _shift_month(anchor, delta: int):
+    total = anchor.year * 12 + (anchor.month - 1) + delta
+    year = total // 12
+    month = (total % 12) + 1
+    return anchor.replace(year=year, month=month, day=1)
+
+
+def _build_session_calendar(anchor, sessions, selected_day=None):
+    sessions_by_date = {}
+
+    for session in sessions:
+        bucket = sessions_by_date.setdefault(
+            session.effective_date,
+            {
+                "sessions": [],
+                "planned_count": 0,
+                "completed_count": 0,
+            },
+        )
+        bucket["sessions"].append(session)
+        if session.is_ui_completed:
+            bucket["completed_count"] += 1
+        else:
+            bucket["planned_count"] += 1
+
+    cal = calendar.Calendar(firstweekday=0)
+    today = timezone.localdate()
+    weeks = []
+
+    for week in cal.monthdatescalendar(anchor.year, anchor.month):
+        week_row = []
+        for day in week:
+            bucket = sessions_by_date.get(
+                day,
+                {
+                    "sessions": [],
+                    "planned_count": 0,
+                    "completed_count": 0,
+                },
+            )
+            week_row.append(
+                {
+                    "date": day,
+                    "in_month": day.month == anchor.month,
+                    "is_today": day == today,
+                    "selected": selected_day == day if selected_day else False,
+                    "planned_count": bucket["planned_count"],
+                    "completed_count": bucket["completed_count"],
+                    "session_count": len(bucket["sessions"]),
+                }
+            )
+        weeks.append(week_row)
+
+    return weeks, sessions_by_date
 
 class ExerciseListView(LoginRequiredMixin, ListView):
     model = Exercise
@@ -330,11 +408,54 @@ class WorkoutSessionListView(LoginRequiredMixin, ListView):
     context_object_name = "sessions"
 
     def get_queryset(self):
-        return (
+        sessions = list(
             WorkoutSession.objects.filter(user=self.request.user)
             .select_related("source_pool")
-            .order_by("-created_at", "-id")
         )
+        sessions.sort(
+            key=lambda session: (session.effective_date, session.created_at, session.id),
+            reverse=True,
+        )
+        return sessions
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        sessions = list(context["sessions"])
+        view_mode = self.request.GET.get("view", "calendar")
+        if view_mode not in {"calendar", "list"}:
+            view_mode = "calendar"
+
+        calendar_anchor = _parse_month_param(self.request.GET.get("month"))
+        selected_day = _parse_day_param(self.request.GET.get("day"))
+        calendar_weeks, sessions_by_date = _build_session_calendar(
+            calendar_anchor,
+            sessions,
+            selected_day=selected_day,
+        )
+
+        selected_day_sessions = []
+        if selected_day:
+            selected_day_sessions = sessions_by_date.get(selected_day, {}).get("sessions", [])
+            selected_day_sessions = sorted(
+                selected_day_sessions,
+                key=lambda session: (session.effective_date, session.created_at, session.id),
+                reverse=True,
+            )
+
+        context.update(
+            {
+                "view_mode": view_mode,
+                "calendar_anchor": calendar_anchor,
+                "calendar_month_param": calendar_anchor.strftime("%Y-%m"),
+                "calendar_prev_param": _shift_month(calendar_anchor, -1).strftime("%Y-%m"),
+                "calendar_next_param": _shift_month(calendar_anchor, 1).strftime("%Y-%m"),
+                "calendar_weeks": calendar_weeks,
+                "selected_day": selected_day,
+                "selected_day_sessions": selected_day_sessions,
+            }
+        )
+        return context
 
 
 class WorkoutSessionCreateView(LoginRequiredMixin, View):

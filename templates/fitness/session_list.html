@@ -5,10 +5,10 @@
 {% block content %}
 <h1>Workout Sessions</h1>
 <p class="muted" style="margin-bottom: 10px;">
-    Execution mode. Keep the session list near the top and the next action obvious.
+    Execution mode. Keep the session calendar near the top and the next action obvious.
 </p>
 
-<div class="list-card panel-accent">
+<div class="list-card panel-accent session-list-primary">
     <div class="section-bar">
         <div class="section-bar-title">
             <div class="section-kicker">Primary action</div>
@@ -24,141 +24,119 @@
             </a>
         </div>
     </div>
-
-    <div class="meta-grid two-col" style="margin-bottom: 0;">
-        <div>
-            <div class="meta-item-label">Session count</div>
-            <div class="meta-item-value">{{ sessions|length }}</div>
-        </div>
-
-        <div>
-            <div class="meta-item-label">Use</div>
-            <div class="meta-item-value">Open / clone / continue</div>
-        </div>
-    </div>
 </div>
 
-<div class="list-card panel-soft mobile-hidden">
-    <div class="section-kicker">Recovery shortcut</div>
-    <div class="list-card-title" style="margin-bottom: 4px;">BIO</div>
-    <div class="muted" style="margin-bottom: 8px;">
-        Jump back to daily signals only when you need recovery context.
-    </div>
+<div class="session-list-header-row">
+    <h2 style="margin: 0;">Sessions</h2>
 
-    <div class="action-group">
-        <a href="{% url 'bio:overview' %}" class="link-button">
-            Open BIO
+    <div class="session-view-toggle">
+        <a
+            href="?view=calendar&month={{ calendar_month_param }}"
+            class="session-view-toggle-link {% if view_mode == 'calendar' %}session-view-toggle-link-active{% endif %}"
+        >
+            <span class="material-symbols-rounded">calendar_month</span>
+            <span>Calendar</span>
         </a>
-        <a href="{% url 'bio:dailymetric-today' %}" class="link-button">
-            Today’s metric
+
+        <a
+            href="?view=list&month={{ calendar_month_param }}"
+            class="session-view-toggle-link {% if view_mode == 'list' %}session-view-toggle-link-active{% endif %}"
+        >
+            <span class="material-symbols-rounded">view_list</span>
+            <span>List</span>
         </a>
     </div>
 </div>
 
-<h2 style="margin: 12px 0 8px 0;">Sessions</h2>
-
-{% for session in sessions %}
-    <div class="list-card panel-soft">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
-            <div>
-                <div class="list-card-title" style="margin-bottom: 2px;">
-                    Session #{{ session.id }}
-                </div>
-                <div class="muted-compact">
-                    {% if session.scheduled_date %}
-                        {{ session.scheduled_date|date:"d.m.Y" }}
-                    {% else %}
-                        No scheduled date
-                    {% endif %}
-                </div>
-            </div>
-
-            <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px;">
-                <div
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        min-height: 24px;
-                        padding: 2px 8px;
-                        border: 1px solid var(--line-2);
-                        background: var(--panel-3);
-                        color: var(--text);
-                        font-size: 11px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        border-radius: var(--radius);
-                    "
-                >
-                    {{ session.get_focus_display }}
-                </div>
-
-                <div
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        min-height: 24px;
-                        padding: 2px 8px;
-                        border: 1px solid var(--line-2);
-                        background: var(--panel-2);
-                        color: var(--text-soft);
-                        font-size: 11px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        border-radius: var(--radius);
-                    "
-                >
-                    {{ session.get_status_display }}
-                </div>
-            </div>
-        </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
-            {% if session.source_pool %}
-                <div class="muted-compact">
-                    From pool: <strong style="color: var(--text);">{{ session.source_pool }}</strong>
-                </div>
-            {% endif %}
-
-            {% if session.started_at %}
-                <div class="muted-compact">
-                    Started {{ session.started_at|date:"d.m.Y H:i" }}
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="action-group">
-            <a href="{% url 'fitness:session-detail' session.pk %}" class="link-button primary-button">
-                Open
+{% if view_mode == "calendar" %}
+    <div class="list-card panel-soft session-calendar-shell">
+        <div class="session-calendar-top">
+            <a href="?view=calendar&month={{ calendar_prev_param }}" class="icon-button" aria-label="Previous month" title="Previous month">
+                <span class="material-symbols-rounded">chevron_left</span>
             </a>
 
-            <form method="post" action="{% url 'fitness:session-clone' session.pk %}">
-                {% csrf_token %}
-                <button type="submit">Clone</button>
-            </form>
+            <div class="session-calendar-title">
+                {{ calendar_anchor|date:"F Y" }}
+            </div>
 
-            <form
-                method="post"
-                action="{% url 'fitness:session-delete' session.pk %}"
-                onsubmit="return confirm('Delete this workout session?');"
-            >
-                {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
-            </form>
-        </div>
-    </div>
-{% empty %}
-    <div class="list-card panel-soft">
-        <div class="list-card-title">No workout sessions yet</div>
-        <div class="muted" style="margin-bottom: 8px;">
-            Start with a clean session and build your flow from there.
-        </div>
-        <div class="action-group">
-            <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
-                Create first session
+            <a href="?view=calendar&month={{ calendar_next_param }}" class="icon-button" aria-label="Next month" title="Next month">
+                <span class="material-symbols-rounded">chevron_right</span>
             </a>
         </div>
+
+        <div class="session-calendar-weekdays">
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+            <div>Sun</div>
+        </div>
+
+        <div class="session-calendar-grid">
+            {% for week in calendar_weeks %}
+                {% for day in week %}
+                    <a
+                        href="?view=calendar&month={{ calendar_month_param }}&day={{ day.date|date:'Y-m-d' }}"
+                        class="session-calendar-day
+                            {% if not day.in_month %}is-out-month{% endif %}
+                            {% if day.is_today %}is-today{% endif %}
+                            {% if day.selected %}is-selected{% endif %}
+                            {% if day.completed_count %}has-completed{% elif day.planned_count %}has-planned{% endif %}
+                        "
+                    >
+                        <div class="session-calendar-day-top">
+                            <span class="session-calendar-day-number">{{ day.date|date:"j" }}</span>
+                            {% if day.session_count %}
+                                <span class="session-calendar-day-count">{{ day.session_count }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="session-calendar-markers">
+                            {% if day.completed_count %}
+                                <span class="session-calendar-marker session-calendar-marker-completed"></span>
+                            {% endif %}
+                            {% if day.planned_count %}
+                                <span class="session-calendar-marker session-calendar-marker-planned"></span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            {% endfor %}
+        </div>
     </div>
-{% endfor %}
+
+    {% if selected_day %}
+        <div class="session-day-panel">
+            <div class="section-kicker">Selected day</div>
+            <h3 style="margin-bottom: 4px;">{{ selected_day|date:"d.m.Y" }}</h3>
+
+            {% for session in selected_day_sessions %}
+                {% include "fitness/partials/session_list_card.html" with session=session %}
+            {% empty %}
+                <div class="list-card panel-soft">
+                    <div class="list-card-title">No sessions on this day</div>
+                    <div class="muted">Choose another day or create a new session.</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% else %}
+    {% for session in sessions %}
+        {% include "fitness/partials/session_list_card.html" with session=session %}
+    {% empty %}
+        <div class="list-card panel-soft">
+            <div class="list-card-title">No workout sessions yet</div>
+            <div class="muted" style="margin-bottom: 8px;">
+                Start with a clean session and build your flow from there.
+            </div>
+            <div class="action-group">
+                <a href="{% url 'fitness:session-create' %}" class="link-button primary-button">
+                    Create first session
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
 {% endblock %}

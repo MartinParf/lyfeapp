@@ -189,6 +189,50 @@ class WorkoutSession(TimeStampedModel):
     def __str__(self) -> str:
         return f"WorkoutSession<{self.user_id} {self.focus} {self.status}>"
 
+    @property
+    def ui_status(self) -> str:
+        if self.status == WorkoutSessionStatus.COMPLETED or (
+            self.started_at and self.ended_at and self.ended_at >= self.started_at
+        ):
+            return WorkoutSessionStatus.COMPLETED
+        return WorkoutSessionStatus.PLANNED
+
+    @property
+    def is_ui_completed(self) -> bool:
+        return self.ui_status == WorkoutSessionStatus.COMPLETED
+
+    @property
+    def is_ui_planned(self) -> bool:
+        return self.ui_status == WorkoutSessionStatus.PLANNED
+
+    @property
+    def effective_date(self):
+        if self.scheduled_date:
+            return self.scheduled_date
+        if self.started_at:
+            return self.started_at.date()
+        if self.ended_at:
+            return self.ended_at.date()
+        return self.created_at.date()
+
+    @property
+    def duration_minutes(self):
+        if self.started_at and self.ended_at and self.ended_at > self.started_at:
+            return int((self.ended_at - self.started_at).total_seconds() // 60)
+        return None
+
+    @property
+    def duration_label(self) -> str:
+        minutes = self.duration_minutes
+        if minutes is None:
+            return "—"
+        hours, remaining = divmod(minutes, 60)
+        if hours and remaining:
+            return f"{hours}h {remaining}m"
+        if hours:
+            return f"{hours}h"
+        return f"{remaining}m"
+
 
 class WorkoutSessionExercise(TimeStampedModel):
     session = models.ForeignKey(
