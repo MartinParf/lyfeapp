@@ -3,236 +3,259 @@
 {% block title %}BIO Analytics | LYFE{% endblock %}
 
 {% block content %}
-<h1>Analytics</h1>
-<p class="muted" style="margin-bottom: 10px;">
-    Experimental analytics layer. Keep interpretation here first, then promote only proven signals back to overview.
-</p>
+<div class="analytics-shell">
+    <div class="analytics-topbar">
+        <div>
+            <h1>Analytics</h1>
+            <p class="muted analytics-intro">
+                Smart BIO analytics for the selected window. Main insight first, technical detail below.
+            </p>
+        </div>
 
-<div class="list-card panel-accent">
-    <div class="action-group" style="justify-content: space-between; align-items: flex-start;">
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
-            <div>
+        <div class="analytics-period-switch" aria-label="Analytics window">
+            <a href="?period=7d" class="link-button analytics-period-link {% if period == '7d' %}primary-button{% endif %}">7d</a>
+            <a href="?period=14d" class="link-button analytics-period-link {% if period == '14d' %}primary-button{% endif %}">14d</a>
+            <a href="?period=30d" class="link-button analytics-period-link {% if period == '30d' %}primary-button{% endif %}">30d</a>
+        </div>
+    </div>
+
+    <div class="list-card panel-accent analytics-window-card">
+        <div class="analytics-window-meta">
+            <div class="analytics-window-item">
                 <div class="meta-item-label">Window</div>
                 <div class="meta-item-value">{{ analytics.period_days }} days</div>
             </div>
-            <div>
+            <div class="analytics-window-item">
+                <div class="meta-item-label">Model</div>
+                <div class="meta-item-value">
+                    {% if analytics.selected_insight_model %}
+                        {{ analytics.selected_insight_model }}
+                    {% else %}
+                        analytics
+                    {% endif %}
+                </div>
+            </div>
+            <div class="analytics-window-item">
                 <div class="meta-item-label">Consistency</div>
                 <div class="meta-item-value">{{ analytics.consistency.overall_score }}</div>
             </div>
         </div>
 
-        <div class="action-group">
-            <a href="?period=7d" class="link-button {% if period == '7d' %}primary-button{% endif %}">
-                7d
-            </a>
-            <a href="?period=14d" class="link-button {% if period == '14d' %}primary-button{% endif %}">
-                14d
-            </a>
-            <a href="?period=30d" class="link-button {% if period == '30d' %}primary-button{% endif %}">
-                30d
-            </a>
-        </div>
-    </div>
-</div>
-
-<div class="analytics-section-head" style="margin-bottom: 8px;">
-    <div>
-        <div class="section-kicker">{{ analytics.period_days }}D INSIGHT</div>
-        <div class="section-meta">{{ analytics.comparison_label }}</div>
-    </div>
-</div>
-
-<div class="overview-tiles overview-tiles-strip overview-tiles-strip-5" style="margin-bottom: 8px;">
-    <div class="stat-tile stat-tile-quiet stat-tile-mini">
-        <div class="stat-label">
-            <span class="stat-label-full">Weight</span>
-            <span class="stat-label-short">WGT</span>
-        </div>
-        <div class="stat-value">{{ analytics.signal_symbols.weight }}</div>
-    </div>
-
-    <div class="stat-tile stat-tile-quiet stat-tile-mini">
-        <div class="stat-label">
-            <span class="stat-label-full">Sleep</span>
-            <span class="stat-label-short">SLP</span>
-        </div>
-        <div class="stat-value">{{ analytics.signal_symbols.sleep }}</div>
-    </div>
-
-    <div class="stat-tile stat-tile-quiet stat-tile-mini">
-        <div class="stat-label">
-            <span class="stat-label-full">Alcohol</span>
-            <span class="stat-label-short">ALC</span>
-        </div>
-        <div class="stat-value">{{ analytics.signal_symbols.alcohol }}</div>
-    </div>
-
-    <div class="stat-tile stat-tile-quiet stat-tile-mini">
-        <div class="stat-label">
-            <span class="stat-label-full">Activity</span>
-            <span class="stat-label-short">ACT</span>
-        </div>
-        <div class="stat-value">{{ analytics.summary.total_activity_minutes }}</div>
-        <div class="stat-subvalue stat-subvalue-compact">min</div>
-    </div>
-
-    <div class="stat-tile stat-tile-quiet stat-tile-mini">
-        <div class="stat-label">
-            <span class="stat-label-full">Calories</span>
-            <span class="stat-label-short">KCAL</span>
-        </div>
-        <div class="stat-value">
-            {% if analytics.summary.avg_calories_actual is not None %}
-                {{ analytics.summary.avg_calories_actual|floatformat:0 }}
-            {% else %}
-                -
-            {% endif %}
-        </div>
-        <div class="stat-subvalue stat-subvalue-compact">avg</div>
-    </div>
-</div>
-
-<div class="overview-content-grid" style="margin-bottom: 8px;">
-    <div class="list-card {{ analytics.main_insight.panel_class }}">
-        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-            <div>
-                <div class="section-kicker">{{ analytics.main_insight.kicker }}</div>
-                <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.main_insight.title }}</div>
-            </div>
-            {% if analytics.main_insight.badge_label %}
-                <span class="analytics-badge analytics-badge--{{ analytics.main_insight.badge_tone }}">
-                    {{ analytics.main_insight.badge_label }}
-                </span>
-            {% endif %}
-        </div>
-
-        <div class="muted">{{ analytics.main_insight.body }}</div>
-
-        {% if analytics.main_insight.supporting %}
-            <div class="muted-compact" style="margin-top: 6px;">{{ analytics.main_insight.supporting }}</div>
+        {% if analytics.insight_selection_reason %}
+            <div class="muted-compact analytics-window-note">{{ analytics.insight_selection_reason }}</div>
+        {% else %}
+            <div class="muted-compact analytics-window-note">{{ analytics.comparison_label }}</div>
         {% endif %}
     </div>
 
-    <div class="list-card {{ analytics.next_action.panel_class }}">
-        <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-            <div>
-                <div class="section-kicker">{{ analytics.next_action.kicker }}</div>
-                <div class="list-card-title" style="margin-bottom: 0;">{{ analytics.next_action.title }}</div>
+    <div class="analytics-signal-grid">
+        <div class="stat-tile stat-tile-quiet stat-tile-mini analytics-signal-card">
+            <div class="analytics-signal-icon">⚖</div>
+            <div class="stat-label">
+                <span class="stat-label-full">Weight</span>
+                <span class="stat-label-short">WGT</span>
             </div>
-            {% if analytics.next_action.badge_label %}
-                <span class="analytics-badge analytics-badge--{{ analytics.next_action.badge_tone }}">
-                    {{ analytics.next_action.badge_label }}
-                </span>
-            {% endif %}
+            <div class="stat-value">{{ analytics.signal_symbols.weight }}</div>
         </div>
 
-        <div class="muted">{{ analytics.next_action.body }}</div>
-
-        {% if analytics.next_action.supporting %}
-            <div class="muted-compact" style="margin-top: 6px;">{{ analytics.next_action.supporting }}</div>
-        {% endif %}
-    </div>
-</div>
-
-<div class="overview-content-grid" style="margin-bottom: 8px;">
-    <div class="list-card {{ analytics.weekly_summary_card.panel_class }}">
-        <div class="section-kicker">{{ analytics.weekly_summary_card.kicker }}</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">{{ analytics.weekly_summary_card.title }}</div>
-        <div class="muted">{{ analytics.weekly_summary_card.body }}</div>
-    </div>
-
-    <div class="list-card {% if analytics.consistency_card.panel_class %}{{ analytics.consistency_card.panel_class }}{% else %}panel-soft{% endif %} analytics-card--consistency">
-        <div class="action-group analytics-card-head" style="justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div>
-                <div class="section-kicker">CONSISTENCY</div>
-                <div class="list-card-title" style="margin-bottom: 0;">Score breakdown</div>
+        <div class="stat-tile stat-tile-quiet stat-tile-mini analytics-signal-card">
+            <div class="analytics-signal-icon">☾</div>
+            <div class="stat-label">
+                <span class="stat-label-full">Sleep</span>
+                <span class="stat-label-short">SLP</span>
             </div>
-            {% if analytics.consistency.badge_label %}
-                <span class="analytics-badge analytics-badge--{{ analytics.consistency.badge_tone }}">
-                    {{ analytics.consistency.badge_label }}
-                </span>
-            {% endif %}
+            <div class="stat-value">{{ analytics.signal_symbols.sleep }}</div>
         </div>
 
-        <div class="analytics-score-grid">
-            <div class="analytics-score-item analytics-score-item--primary">
-                <div class="analytics-score-label">OVERALL SCORE</div>
-                <div class="analytics-score-value">{{ analytics.consistency.overall_score }}</div>
+        <div class="stat-tile stat-tile-quiet stat-tile-mini analytics-signal-card">
+            <div class="analytics-signal-icon">◦</div>
+            <div class="stat-label">
+                <span class="stat-label-full">Alcohol</span>
+                <span class="stat-label-short">ALC</span>
             </div>
+            <div class="stat-value">{{ analytics.signal_symbols.alcohol }}</div>
+        </div>
 
-            <div class="analytics-score-item">
-                <div class="analytics-score-label">METRIC SCORE</div>
-                <div class="analytics-score-value">{{ analytics.consistency.metric_score }}</div>
+        <div class="stat-tile stat-tile-quiet stat-tile-mini analytics-signal-card">
+            <div class="analytics-signal-icon">↯</div>
+            <div class="stat-label">
+                <span class="stat-label-full">Activity</span>
+                <span class="stat-label-short">ACT</span>
             </div>
+            <div class="stat-value">{{ analytics.summary.total_activity_minutes }}</div>
+            <div class="stat-subvalue stat-subvalue-compact">min</div>
+        </div>
 
-            <div class="analytics-score-item">
-                <div class="analytics-score-label">ACTIVITY SCORE</div>
-                <div class="analytics-score-value">{{ analytics.consistency.activity_score }}</div>
+        <div class="stat-tile stat-tile-quiet stat-tile-mini analytics-signal-card">
+            <div class="analytics-signal-icon">k</div>
+            <div class="stat-label">
+                <span class="stat-label-full">Calories</span>
+                <span class="stat-label-short">KCAL</span>
             </div>
-
-            <div class="analytics-score-item">
-                <div class="analytics-score-label">ACTIVE DAYS</div>
-                <div class="analytics-score-value">{{ analytics.consistency.active_days }}</div>
+            <div class="stat-value">
+                {% if analytics.summary.avg_calories_actual is not None %}
+                    {{ analytics.summary.avg_calories_actual|floatformat:0 }}
+                {% else %}
+                    -
+                {% endif %}
             </div>
+            <div class="stat-subvalue stat-subvalue-compact">avg</div>
         </div>
     </div>
-</div>
 
-<div class="overview-content-grid" style="margin-bottom: 8px;">
-    {% for card in analytics.secondary_insights %}
-        <div class="list-card {{ card.panel_class }}">
-            <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+    <div class="analytics-hero-grid">
+        <div class="list-card {{ analytics.main_insight.panel_class }} analytics-focus-card analytics-focus-card-main">
+            <div class="analytics-card-head">
                 <div>
-                    <div class="section-kicker">{{ card.kicker }}</div>
-                    <div class="list-card-title" style="margin-bottom: 0;">{{ card.title }}</div>
+                    <div class="section-kicker">{{ analytics.main_insight.kicker }}</div>
+                    <div class="list-card-title analytics-focus-title">{{ analytics.main_insight.title }}</div>
                 </div>
-                {% if card.badge_label %}
-                    <span class="analytics-badge analytics-badge--{{ card.badge_tone }}">
-                        {{ card.badge_label }}
+                {% if analytics.main_insight.badge_label %}
+                    <span class="analytics-badge analytics-badge--{{ analytics.main_insight.badge_tone }}">
+                        {{ analytics.main_insight.badge_label }}
                     </span>
                 {% endif %}
             </div>
 
-            <div class="muted">{{ card.body }}</div>
+            <div class="analytics-focus-body">{{ analytics.main_insight.body }}</div>
 
-            {% if card.supporting %}
-                <div class="muted-compact" style="margin-top: 6px;">{{ card.supporting }}</div>
+            {% if analytics.main_insight.supporting %}
+                <div class="muted-compact analytics-focus-supporting">{{ analytics.main_insight.supporting }}</div>
             {% endif %}
         </div>
-    {% endfor %}
-</div>
 
-<div class="overview-content-grid">
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Trend logic</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">Signals</div>
+        <div class="list-card {{ analytics.next_action.panel_class }} analytics-focus-card analytics-focus-card-action">
+            <div class="analytics-card-head">
+                <div>
+                    <div class="section-kicker">{{ analytics.next_action.kicker }}</div>
+                    <div class="list-card-title analytics-focus-title">{{ analytics.next_action.title }}</div>
+                </div>
+                {% if analytics.next_action.badge_label %}
+                    <span class="analytics-badge analytics-badge--{{ analytics.next_action.badge_tone }}">
+                        {{ analytics.next_action.badge_label }}
+                    </span>
+                {% endif %}
+            </div>
 
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
-            <div>
-                <div class="meta-item-label">Weight</div>
-                <div class="meta-item-value">{{ analytics.trends.weight }}</div>
+            <div class="analytics-focus-body">{{ analytics.next_action.body }}</div>
+
+            {% if analytics.next_action.supporting %}
+                <div class="muted-compact analytics-focus-supporting">{{ analytics.next_action.supporting }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="analytics-summary-grid">
+        <div class="list-card {{ analytics.weekly_summary_card.panel_class }} analytics-summary-card">
+            <div class="section-kicker">{{ analytics.weekly_summary_card.kicker }}</div>
+            <div class="list-card-title">{{ analytics.weekly_summary_card.title }}</div>
+            <div class="muted">{{ analytics.weekly_summary_card.body }}</div>
+            {% if analytics.weekly_summary_card.supporting %}
+                <div class="muted-compact analytics-card-footnote">{{ analytics.weekly_summary_card.supporting }}</div>
+            {% endif %}
+        </div>
+
+        <div class="list-card {% if analytics.consistency_card.panel_class %}{{ analytics.consistency_card.panel_class }}{% else %}panel-soft{% endif %} analytics-summary-card analytics-card--consistency">
+            <div class="analytics-card-head analytics-card-head-tight">
+                <div>
+                    <div class="section-kicker">Consistency</div>
+                    <div class="list-card-title">Score breakdown</div>
+                </div>
+                {% if analytics.consistency.badge_label %}
+                    <span class="analytics-badge analytics-badge--{{ analytics.consistency.badge_tone }}">
+                        {{ analytics.consistency.badge_label }}
+                    </span>
+                {% endif %}
             </div>
-            <div>
-                <div class="meta-item-label">Sleep</div>
-                <div class="meta-item-value">{{ analytics.trends.sleep }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Alcohol</div>
-                <div class="meta-item-value">{{ analytics.trends.alcohol }}</div>
-            </div>
-            <div>
-                <div class="meta-item-label">Activity</div>
-                <div class="meta-item-value">{{ analytics.trends.activity }}</div>
+
+            <div class="analytics-score-grid">
+                <div class="analytics-score-item analytics-score-item--primary">
+                    <div class="analytics-score-label">Overall</div>
+                    <div class="analytics-score-value">{{ analytics.consistency.overall_score }}</div>
+                </div>
+
+                <div class="analytics-score-item">
+                    <div class="analytics-score-label">Metric</div>
+                    <div class="analytics-score-value">{{ analytics.consistency.metric_score }}</div>
+                </div>
+
+                <div class="analytics-score-item">
+                    <div class="analytics-score-label">Activity</div>
+                    <div class="analytics-score-value">{{ analytics.consistency.activity_score }}</div>
+                </div>
+
+                <div class="analytics-score-item">
+                    <div class="analytics-score-label">Active days</div>
+                    <div class="analytics-score-value">{{ analytics.consistency.active_days }}</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="list-card panel-soft">
-        <div class="section-kicker">Recent vs previous</div>
-        <div class="list-card-title" style="margin-bottom: 8px;">Comparison</div>
+    <div class="analytics-secondary-grid">
+        {% for card in analytics.secondary_insights %}
+            <div class="list-card {{ card.panel_class }} analytics-secondary-card">
+                <div class="analytics-card-head analytics-card-head-tight">
+                    <div>
+                        <div class="section-kicker">{{ card.kicker }}</div>
+                        <div class="list-card-title analytics-secondary-title">{{ card.title }}</div>
+                    </div>
+                    {% if card.badge_label %}
+                        <span class="analytics-badge analytics-badge--{{ card.badge_tone }}">
+                            {{ card.badge_label }}
+                        </span>
+                    {% endif %}
+                </div>
 
-        <div class="meta-grid two-col" style="margin-bottom: 0;">
+                <div class="muted">{{ card.body }}</div>
+
+                {% if card.supporting %}
+                    <div class="muted-compact analytics-card-footnote">{{ card.supporting }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <details class="list-card panel-soft analytics-disclosure" open>
+        <summary class="analytics-disclosure-summary">
             <div>
+                <div class="section-kicker">Trend snapshot</div>
+                <div class="list-card-title analytics-disclosure-title">Current engine view</div>
+            </div>
+            <span class="analytics-disclosure-toggle">Open</span>
+        </summary>
+
+        <div class="analytics-detail-grid">
+            <div class="analytics-detail-item">
+                <div class="meta-item-label">Weight</div>
+                <div class="meta-item-value">{{ analytics.trends.weight }}</div>
+            </div>
+            <div class="analytics-detail-item">
+                <div class="meta-item-label">Sleep</div>
+                <div class="meta-item-value">{{ analytics.trends.sleep }}</div>
+            </div>
+            <div class="analytics-detail-item">
+                <div class="meta-item-label">Alcohol</div>
+                <div class="meta-item-value">{{ analytics.trends.alcohol }}</div>
+            </div>
+            <div class="analytics-detail-item">
+                <div class="meta-item-label">Activity</div>
+                <div class="meta-item-value">{{ analytics.trends.activity }}</div>
+            </div>
+        </div>
+    </details>
+
+    <details class="list-card panel-soft analytics-disclosure">
+        <summary class="analytics-disclosure-summary">
+            <div>
+                <div class="section-kicker">Comparison</div>
+                <div class="list-card-title analytics-disclosure-title">Recent vs previous</div>
+            </div>
+            <span class="analytics-disclosure-toggle">Open</span>
+        </summary>
+
+        <div class="analytics-detail-grid">
+            <div class="analytics-detail-item">
                 <div class="meta-item-label">Weight delta</div>
                 <div class="meta-item-value">
                     {% if analytics.deltas.avg_weight is not None %}
@@ -242,7 +265,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div>
+            <div class="analytics-detail-item">
                 <div class="meta-item-label">Sleep delta</div>
                 <div class="meta-item-value">
                     {% if analytics.deltas.avg_sleep is not None %}
@@ -252,7 +275,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div>
+            <div class="analytics-detail-item">
                 <div class="meta-item-label">Alcohol delta</div>
                 <div class="meta-item-value">
                     {% if analytics.deltas.avg_alcohol is not None %}
@@ -262,7 +285,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div>
+            <div class="analytics-detail-item">
                 <div class="meta-item-label">Minutes delta</div>
                 <div class="meta-item-value">
                     {% if analytics.deltas.activity_minutes is not None %}
@@ -272,7 +295,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div>
+            <div class="analytics-detail-item">
                 <div class="meta-item-label">Distance delta</div>
                 <div class="meta-item-value">
                     {% if analytics.deltas.distance is not None %}
@@ -282,7 +305,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div>
+            <div class="analytics-detail-item">
                 <div class="meta-item-label">Intake kcal delta</div>
                 <div class="meta-item-value">
                     {% if analytics.deltas.avg_calories_actual is not None %}
@@ -293,6 +316,56 @@
                 </div>
             </div>
         </div>
-    </div>
+    </details>
+
+    <details class="list-card panel-soft analytics-disclosure">
+        <summary class="analytics-disclosure-summary">
+            <div>
+                <div class="section-kicker">Debug / export</div>
+                <div class="list-card-title analytics-disclosure-title">Engine + export tools</div>
+            </div>
+            <span class="analytics-disclosure-toggle">Open</span>
+        </summary>
+
+        <div class="analytics-debug-grid">
+            <div class="analytics-detail-item">
+                <div class="meta-item-label">Selected model</div>
+                <div class="meta-item-value">
+                    {% if analytics.selected_insight_model %}
+                        {{ analytics.selected_insight_model }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="analytics-detail-item">
+                <div class="meta-item-label">Summary engine</div>
+                <div class="meta-item-value">
+                    {% if analytics.summary_engine_version %}
+                        {{ analytics.summary_engine_version }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="analytics-detail-item analytics-detail-item-wide">
+                <div class="meta-item-label">Selection reason</div>
+                <div class="meta-item-value analytics-detail-value-wrap">
+                    {% if analytics.insight_selection_reason %}
+                        {{ analytics.insight_selection_reason }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="analytics-export-row">
+            <a href="{% url 'bio:analytics-export-json' %}?period={{ period }}" class="link-button">Export JSON</a>
+            <a href="{% url 'bio:analytics-export-csv' %}?period={{ period }}" class="link-button">Export CSV</a>
+        </div>
+    </details>
 </div>
 {% endblock %}

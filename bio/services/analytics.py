@@ -15,6 +15,11 @@ from bio.models import (
     AnalyticsSnapshotType,
     DailyMetric,
 )
+from bio.services.dataframes import (
+    build_bio_correlation_foundation,
+    build_bio_dataframe_foundation,
+    build_bio_rolling_foundation,
+)
 
 User = get_user_model()
 
@@ -578,6 +583,1068 @@ def _build_legacy_insights(
 
     return insights[:6]
 
+def _build_pandas_foundation_payload(
+    *,
+    user: User,
+    recent_start: date,
+    recent_end: date,
+    previous_start: date,
+    previous_end: date,
+) -> dict[str, Any]:
+    return {
+        "enabled": True,
+        "granularity": "day",
+        "recent": build_bio_dataframe_foundation(
+            user=user,
+            start_date=recent_start,
+            end_date=recent_end,
+        ),
+        "previous": build_bio_dataframe_foundation(
+            user=user,
+            start_date=previous_start,
+            end_date=previous_end,
+        ),
+    }
+
+def _build_pandas_rolling_payload(
+    *,
+    user: User,
+    recent_start: date,
+    recent_end: date,
+    previous_start: date,
+    previous_end: date,
+) -> dict[str, Any]:
+    return {
+        "enabled": True,
+        "recent": build_bio_rolling_foundation(
+            user=user,
+            start_date=recent_start,
+            end_date=recent_end,
+        ),
+        "previous": build_bio_rolling_foundation(
+            user=user,
+            start_date=previous_start,
+            end_date=previous_end,
+        ),
+    }
+
+def _build_fitness_bridge_summary(
+    *,
+    pandas_foundation: dict[str, Any],
+    pandas_rolling: dict[str, Any],
+) -> dict[str, Any]:
+    recent_foundation = pandas_foundation.get("recent", {})
+    previous_foundation = pandas_foundation.get("previous", {})
+
+    recent_strength = recent_foundation.get("strength_summary", {})
+    previous_strength = previous_foundation.get("strength_summary", {})
+
+    recent_rolling = pandas_rolling.get("recent", {}).get("latest", {})
+    previous_rolling = pandas_rolling.get("previous", {}).get("latest", {})
+
+    return {
+        "enabled": True,
+        "recent": {
+            "training_days": recent_strength.get("training_days", 0),
+            "sessions": recent_strength.get("sessions", 0),
+            "set_count": recent_strength.get("set_count", 0),
+            "exercise_count": recent_strength.get("exercise_count", 0),
+            "volume_load": recent_strength.get("volume_load", 0),
+            "avg_training_load_score": recent_strength.get("avg_training_load_score", 0),
+            "rolling_training_load_ma_7d": recent_rolling.get("strength_training_load_ma_7d"),
+            "rolling_strength_sessions_7d": recent_rolling.get("strength_sessions_7d"),
+        },
+        "previous": {
+            "training_days": previous_strength.get("training_days", 0),
+            "sessions": previous_strength.get("sessions", 0),
+            "set_count": previous_strength.get("set_count", 0),
+            "exercise_count": previous_strength.get("exercise_count", 0),
+            "volume_load": previous_strength.get("volume_load", 0),
+            "avg_training_load_score": previous_strength.get("avg_training_load_score", 0),
+            "rolling_training_load_ma_7d": previous_rolling.get("strength_training_load_ma_7d"),
+            "rolling_strength_sessions_7d": previous_rolling.get("strength_sessions_7d"),
+        },
+    }
+
+def _safe_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _confidence_from_non_null_counts(recent_count: int, previous_count: int, *, high: int = 5, medium: int = 3) -> str:
+    baseline = min(recent_count, previous_count)
+
+    if baseline >= high:
+        return "HIGH"
+    if baseline >= medium:
+        return "MEDIUM"
+    return "LOW"
+
+
+def _compare_directional_metric(
+    *,
+    recent_value: float | None,
+    previous_value: float | None,
+    tolerance: float,
+    higher_is_better: bool,
+    stable_label: str = "stable",
+) -> tuple[str, float | None]:
+    if recent_value is None or previous_value is None:
+        return ("insufficient", None)
+
+    delta = recent_value - previous_value
+    if abs(delta) <= tolerance:
+        return (stable_label, delta)
+
+    if higher_is_better:
+        return ("improving", delta) if delta > 0 else ("worsening", delta)
+
+    return ("improving", delta) if delta < 0 else ("worsening", delta)
+
+
+def _compare_weight_metric(
+    *,
+    recent_value: float | None,
+    previous_value: float | None,
+    tolerance: float,
+) -> tuple[str, float | None]:
+    if recent_value is None or previous_value is None:
+        return ("insufficient", None)
+
+    delta = recent_value - previous_value
+    if abs(delta) <= tolerance:
+        return ("stable", delta)
+    return ("increasing", delta) if delta > 0 else ("decreasing", delta)
+
+
+def _compare_balance_metric(
+    *,
+    recent_value: float | None,
+    previous_value: float | None,
+    tolerance: float,
+) -> tuple[str, float | None]:
+    if recent_value is None or previous_value is None:
+        return ("insufficient", None)
+
+    recent_abs = abs(recent_value)
+    previous_abs = abs(previous_value)
+    delta = recent_abs - previous_abs
+
+    if abs(delta) <= tolerance:
+        return ("stable", recent_value - previous_value)
+
+    if recent_abs < previous_abs:
+        return ("closer_to_target", recent_value - previous_value)
+    return ("farther_from_target", recent_value - previous_value)
+
+
+def _trend_card(
+    *,
+    name: str,
+    signal: str,
+    recent_value: float | None,
+    previous_value: float | None,
+    delta: float | None,
+    confidence: str,
+    basis: str,
+) -> dict[str, Any]:
+    return {
+        "name": name,
+        "signal": signal,
+        "recent_value": recent_value,
+        "previous_value": previous_value,
+        "delta": delta,
+        "confidence": confidence,
+        "basis": basis,
+    }
+
+
+def _pick_dominant_trend(trend_cards: list[dict[str, Any]]) -> dict[str, Any] | None:
+    priority = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
+    neutral_signals = {"stable", "insufficient"}
+
+    candidates = [
+        card for card in trend_cards
+        if card["signal"] not in neutral_signals
+    ]
+    if not candidates:
+        return None
+
+    candidates.sort(
+        key=lambda card: (
+            priority.get(card["confidence"], 0),
+            abs(card["delta"]) if card["delta"] is not None else 0,
+        ),
+        reverse=True,
+    )
+    return candidates[0]
+
+
+def _build_advanced_trends(
+    *,
+    pandas_rolling: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+) -> dict[str, Any]:
+    recent = pandas_rolling.get("recent", {})
+    previous = pandas_rolling.get("previous", {})
+
+    recent_latest = recent.get("latest", {})
+    previous_latest = previous.get("latest", {})
+
+    recent_non_null = recent.get("non_null_counts", {})
+    previous_non_null = previous.get("non_null_counts", {})
+
+    weight_recent = _safe_float(recent_latest.get("weight_ma_7d"))
+    weight_previous = _safe_float(previous_latest.get("weight_ma_7d"))
+    weight_signal, weight_delta = _compare_weight_metric(
+        recent_value=weight_recent,
+        previous_value=weight_previous,
+        tolerance=0.2,
+    )
+
+    sleep_recent = _safe_float(recent_latest.get("sleep_ma_7d"))
+    sleep_previous = _safe_float(previous_latest.get("sleep_ma_7d"))
+    sleep_signal, sleep_delta = _compare_directional_metric(
+        recent_value=sleep_recent,
+        previous_value=sleep_previous,
+        tolerance=0.2,
+        higher_is_better=True,
+    )
+
+    alcohol_recent = _safe_float(recent_latest.get("alcohol_ma_7d"))
+    alcohol_previous = _safe_float(previous_latest.get("alcohol_ma_7d"))
+    alcohol_signal, alcohol_delta = _compare_directional_metric(
+        recent_value=alcohol_recent,
+        previous_value=alcohol_previous,
+        tolerance=0.25,
+        higher_is_better=False,
+    )
+
+    activity_recent = _safe_float(recent_latest.get("activity_minutes_7d"))
+    activity_previous = _safe_float(previous_latest.get("activity_minutes_7d"))
+    activity_signal, activity_delta = _compare_directional_metric(
+        recent_value=activity_recent,
+        previous_value=activity_previous,
+        tolerance=20.0,
+        higher_is_better=True,
+    )
+
+    calorie_recent = _safe_float(recent_latest.get("calorie_delta_ma_7d"))
+    calorie_previous = _safe_float(previous_latest.get("calorie_delta_ma_7d"))
+    calorie_signal, calorie_delta = _compare_balance_metric(
+        recent_value=calorie_recent,
+        previous_value=calorie_previous,
+        tolerance=150.0,
+    )
+
+    strength_recent = _safe_float(recent_latest.get("strength_training_load_ma_7d"))
+    strength_previous = _safe_float(previous_latest.get("strength_training_load_ma_7d"))
+    strength_signal, strength_delta = _compare_weight_metric(
+        recent_value=strength_recent,
+        previous_value=strength_previous,
+        tolerance=5.0,
+    )
+
+    trend_cards = [
+        _trend_card(
+            name="weight",
+            signal=weight_signal,
+            recent_value=weight_recent,
+            previous_value=weight_previous,
+            delta=weight_delta,
+            confidence=_confidence_from_non_null_counts(
+                int(recent_non_null.get("weight_ma_7d", 0)),
+                int(previous_non_null.get("weight_ma_7d", 0)),
+            ),
+            basis="weight_ma_7d",
+        ),
+        _trend_card(
+            name="sleep",
+            signal=sleep_signal,
+            recent_value=sleep_recent,
+            previous_value=sleep_previous,
+            delta=sleep_delta,
+            confidence=_confidence_from_non_null_counts(
+                int(recent_non_null.get("sleep_ma_7d", 0)),
+                int(previous_non_null.get("sleep_ma_7d", 0)),
+            ),
+            basis="sleep_ma_7d",
+        ),
+        _trend_card(
+            name="alcohol",
+            signal=alcohol_signal,
+            recent_value=alcohol_recent,
+            previous_value=alcohol_previous,
+            delta=alcohol_delta,
+            confidence=_confidence_from_non_null_counts(
+                int(recent_non_null.get("alcohol_ma_7d", 0)),
+                int(previous_non_null.get("alcohol_ma_7d", 0)),
+            ),
+            basis="alcohol_ma_7d",
+        ),
+        _trend_card(
+            name="activity",
+            signal=activity_signal,
+            recent_value=activity_recent,
+            previous_value=activity_previous,
+            delta=activity_delta,
+            confidence=_confidence_from_non_null_counts(
+                int(recent_non_null.get("activity_minutes_7d", 0)),
+                int(previous_non_null.get("activity_minutes_7d", 0)),
+                high=7,
+                medium=4,
+            ),
+            basis="activity_minutes_7d",
+        ),
+        _trend_card(
+            name="calorie_balance",
+            signal=calorie_signal,
+            recent_value=calorie_recent,
+            previous_value=calorie_previous,
+            delta=calorie_delta,
+            confidence=_confidence_from_non_null_counts(
+                int(recent_non_null.get("calorie_delta_ma_7d", 0)),
+                int(previous_non_null.get("calorie_delta_ma_7d", 0)),
+            ),
+            basis="calorie_delta_ma_7d",
+        ),
+        _trend_card(
+            name="strength_load",
+            signal=strength_signal,
+            recent_value=strength_recent,
+            previous_value=strength_previous,
+            delta=strength_delta,
+            confidence=_confidence_from_non_null_counts(
+                int(recent_non_null.get("strength_training_load_ma_7d", 0)),
+                int(previous_non_null.get("strength_training_load_ma_7d", 0)),
+                high=7,
+                medium=3,
+            ),
+            basis="strength_training_load_ma_7d",
+        ),
+    ]
+
+    dominant = _pick_dominant_trend(trend_cards)
+
+    return {
+        "enabled": True,
+        "cards": trend_cards,
+        "dominant": dominant,
+        "fitness_context": fitness_bridge,
+    }
+
+
+def _build_correlation_layer(
+    *,
+    user: User,
+    recent_start: date,
+    recent_end: date,
+    previous_start: date,
+    previous_end: date,
+) -> dict[str, Any]:
+    return {
+        "enabled": True,
+        "recent": build_bio_correlation_foundation(
+            user=user,
+            start_date=recent_start,
+            end_date=recent_end,
+        ),
+        "previous": build_bio_correlation_foundation(
+            user=user,
+            start_date=previous_start,
+            end_date=previous_end,
+        ),
+    }
+
+def _lookup_trend_card(advanced_trends: dict[str, Any], name: str) -> dict[str, Any] | None:
+    for card in advanced_trends.get("cards", []):
+        if card.get("name") == name:
+            return card
+    return None
+
+
+def _lookup_dominant_correlation(correlation_layer: dict[str, Any]) -> dict[str, Any] | None:
+    recent = correlation_layer.get("recent", {}).get("dominant")
+    previous = correlation_layer.get("previous", {}).get("dominant")
+    return recent or previous
+
+
+def _card_with_state(card: dict[str, Any], state: str) -> dict[str, Any]:
+    enriched = dict(card)
+    enriched["state"] = state
+    return enriched
+
+
+def _format_metric(value: float | None, *, digits: int = 2, suffix: str = "") -> str:
+    if value is None:
+        return "n/a"
+    rounded = round(float(value), digits)
+    if digits == 0:
+        rounded = int(round(float(value), 0))
+    return f"{rounded}{suffix}"
+
+
+def _build_richer_main_insight(
+    *,
+    legacy_main_insight: dict[str, Any],
+    advanced_trends: dict[str, Any],
+    correlation_layer: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+    pandas_foundation: dict[str, Any],
+) -> dict[str, Any]:
+    dominant = advanced_trends.get("dominant")
+    dominant_correlation = _lookup_dominant_correlation(correlation_layer)
+
+    recent_foundation = pandas_foundation.get("recent", {})
+    metric_coverage_pct = recent_foundation.get("metric_coverage_pct", 0)
+    activity_coverage_pct = recent_foundation.get("activity_coverage_pct", 0)
+
+    recent_strength = fitness_bridge.get("recent", {})
+    strength_sessions = recent_strength.get("sessions", 0)
+    training_days = recent_strength.get("training_days", 0)
+
+    if metric_coverage_pct < 50:
+        return _card_with_state(
+            _build_card(
+                kicker="Main insight",
+                title="Tracking coverage is limiting interpretation",
+                body=(
+                    f"Metric coverage is only {metric_coverage_pct}% in the recent window, "
+                    "so the smarter trend layer is active but confidence is still limited."
+                ),
+                badge="LIMITED",
+                tone="warn",
+            ),
+            "limited",
+        )
+
+    if dominant and dominant.get("name") == "activity" and dominant.get("signal") == "worsening":
+        recent_value = dominant.get("recent_value")
+        previous_value = dominant.get("previous_value")
+        extra = ""
+        if strength_sessions == 0:
+            extra = " No completed strength sessions were captured in the recent window either."
+        return _card_with_state(
+            _build_card(
+                kicker="Main insight",
+                title="Movement baseline dropped in the recent window",
+                body=(
+                    f"Rolling activity volume fell from {_format_metric(previous_value, digits=0, suffix=' min')} "
+                    f"to {_format_metric(recent_value, digits=0, suffix=' min')}.{extra}"
+                ),
+                badge="WORSENING",
+                tone="warn",
+            ),
+            "worsening",
+        )
+
+    if dominant and dominant.get("name") == "sleep" and dominant.get("signal") == "worsening":
+        return _card_with_state(
+            _build_card(
+                kicker="Main insight",
+                title="Recovery trend weakened",
+                body=(
+                    f"Rolling sleep quality moved from {_format_metric(dominant.get('previous_value'))} "
+                    f"to {_format_metric(dominant.get('recent_value'))}, so the recent window looks less recovered."
+                ),
+                badge="WORSENING",
+                tone="warn",
+            ),
+            "worsening",
+        )
+
+    if dominant and dominant.get("name") == "calorie_balance" and dominant.get("signal") == "closer_to_target":
+        return _card_with_state(
+            _build_card(
+                kicker="Main insight",
+                title="Intake alignment improved",
+                body=(
+                    "The rolling calorie balance moved closer to target than in the previous window, "
+                    "which makes intake interpretation cleaner."
+                ),
+                badge="IMPROVING",
+                tone="good",
+            ),
+            "improving",
+        )
+
+    if dominant and dominant.get("name") == "strength_load" and dominant.get("signal") == "increasing" and training_days > 0:
+        return _card_with_state(
+            _build_card(
+                kicker="Main insight",
+                title="Training load stepped up",
+                body=(
+                    f"The recent window includes {strength_sessions} completed strength sessions "
+                    "with a higher rolling training load than before."
+                ),
+                badge="HIGHER LOAD",
+                tone="info",
+            ),
+            "increasing",
+        )
+
+    if dominant_correlation and dominant_correlation.get("status") == "OK":
+        return _card_with_state(
+            _build_card(
+                kicker="Main insight",
+                title="A relationship signal is starting to emerge",
+                body=(
+                    f"{dominant_correlation['label']} is currently the clearest association in the available data "
+                    f"({dominant_correlation['direction'].lower()}, {dominant_correlation['strength'].lower()})."
+                ),
+                badge="ASSOCIATION",
+                tone="neutral",
+            ),
+            "mixed",
+        )
+
+    return legacy_main_insight
+
+
+def _build_richer_next_action(
+    *,
+    legacy_next_action: dict[str, Any],
+    advanced_trends: dict[str, Any],
+    correlation_layer: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+    pandas_foundation: dict[str, Any],
+) -> dict[str, Any]:
+    recent_foundation = pandas_foundation.get("recent", {})
+    metric_coverage_pct = recent_foundation.get("metric_coverage_pct", 0)
+
+    activity_card = _lookup_trend_card(advanced_trends, "activity")
+    sleep_card = _lookup_trend_card(advanced_trends, "sleep")
+    alcohol_card = _lookup_trend_card(advanced_trends, "alcohol")
+    strength_card = _lookup_trend_card(advanced_trends, "strength_load")
+
+    dominant_correlation = _lookup_dominant_correlation(correlation_layer)
+    recent_strength = fitness_bridge.get("recent", {})
+    training_days = recent_strength.get("training_days", 0)
+    strength_sessions = recent_strength.get("sessions", 0)
+
+    if metric_coverage_pct < 60:
+        return _card_with_state(
+            _build_card(
+                kicker="Next action",
+                title="Raise metric coverage first",
+                body=(
+                    f"Recent metric coverage is only {metric_coverage_pct}%, so add more daily BIO entries "
+                    "before trusting the stronger analytics too much."
+                ),
+                badge="TRACKING",
+                tone="warn",
+            ),
+            "limited",
+        )
+
+    if activity_card and activity_card.get("signal") == "worsening" and strength_sessions == 0:
+        return _card_with_state(
+            _build_card(
+                kicker="Next action",
+                title="Add one real movement or training day",
+                body=(
+                    "The rolling activity baseline faded and no completed strength session was captured recently, "
+                    "so the cleanest next step is to add one genuine activity day."
+                ),
+                badge="MOVEMENT",
+                tone="warn",
+            ),
+            "worsening",
+        )
+
+    if (
+        sleep_card and sleep_card.get("signal") == "worsening"
+        and alcohol_card and alcohol_card.get("signal") == "worsening"
+    ):
+        return _card_with_state(
+            _build_card(
+                kicker="Next action",
+                title="Reduce evening recovery drag",
+                body=(
+                    "Sleep and alcohol both moved the wrong way. Protect the next few evenings first, "
+                    "then reassess trend direction."
+                ),
+                badge="RECOVERY",
+                tone="warn",
+            ),
+            "worsening",
+        )
+
+    if training_days > 0 and (sleep_card is None or sleep_card.get("signal") == "insufficient"):
+        return _card_with_state(
+            _build_card(
+                kicker="Next action",
+                title="Track sleep around training days",
+                body=(
+                    f"You already have {strength_sessions} completed strength session(s) in the window, "
+                    "so add sleep data consistently to unlock better recovery correlations."
+                ),
+                badge="SLEEP DATA",
+                tone="neutral",
+            ),
+            "neutral",
+        )
+
+    if dominant_correlation and dominant_correlation.get("name") == "alcohol_vs_next_sleep":
+        return _card_with_state(
+            _build_card(
+                kicker="Next action",
+                title="Test alcohol reduction against sleep",
+                body=(
+                    "The clearest relationship signal currently points at alcohol and next-day sleep, "
+                    "so the next useful experiment is reducing alcohol exposure for a few days."
+                ),
+                badge="EXPERIMENT",
+                tone="neutral",
+            ),
+            "mixed",
+        )
+
+    if strength_card and strength_card.get("signal") == "increasing" and training_days > 0:
+        return _card_with_state(
+            _build_card(
+                kicker="Next action",
+                title="Support the higher training load",
+                body=(
+                    "Training load is trending upward. Keep recovery inputs tighter before increasing complexity further."
+                ),
+                badge="LOAD",
+                tone="neutral",
+            ),
+            "increasing",
+        )
+
+    return legacy_next_action
+
+
+def _build_richer_weekly_summary_card(
+    *,
+    legacy_weekly_summary_card: dict[str, Any],
+    pandas_foundation: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+) -> dict[str, Any]:
+    recent_foundation = pandas_foundation.get("recent", {})
+    recent_strength = fitness_bridge.get("recent", {})
+
+    rows = recent_foundation.get("rows", 0)
+    metric_days = recent_foundation.get("metric_days", 0)
+    activity_days = recent_foundation.get("activity_days", 0)
+    activity_totals = recent_foundation.get("activity_totals", {})
+    strength_sessions = recent_strength.get("sessions", 0)
+    training_days = recent_strength.get("training_days", 0)
+    avg_training_load_score = recent_strength.get("avg_training_load_score", 0)
+
+    if rows == 0:
+        return legacy_weekly_summary_card
+
+    return _card_with_state(
+        _build_card(
+            kicker="Weekly summary",
+            title=f"{rows}-day enriched summary",
+            body=(
+                f"{metric_days}/{rows} metric days, {activity_days} active days, "
+                f"{activity_totals.get('minutes', 0)} clean movement min, "
+                f"{strength_sessions} strength session(s) across {training_days} training day(s)."
+            ),
+            tone="neutral",
+            supporting=(
+                f"Average training load score: {avg_training_load_score}"
+                if strength_sessions
+                else "No completed strength sessions were captured in this window."
+            ),
+        ),
+        "neutral",
+    )
+
+
+def _build_richer_secondary_insights(
+    *,
+    legacy_secondary_insights: list[dict[str, Any]],
+    advanced_trends: dict[str, Any],
+    correlation_layer: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+) -> list[dict[str, Any]]:
+    recent_strength = fitness_bridge.get("recent", {})
+    dominant_correlation = _lookup_dominant_correlation(correlation_layer)
+
+    weight_card = _lookup_trend_card(advanced_trends, "weight")
+    sleep_card = _lookup_trend_card(advanced_trends, "sleep")
+    alcohol_card = _lookup_trend_card(advanced_trends, "alcohol")
+    activity_card = _lookup_trend_card(advanced_trends, "activity")
+    calorie_card = _lookup_trend_card(advanced_trends, "calorie_balance")
+
+    cards: list[dict[str, Any]] = []
+
+    if weight_card and weight_card.get("signal") != "insufficient":
+        cards.append(_card_with_state(
+            _build_card(
+                kicker="Secondary insight",
+                title="Weight trend",
+                body=(
+                    f"Rolling weight moved from {_format_metric(weight_card.get('previous_value'))} kg "
+                    f"to {_format_metric(weight_card.get('recent_value'))} kg."
+                ),
+                badge=str(weight_card.get("signal", "stable")).upper(),
+                tone="neutral",
+                supporting=f"Confidence: {weight_card.get('confidence', 'LOW')}",
+            ),
+            str(weight_card.get("signal", "stable")),
+        ))
+    else:
+        cards.append(legacy_secondary_insights[0])
+
+    if sleep_card and alcohol_card and (
+        sleep_card.get("signal") != "insufficient" or alcohol_card.get("signal") != "insufficient"
+    ):
+        cards.append(_card_with_state(
+            _build_card(
+                kicker="Secondary insight",
+                title="Recovery pattern",
+                body=(
+                    f"Sleep: {sleep_card.get('signal')} / Alcohol: {alcohol_card.get('signal')} "
+                    "on rolling 7d signals."
+                ),
+                badge="RECOVERY",
+                tone="neutral" if sleep_card.get("signal") != "worsening" else "warn",
+                supporting=(
+                    f"Correlation lead: {dominant_correlation['label']}"
+                    if dominant_correlation and dominant_correlation.get("status") == "OK"
+                    else None
+                ),
+            ),
+            "mixed",
+        ))
+    else:
+        cards.append(legacy_secondary_insights[1])
+
+    cards.append(_card_with_state(
+        _build_card(
+            kicker="Secondary insight",
+            title="Activity + training",
+            body=(
+                f"Rolling movement signal is {activity_card.get('signal') if activity_card else 'insufficient'} "
+                f"with {recent_strength.get('sessions', 0)} completed strength session(s)."
+            ),
+            badge="TRAINING" if recent_strength.get("sessions", 0) else "ACTIVITY",
+            tone="neutral" if recent_strength.get("sessions", 0) else "warn",
+            supporting=(
+                f"Avg training load score {recent_strength.get('avg_training_load_score', 0)}"
+                if recent_strength.get("sessions", 0)
+                else "No completed strength session in the recent window."
+            ),
+        ),
+        "neutral",
+    ))
+
+    if calorie_card and calorie_card.get("signal") != "insufficient":
+        cards.append(_card_with_state(
+            _build_card(
+                kicker="Secondary insight",
+                title="Calorie balance",
+                body=(
+                    "Rolling intake balance is "
+                    f"{str(calorie_card.get('signal', 'stable')).replace('_', ' ')} versus the previous window."
+                ),
+                badge=str(calorie_card.get("signal", "stable")).upper(),
+                tone="neutral",
+                supporting=f"Confidence: {calorie_card.get('confidence', 'LOW')}",
+            ),
+            str(calorie_card.get("signal", "stable")),
+        ))
+    else:
+        cards.append(legacy_secondary_insights[3])
+
+    return cards[:4]
+
+
+def _build_richer_summary_generation(
+    *,
+    legacy_main_insight: dict[str, Any],
+    legacy_next_action: dict[str, Any],
+    legacy_weekly_summary_card: dict[str, Any],
+    legacy_secondary_insights: list[dict[str, Any]],
+    advanced_trends: dict[str, Any],
+    correlation_layer: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+    pandas_foundation: dict[str, Any],
+) -> dict[str, Any]:
+    main_insight = _build_richer_main_insight(
+        legacy_main_insight=legacy_main_insight,
+        advanced_trends=advanced_trends,
+        correlation_layer=correlation_layer,
+        fitness_bridge=fitness_bridge,
+        pandas_foundation=pandas_foundation,
+    )
+    next_action = _build_richer_next_action(
+        legacy_next_action=legacy_next_action,
+        advanced_trends=advanced_trends,
+        correlation_layer=correlation_layer,
+        fitness_bridge=fitness_bridge,
+        pandas_foundation=pandas_foundation,
+    )
+    weekly_summary_card = _build_richer_weekly_summary_card(
+        legacy_weekly_summary_card=legacy_weekly_summary_card,
+        pandas_foundation=pandas_foundation,
+        fitness_bridge=fitness_bridge,
+    )
+    secondary_insights = _build_richer_secondary_insights(
+        legacy_secondary_insights=legacy_secondary_insights,
+        advanced_trends=advanced_trends,
+        correlation_layer=correlation_layer,
+        fitness_bridge=fitness_bridge,
+    )
+
+    insights = _build_legacy_insights(
+        main_insight=main_insight,
+        next_action=next_action,
+        weekly_summary_card=weekly_summary_card,
+        secondary_insights=secondary_insights,
+    )
+
+    return {
+        "engine_version": "pandas_summary_v1",
+        "main_insight": main_insight,
+        "next_action": next_action,
+        "weekly_summary_card": weekly_summary_card,
+        "secondary_insights": secondary_insights,
+        "insights": insights,
+    }
+
+
+def _secondary_guard_card(
+    *,
+    title: str,
+    body: str,
+    badge: str = "LIMITED",
+    tone: str = "warn",
+    supporting: str | None = None,
+    state: str = "limited",
+) -> dict[str, Any]:
+    return _card_with_state(
+        _build_card(
+            kicker="Secondary insight",
+            title=title,
+            body=body,
+            badge=badge,
+            tone=tone,
+            supporting=supporting,
+        ),
+        state,
+    )
+
+
+def _build_guarded_secondary_insights(
+    *,
+    richer_summary: dict[str, Any],
+    pandas_foundation: dict[str, Any],
+    advanced_trends: dict[str, Any],
+    correlation_layer: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+) -> list[dict[str, Any]]:
+    recent_foundation = pandas_foundation.get("recent", {})
+    rows = int(recent_foundation.get("rows", 0) or 0)
+    metric_days = int(recent_foundation.get("metric_days", 0) or 0)
+    activity_days = int(recent_foundation.get("activity_days", 0) or 0)
+    coverage = int(recent_foundation.get("metric_coverage_pct", 0) or 0)
+
+    recent_strength = fitness_bridge.get("recent", {})
+    dominant_trend = advanced_trends.get("dominant")
+    dominant_correlation = _lookup_dominant_correlation(correlation_layer)
+
+    richer_cards = richer_summary.get("secondary_insights", [])
+
+    cards: list[dict[str, Any]] = []
+
+    cards.append(
+        _secondary_guard_card(
+            title="Coverage",
+            body=f"{metric_days}/{rows} metric days and {activity_days} active days in the recent window.",
+            badge="LIMITED" if coverage < 60 else "USABLE",
+            tone="warn" if coverage < 60 else "neutral",
+            supporting=(
+                "Interpretation is still thin; treat comparisons cautiously."
+                if coverage < 60
+                else "Coverage is usable enough for trend interpretation."
+            ),
+            state="limited" if coverage < 60 else "neutral",
+        )
+    )
+
+    if len(richer_cards) >= 3:
+        cards.append(richer_cards[2])
+    else:
+        cards.append(
+            _secondary_guard_card(
+                title="Activity + training",
+                body=(
+                    f"{activity_days} active days and {recent_strength.get('sessions', 0)} completed strength session(s) "
+                    "were captured in the recent window."
+                ),
+                badge="ACTIVITY",
+                tone="neutral",
+                supporting=(
+                    f"Avg training load score {recent_strength.get('avg_training_load_score', 0)}"
+                    if recent_strength.get("sessions", 0)
+                    else "No completed strength session in the recent window."
+                ),
+                state="neutral",
+            )
+        )
+
+    if dominant_trend:
+        cards.append(
+            _secondary_guard_card(
+                title="Trend confidence",
+                body=(
+                    f"The clearest current trend is {dominant_trend['name']} = {dominant_trend['signal']} "
+                    f"with {dominant_trend.get('confidence', 'LOW')} confidence."
+                ),
+                badge="TREND",
+                tone="neutral",
+                supporting=f"Basis: {dominant_trend.get('basis', 'n/a')}",
+                state="neutral",
+            )
+        )
+    else:
+        cards.append(
+            _secondary_guard_card(
+                title="Trend confidence",
+                body="The trend engine is active, but the recent window still lacks enough paired data for confident secondary trend calls.",
+                badge="LIMITED",
+                tone="warn",
+                supporting="Add more consecutive metric days to unlock better secondary signals.",
+                state="limited",
+            )
+        )
+
+    if dominant_correlation and dominant_correlation.get("status") == "OK":
+        cards.append(
+            _secondary_guard_card(
+                title="Association signal",
+                body=(
+                    f"{dominant_correlation['label']} is the clearest current relationship signal "
+                    f"({dominant_correlation['direction'].lower()}, {dominant_correlation['strength'].lower()})."
+                ),
+                badge="ASSOCIATION",
+                tone="neutral",
+                supporting="Associative only — not a causal claim.",
+                state="neutral",
+            )
+        )
+    else:
+        cards.append(
+            _secondary_guard_card(
+                title="Associations",
+                body="There is not enough paired data yet for reliable correlation-style insight cards.",
+                badge="INSUFFICIENT",
+                tone="warn",
+                supporting="Keep logging consecutive days, especially around sleep, alcohol, activity and training.",
+                state="limited",
+            )
+        )
+
+    return cards[:4]
+
+
+def _select_insight_model(
+    *,
+    legacy_summary: dict[str, Any],
+    richer_summary: dict[str, Any],
+    pandas_foundation: dict[str, Any],
+    advanced_trends: dict[str, Any],
+    correlation_layer: dict[str, Any],
+    fitness_bridge: dict[str, Any],
+) -> dict[str, Any]:
+    recent_foundation = pandas_foundation.get("recent", {})
+    metric_days = int(recent_foundation.get("metric_days", 0) or 0)
+    coverage = int(recent_foundation.get("metric_coverage_pct", 0) or 0)
+    activity_days = int(recent_foundation.get("activity_days", 0) or 0)
+
+    v1 = {
+        "model_id": "legacy_v1",
+        "summary": legacy_summary,
+    }
+    v2 = {
+        "model_id": "pandas_summary_v1",
+        "summary": richer_summary,
+    }
+
+    if metric_days < 3 or coverage < 40:
+        guarded_secondary = _build_guarded_secondary_insights(
+            richer_summary=richer_summary,
+            pandas_foundation=pandas_foundation,
+            advanced_trends=advanced_trends,
+            correlation_layer=correlation_layer,
+            fitness_bridge=fitness_bridge,
+        )
+        selected_summary = {
+            "engine_version": "hybrid_guarded_v2",
+            "main_insight": richer_summary["main_insight"],
+            "next_action": richer_summary["next_action"],
+            "weekly_summary_card": richer_summary["weekly_summary_card"],
+            "secondary_insights": guarded_secondary,
+            "insights": _build_legacy_insights(
+                main_insight=richer_summary["main_insight"],
+                next_action=richer_summary["next_action"],
+                weekly_summary_card=richer_summary["weekly_summary_card"],
+                secondary_insights=guarded_secondary,
+            ),
+        }
+        return {
+            "selected_model": "hybrid_guarded_v2",
+            "selection_reason": (
+                f"Recent coverage is thin ({coverage}% / {metric_days} metric days), "
+                "so v2 main cards are kept but secondary insights are gated."
+            ),
+            "v1": v1,
+            "v2": v2,
+            "selected_summary": selected_summary,
+        }
+
+    if coverage < 60 or activity_days < 2:
+        guarded_secondary = _build_guarded_secondary_insights(
+            richer_summary=richer_summary,
+            pandas_foundation=pandas_foundation,
+            advanced_trends=advanced_trends,
+            correlation_layer=correlation_layer,
+            fitness_bridge=fitness_bridge,
+        )
+        selected_summary = {
+            "engine_version": "hybrid_v2_cautious",
+            "main_insight": richer_summary["main_insight"],
+            "next_action": richer_summary["next_action"],
+            "weekly_summary_card": richer_summary["weekly_summary_card"],
+            "secondary_insights": guarded_secondary,
+            "insights": _build_legacy_insights(
+                main_insight=richer_summary["main_insight"],
+                next_action=richer_summary["next_action"],
+                weekly_summary_card=richer_summary["weekly_summary_card"],
+                secondary_insights=guarded_secondary,
+            ),
+        }
+        return {
+            "selected_model": "hybrid_v2_cautious",
+            "selection_reason": (
+                f"Coverage is improving but still not robust enough for full v2 secondary cards "
+                f"({coverage}% coverage, {activity_days} active days)."
+            ),
+            "v1": v1,
+            "v2": v2,
+            "selected_summary": selected_summary,
+        }
+
+    return {
+        "selected_model": "pandas_summary_v1",
+        "selection_reason": "Coverage and activity depth are sufficient for full pandas-enriched summary output.",
+        "v1": v1,
+        "v2": v2,
+        "selected_summary": richer_summary,
+    }
+
 
 def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
     today = timezone.localdate()
@@ -639,15 +1706,59 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
     weight_trend_raw = _trend_label(avg_weight, prev_avg_weight, tolerance=0.15)
     sleep_trend_raw = _trend_label(avg_sleep, prev_avg_sleep, tolerance=0.2)
     alcohol_trend_raw = _trend_label(avg_alcohol, prev_avg_alcohol, tolerance=0.25)
-    activity_trend_raw = _trend_label(float(total_activity_minutes), float(prev_total_activity_minutes), tolerance=20.0)
     intake_trend_raw = _trend_label(avg_calories_actual, prev_avg_calories_actual, tolerance=75.0)
-
-    consistency = _consistency_breakdown(metric_days, active_days, period_days)
 
     weight_signal = _weight_signal(weight_trend_raw)
     sleep_signal = _sleep_signal(sleep_trend_raw)
     alcohol_signal = _alcohol_signal(alcohol_trend_raw)
+
+    pandas_foundation = _build_pandas_foundation_payload(
+        user=user,
+        recent_start=recent_start,
+        recent_end=today,
+        previous_start=previous_start,
+        previous_end=previous_end,
+    )
+
+    pandas_rolling = _build_pandas_rolling_payload(
+        user=user,
+        recent_start=recent_start,
+        recent_end=today,
+        previous_start=previous_start,
+        previous_end=previous_end,
+    )
+
+    recent_foundation = pandas_foundation.get("recent", {})
+    previous_foundation = pandas_foundation.get("previous", {})
+
+    recent_activity_totals = recent_foundation.get("activity_totals", {})
+    previous_activity_totals = previous_foundation.get("activity_totals", {})
+
+    activity_entries = int(recent_activity_totals.get("entries", activity_entries) or 0)
+    active_days = int(recent_foundation.get("activity_days", active_days) or 0)
+
+    total_activity_minutes = int(recent_activity_totals.get("minutes", total_activity_minutes) or 0)
+    prev_total_activity_minutes = int(
+        previous_activity_totals.get("minutes", prev_total_activity_minutes) or 0
+    )
+
+    recent_distance = _safe_float(recent_activity_totals.get("distance_km"))
+    previous_distance = _safe_float(previous_activity_totals.get("distance_km"))
+
+    if recent_distance is not None:
+        total_distance = round(recent_distance, 2)
+    if previous_distance is not None:
+        prev_total_distance = round(previous_distance, 2)
+
+    activity_trend_raw = _trend_label(
+        float(total_activity_minutes),
+        float(prev_total_activity_minutes),
+        tolerance=20.0,
+    )
     activity_signal = _activity_signal(activity_trend_raw)
+
+    consistency = _consistency_breakdown(metric_days, active_days, period_days)
+    consistency["active_days"] = active_days
 
     main_insight = _build_main_insight(
         consistency_score=consistency["overall_score"],
@@ -712,6 +1823,64 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
         secondary_insights=secondary_insights,
     )
 
+    fitness_bridge = _build_fitness_bridge_summary(
+        pandas_foundation=pandas_foundation,
+        pandas_rolling=pandas_rolling,
+    )
+
+    advanced_trends = _build_advanced_trends(
+        pandas_rolling=pandas_rolling,
+        fitness_bridge=fitness_bridge,
+    )
+
+    correlation_layer = _build_correlation_layer(
+        user=user,
+        recent_start=recent_start,
+        recent_end=today,
+        previous_start=previous_start,
+        previous_end=previous_end,
+    )
+
+    legacy_main_insight = main_insight
+    legacy_next_action = next_action
+    legacy_weekly_summary_card = weekly_summary_card
+    legacy_secondary_insights = secondary_insights
+
+    richer_summary = _build_richer_summary_generation(
+        legacy_main_insight=legacy_main_insight,
+        legacy_next_action=legacy_next_action,
+        legacy_weekly_summary_card=legacy_weekly_summary_card,
+        legacy_secondary_insights=legacy_secondary_insights,
+        advanced_trends=advanced_trends,
+        correlation_layer=correlation_layer,
+        fitness_bridge=fitness_bridge,
+        pandas_foundation=pandas_foundation,
+    )
+
+    legacy_summary = {
+        "main_insight": legacy_main_insight,
+        "next_action": legacy_next_action,
+        "weekly_summary_card": legacy_weekly_summary_card,
+        "secondary_insights": legacy_secondary_insights,
+    }
+
+    insight_models = _select_insight_model(
+        legacy_summary=legacy_summary,
+        richer_summary=richer_summary,
+        pandas_foundation=pandas_foundation,
+        advanced_trends=advanced_trends,
+        correlation_layer=correlation_layer,
+        fitness_bridge=fitness_bridge,
+    )
+
+    selected_summary = insight_models["selected_summary"]
+
+    main_insight = selected_summary["main_insight"]
+    next_action = selected_summary["next_action"]
+    weekly_summary_card = selected_summary["weekly_summary_card"]
+    secondary_insights = selected_summary["secondary_insights"]
+    insights = selected_summary["insights"]
+
     return {
         "period_days": period_days,
         "window": {
@@ -768,6 +1937,26 @@ def build_bio_analytics(*, user: User, period_days: int = 7) -> dict[str, Any]:
         "consistency_card": consistency_card,
         "secondary_insights": secondary_insights,
         "insights": insights,
+        "pandas_foundation": pandas_foundation,
+        "pandas_rolling": pandas_rolling,
+        "fitness_bridge": fitness_bridge,
+        "trend_engine_version": "pandas_v1",
+        "advanced_trends": advanced_trends,
+        "correlation_engine_version": "pandas_v1",
+        "correlation_layer": correlation_layer,
+        "summary_engine_version": "pandas_summary_v1",
+        "richer_summary": richer_summary,
+        "legacy_summary": {
+            "main_insight": legacy_main_insight,
+            "next_action": legacy_next_action,
+            "weekly_summary_card": legacy_weekly_summary_card,
+            "secondary_insights": legacy_secondary_insights,
+        },
+        "insight_model_v1": insight_models["v1"],
+        "insight_model_v2": insight_models["v2"],
+        "selected_insight_model": insight_models["selected_model"],
+        "insight_selection_reason": insight_models["selection_reason"],
+        "selected_summary": selected_summary,
     }
 
 def _json_safe(value: Any) -> Any:

@@ -1,3 +1,4 @@
+import csv
 from datetime import timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
+from django.http import HttpResponse, JsonResponse
 
 from .forms import ActivityForm, DailyMetricForm
 from .models import Activity, AnalyticsSnapshotType, DailyMetric
@@ -23,6 +25,7 @@ from .tasks import (
     recompute_overview_snapshot,
     recompute_recent_snapshots_for_user,
 )
+from .services.reports import build_bio_analytics_report, build_bio_daily_csv_rows
 
 
 def _queue_snapshot_refresh_if_needed(*, user, snapshot_type: str, period_days: int) -> None:
@@ -486,17 +489,20 @@ class BioOverviewView(LoginRequiredMixin, View):
 
         return render(request, self.template_name, context)
 
+def _resolve_period_days(period_param: str) -> int:
+    period_map = {
+        "7d": 7,
+        "14d": 14,
+        "30d": 30,
+    }
+    return period_map.get(period_param, 7)
+
 class BioAnalyticsView(LoginRequiredMixin, View):
     template_name = "bio/analytics.html"
 
     def get(self, request):
         period_param = request.GET.get("period", "7d")
-        period_map = {
-            "7d": 7,
-            "14d": 14,
-            "30d": 30,
-        }
-        period_days = period_map.get(period_param, 7)
+        period_days = _resolve_period_days(period_param)
 
         analytics = _get_snapshot_or_fallback(
             user=request.user,
@@ -509,3 +515,78 @@ class BioAnalyticsView(LoginRequiredMixin, View):
             "analytics": analytics,
         }
         return render(request, self.template_name, context)
+
+class BioAnalyticsExportJsonView(LoginRequiredMixin, View):
+    def get(self, request):
+        period_param = request.GET.get("period", "7d")
+        period_days = _resolve_period_days(period_param)
+
+        report = build_bio_analytics_report(
+            user=request.user,
+            period_days=period_days,
+        )
+        return JsonResponse(report, json_dumps_params={"indent": 2})
+
+class BioAnalyticsExportCsvView(LoginRequiredMixin, View):
+    def get(self, request):
+        period_param = request.GET.get("period", "7d")
+        period_days = _resolve_period_days(period_param)
+
+        end_date = timezone.localdate()
+        start_date = end_date - timedelta(days=period_days - 1)
+
+        rows = build_bio_daily_csv_rows(
+            user=request.user,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            f'attachment; filename="bio-daily-export-{request.user.username}-{period_param}.csv"'
+        )
+
+        fieldnames = [
+            "date",
+            "metric_logged",
+            "has_metric",
+            "weight_kg",
+            "sleep_quality",
+            "alcohol_units",
+            "calories_planned",
+            "calories_actual",
+            "diet_mode",
+            "activity_logged",
+            "has_activity",
+            "activity_entries",
+            "activity_minutes_raw",
+            "activity_minutes",
+            "activity_calories_raw",
+            "activity_calories",
+            "activity_distance_km_raw",
+            "activity_distance_km",
+            "activity_duration_outlier_count",
+            "activity_distance_outlier_count",
+            "activity_calories_outlier_count",
+            "activity_type_count",
+            "activity_types",
+            "strength_sessions",
+            "strength_exercise_count",
+            "strength_set_count",
+            "strength_volume_load",
+            "strength_training_load_score",
+            "strength_training_day",
+            "calorie_delta",
+            "calorie_target_hit",
+            "weight_change_1d",
+            "sleep_low_flag",
+            "alcohol_high_flag",
+        ]
+
+        writer = csv.DictWriter(response, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for row in rows:
+            writer.writerow({key: row.get(key) for key in fieldnames})
+
+        return response

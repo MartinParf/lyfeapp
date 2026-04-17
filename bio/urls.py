@@ -12,6 +12,8 @@ from .views import (
     DailyMetricTodayView,
     BioOverviewView,
     BioAnalyticsView,
+    BioAnalyticsExportJsonView,
+    BioAnalyticsExportCsvView,
 )
 
 app_name = "bio"
@@ -28,5 +30,7 @@ urlpatterns = [
     path("activities/<int:pk>/edit/", ActivityUpdateView.as_view(), name="activity-edit"),
     path("activities/<int:pk>/delete/", ActivityDeleteView.as_view(), name="activity-delete"),
     path("analytics/", BioAnalyticsView.as_view(), name="analytics"),
+    path("analytics/export/json/", BioAnalyticsExportJsonView.as_view(), name="analytics-export-json"),
+    path("analytics/export/csv/", BioAnalyticsExportCsvView.as_view(), name="analytics-export-csv"),
     
 ]
