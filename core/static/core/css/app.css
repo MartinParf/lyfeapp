@@ -3823,7 +3823,7 @@ button.primary-submit-full,
    ========================================================= */
 
    :root[data-theme="light"] {
-    --bg: #d9e4ea;
+    --bg: #cbd7de;
 
     --panel: #edf4f7;
     --panel-2: #f5f8fa;
@@ -3840,8 +3840,8 @@ button.primary-submit-full,
     --fitness-soft: rgba(231, 154, 21, 0.075);
 
     --page-bg:
-        radial-gradient(circle at top, rgba(24, 183, 214, 0.075), transparent 35%),
-        linear-gradient(180deg, #e8f0f3 0%, #d9e4ea 46%, #cad8e0 100%);
+        radial-gradient(circle at top, rgba(80, 115, 135, 0.05), transparent 35%),
+        linear-gradient(180deg, #dce7ec 0%, #cbd7de 46%, #bbc9d2 100%);
 
     --surface-elevated: rgba(255, 255, 255, 0.44);
     --surface-elevated-2: rgba(255, 255, 255, 0.66);
@@ -3907,3 +3907,166 @@ button.primary-submit-full,
     color: #12202a !important;
     text-shadow: none;
 }
+
+/* =========================================================
+   LIGHT THEME CONTRAST TUNING
+   Cards need stronger separation in light mode
+   ========================================================= */
+
+   :root[data-theme="light"] {
+    --panel: #eef4f7;
+    --panel-2: #f7fafb;
+    --panel-3: #dbe8ee;
+
+    --line: rgba(35, 58, 72, 0.20);
+    --line-2: rgba(35, 58, 72, 0.34);
+
+    --text: #101c25;
+    --text-soft: #354b58;
+    --text-dim: #607480;
+
+    --surface-elevated: rgba(255, 255, 255, 0.70);
+    --surface-elevated-2: rgba(255, 255, 255, 0.88);
+
+    --shadow-soft: 0 10px 24px rgba(35, 58, 72, 0.16);
+}
+
+:root[data-theme="light"] .list-card,
+:root[data-theme="light"] .panel-soft,
+:root[data-theme="light"] .panel-accent,
+:root[data-theme="light"] .metric-card,
+:root[data-theme="light"] .analytics-card,
+:root[data-theme="light"] .session-list-card {
+    border-color: var(--line);
+    box-shadow: 0 8px 20px rgba(35, 58, 72, 0.10);
+}
+
+:root[data-theme="light"] .metric-card,
+:root[data-theme="light"] .analytics-card {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.78) 0%,
+            rgba(238, 246, 249, 0.90) 100%
+        );
+}
+
+/* =========================================================
+   SESSION STATE CARDS
+   Planned gets subtle distinction, completed stays default
+   ========================================================= */
+
+/* Dark: planned only — slightly greyer and lighter */
+:root[data-theme="dark"] .session-list-card-planned {
+    border-color: rgba(170, 180, 190, 0.24);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(170, 180, 190, 0.055) 0%,
+            color-mix(in srgb, var(--panel) 92%, #ffffff 8%) 100%
+        );
+}
+
+/* Dark: completed uses default card surface, only icon carries status */
+:root[data-theme="dark"] .session-list-card-completed {
+    border-color: var(--line);
+    background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
+}
+
+/* Light: keep both close to normal cards, contrast is handled globally */
+:root[data-theme="light"] .session-list-card-planned {
+    /* Zesvětlený rámeček (sníženo z 0.15 na 0.12) */
+    border-color: rgba(15, 23, 42, 0.12); 
+        
+    /* Zesvětlené pozadí (sníženo z 0.04 na pouhá 0.02) */
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.02) 0%, var(--panel) 100%);
+}
+
+:root[data-theme="light"] .session-list-card-completed {
+    border-color: var(--line);
+    background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
+}
+/* =========================================================
+   Session status ikonky
+   ========================================================= */
+
+:root[data-theme="light"] .session-list-card-completed .session-state-icon,
+:root[data-theme="light"] .session-list-card-completed .session-inline-state {
+    color: #15803d;
+}
+
+:root[data-theme="light"] .session-list-card-planned .session-state-icon,
+:root[data-theme="light"] .session-list-card-planned .session-inline-state {
+    color: #5f6f7a;
+}
+
+:root[data-theme="dark"] .session-list-card-completed .session-state-icon,
+:root[data-theme="dark"] .session-list-card-completed .session-inline-state {
+    color: #86efac;
+}
+
+:root[data-theme="dark"] .session-list-card-planned .session-state-icon,
+:root[data-theme="dark"] .session-list-card-planned .session-inline-state {
+    color: #9aa7b5;
+}
+/* =========================================================
+   THEME POLISH — stronger BIO/FITNESS mode switch
+   ========================================================= */
+
+   .mode-switch,
+   .mode-toggle,
+   .mode-tabs,
+   .app-mode-switch {
+       border-color: var(--line-2);
+       background:
+           linear-gradient(
+               180deg,
+               color-mix(in srgb, var(--panel-3) 58%, var(--panel-2) 42%) 0%,
+               var(--panel-2) 100%
+           );
+       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+   }
+   
+   .mode-switch a,
+   .mode-toggle a,
+   .mode-tabs a,
+   .app-mode-switch a {
+       color: var(--text-soft);
+   }
+   
+   body.mode-bio .mode-switch a[href*="bio"],
+   body.mode-bio .mode-toggle a[href*="bio"],
+   body.mode-bio .mode-tabs a[href*="bio"],
+   body.mode-bio .app-mode-switch a[href*="bio"] {
+       color: #ffffff;
+       background:
+           linear-gradient(
+               180deg,
+               color-mix(in srgb, var(--bio) 28%, var(--panel-3) 72%) 0%,
+               color-mix(in srgb, var(--bio) 16%, var(--panel-2) 84%) 100%
+           );
+   }
+   
+   body.mode-fitness .mode-switch a[href*="fitness"],
+   body.mode-fitness .mode-toggle a[href*="fitness"],
+   body.mode-fitness .mode-tabs a[href*="fitness"],
+   body.mode-fitness .app-mode-switch a[href*="fitness"] {
+       color: #ffffff;
+       background:
+           linear-gradient(
+               180deg,
+               color-mix(in srgb, var(--fitness) 30%, var(--panel-3) 70%) 0%,
+               color-mix(in srgb, var(--fitness) 17%, var(--panel-2) 83%) 100%
+           );
+   }
+   
+   :root[data-theme="light"] body.mode-bio .mode-switch a[href*="bio"],
+   :root[data-theme="light"] body.mode-bio .mode-toggle a[href*="bio"],
+   :root[data-theme="light"] body.mode-bio .mode-tabs a[href*="bio"],
+   :root[data-theme="light"] body.mode-bio .app-mode-switch a[href*="bio"],
+   :root[data-theme="light"] body.mode-fitness .mode-switch a[href*="fitness"],
+   :root[data-theme="light"] body.mode-fitness .mode-toggle a[href*="fitness"],
+   :root[data-theme="light"] body.mode-fitness .mode-tabs a[href*="fitness"],
+   :root[data-theme="light"] body.mode-fitness .app-mode-switch a[href*="fitness"] {
+       color: var(--text) !important;
+   }
