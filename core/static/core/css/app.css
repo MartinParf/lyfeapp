@@ -3788,3 +3788,31 @@ button.primary-submit-full,
 :root[data-theme="light"] .session-list-card-completed .session-inline-state {
     color: #15803d;
 }
+/* =========================================================
+   THEME LAB C2 — SOFT GRAPHITE PLUS
+   Softer, greyer, calmer dark theme
+   ========================================================= */
+
+   :root[data-theme="dark"] {
+    --bg: #0f1216;
+
+    --panel: #171b21;
+    --panel-2: #1d232b;
+    --panel-3: #252d37;
+
+    --line: rgba(205, 212, 220, 0.10);
+    --line-2: rgba(205, 212, 220, 0.19);
+
+    --text: #f2f4f7;
+    --text-soft: #c5ccd5;
+    --text-dim: #8d96a3;
+
+    --page-bg:
+        radial-gradient(circle at top, rgba(180, 190, 200, 0.035), transparent 34%),
+        linear-gradient(180deg, #0b0e12 0%, #0f1318 45%, #12171d 100%);
+
+    --surface-elevated: rgba(255, 255, 255, 0.035);
+    --surface-elevated-2: rgba(255, 255, 255, 0.052);
+
+    --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.26);
+}
