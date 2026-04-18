@@ -1933,132 +1933,6 @@ input[type="button"] {
     }
 }
 
-/* =========================================================
-   LIGHT THEME SUPPORT — consolidated and non-destructive
-   ========================================================= */
-
-:root[data-theme="light"] .mode-switch-link,
-:root[data-theme="light"] .context-subnav-link,
-:root[data-theme="light"] .nav-pill,
-:root[data-theme="light"] .sub-nav-link,
-:root[data-theme="light"] .link-button,
-:root[data-theme="light"] button,
-:root[data-theme="light"] input[type="submit"],
-:root[data-theme="light"] input[type="button"] {
-    color: #334155;
-    background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
-    border-color: rgba(15, 23, 42, 0.10);
-}
-
-:root[data-theme="light"] .mode-switch-link-active,
-:root[data-theme="light"] .context-subnav-link-active,
-:root[data-theme="light"] .nav-pill-active,
-:root[data-theme="light"] .sub-nav-link-active,
-:root[data-theme="light"] .primary-button {
-    color: #0f172a !important;
-    text-shadow: none;
-    border-color: color-mix(in srgb, var(--mode) 40%, rgba(15, 23, 42, 0.12));
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--mode) 12%, #ffffff 88%) 0%,
-            color-mix(in srgb, var(--mode) 7%, #f5f8fb 93%) 100%
-        );
-}
-
-:root[data-theme="light"] .mode-switch {
-    background: linear-gradient(180deg, #f4f6f8 0%, #eef2f5 100%);
-    border-color: rgba(15, 23, 42, 0.10);
-}
-
-:root[data-theme="light"] .app-brand-title,
-:root[data-theme="light"] h1,
-:root[data-theme="light"] h2,
-:root[data-theme="light"] h3,
-:root[data-theme="light"] h4 {
-    color: #0f172a;
-}
-
-:root[data-theme="light"] .app-brand-subtitle,
-:root[data-theme="light"] .muted,
-:root[data-theme="light"] p,
-:root[data-theme="light"] .overview-lead,
-:root[data-theme="light"] .mode-bridge-copy {
-    color: #516071;
-}
-
-:root[data-theme="light"] .meta-item-label,
-:root[data-theme="light"] .compact-label,
-:root[data-theme="light"] .section-kicker,
-:root[data-theme="light"] .mode-bridge-kicker,
-:root[data-theme="light"] .stat-label {
-    color: #708096;
-}
-
-:root[data-theme="light"] .panel-accent,
-:root[data-theme="light"] .overview-primary-card,
-:root[data-theme="light"] .session-page-head {
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--mode) 6%, #ffffff 94%) 0%,
-            #f8fafc 100%
-        );
-    border-color: color-mix(in srgb, var(--mode) 24%, rgba(15, 23, 42, 0.10));
-}
-
-:root[data-theme="light"] .mode-bridge-card-bio,
-:root[data-theme="light"] .overview-bridge-card-current,
-:root[data-theme="light"] .summary-tile-weight {
-    background: linear-gradient(180deg, rgba(24, 183, 214, 0.04) 0%, #f8fafc 100%);
-    border-color: rgba(24, 183, 214, 0.18);
-}
-
-:root[data-theme="light"] .mode-bridge-card-fitness,
-:root[data-theme="light"] .overview-bridge-card-other,
-:root[data-theme="light"] .summary-tile-alcohol,
-:root[data-theme="light"] .execution-card-primary {
-    background: linear-gradient(180deg, rgba(231, 154, 21, 0.04) 0%, #f8fafc 100%);
-    border-color: rgba(231, 154, 21, 0.20);
-}
-
-:root[data-theme="light"] .summary-tile-sleep {
-    background: linear-gradient(180deg, rgba(34, 197, 94, 0.04) 0%, #f8fafc 100%);
-    border-color: rgba(34, 197, 94, 0.18);
-}
-
-:root[data-theme="light"] .summary-tile-trend {
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.04) 0%, #f8fafc 100%);
-    border-color: rgba(59, 130, 246, 0.18);
-}
-
-:root[data-theme="light"] input,
-:root[data-theme="light"] select,
-:root[data-theme="light"] textarea {
-    background: #ffffff;
-    color: #0f172a;
-    border-color: rgba(15, 23, 42, 0.10);
-}
-
-:root[data-theme="light"] input::placeholder,
-:root[data-theme="light"] textarea::placeholder {
-    color: #8a97a8;
-}
-
-:root[data-theme="light"] .danger,
-:root[data-theme="light"] button.danger {
-    color: #b84343;
-    border-color: rgba(239, 68, 68, 0.20);
-    background: linear-gradient(180deg, rgba(239, 68, 68, 0.04) 0%, #ffffff 100%);
-}
-
-:root[data-theme="dark"] .mode-switch-link-active,
-:root[data-theme="dark"] .context-subnav-link-active,
-:root[data-theme="dark"] .nav-pill-active,
-:root[data-theme="dark"] .sub-nav-link-active,
-:root[data-theme="dark"] .primary-button {
-    color: #f8fbff;
-}
 /* 10.2b / 5-column compact insight strip */
 .overview-tiles-strip-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -4166,4 +4040,202 @@ button.primary-submit-full,
 :root[data-theme="light"] .mode-switch-link-active {
     color: #0f1b24 !important;
     background: transparent !important;
+}
+/* =========================================================
+   LIGHT THEME FINAL READABILITY PATCH
+   Restores only useful light-mode support after removing old block
+   ========================================================= */
+
+/* Stronger text hierarchy in light mode */
+:root[data-theme="light"] {
+    --text: #0f1b24;
+    --text-soft: #324a58;
+    --text-dim: #566c79;
+
+    --line: rgba(27, 48, 62, 0.24);
+    --line-2: rgba(27, 48, 62, 0.40);
+
+    --surface-elevated: rgba(255, 255, 255, 0.74);
+    --surface-elevated-2: rgba(255, 255, 255, 0.90);
+}
+
+/* General readable text */
+:root[data-theme="light"] body,
+:root[data-theme="light"] p,
+:root[data-theme="light"] label,
+:root[data-theme="light"] .muted,
+:root[data-theme="light"] .muted-compact,
+:root[data-theme="light"] .form-help,
+:root[data-theme="light"] .helptext,
+:root[data-theme="light"] .quick-choice-help,
+:root[data-theme="light"] .overview-lead,
+:root[data-theme="light"] .mode-bridge-copy,
+:root[data-theme="light"] .form-hero-copy,
+:root[data-theme="light"] .execution-subtitle {
+    color: var(--text-soft);
+}
+
+/* Form labels should not look disabled */
+:root[data-theme="light"] .form-row label,
+:root[data-theme="light"] .form-section label,
+:root[data-theme="light"] .inline-form label {
+    color: var(--text);
+    font-weight: 700;
+}
+
+/* Small technical labels */
+:root[data-theme="light"] .meta-item-label,
+:root[data-theme="light"] .compact-label,
+:root[data-theme="light"] .section-kicker,
+:root[data-theme="light"] .mode-bridge-kicker,
+:root[data-theme="light"] .stat-label,
+:root[data-theme="light"] .entity-kpi-label,
+:root[data-theme="light"] .session-duration-label,
+:root[data-theme="light"] .execution-mini-label,
+:root[data-theme="light"] .form-hero-mini-label {
+    color: var(--text-dim);
+}
+
+/* Inputs/selects/textareas */
+:root[data-theme="light"] input,
+:root[data-theme="light"] select,
+:root[data-theme="light"] textarea {
+    background: rgba(248, 250, 251, 0.96);
+    color: var(--text);
+    border-color: rgba(27, 48, 62, 0.34);
+}
+
+:root[data-theme="light"] input::placeholder,
+:root[data-theme="light"] textarea::placeholder {
+    color: rgba(86, 108, 121, 0.56);
+}
+
+:root[data-theme="light"] input:disabled,
+:root[data-theme="light"] select:disabled,
+:root[data-theme="light"] textarea:disabled {
+    color: rgba(15, 27, 36, 0.62);
+    background: rgba(229, 236, 240, 0.78);
+    border-color: rgba(27, 48, 62, 0.22);
+}
+
+/* Basic buttons after removing old support block */
+:root[data-theme="light"] .link-button,
+:root[data-theme="light"] button,
+:root[data-theme="light"] input[type="submit"],
+:root[data-theme="light"] input[type="button"] {
+    color: var(--text);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.88) 0%,
+            rgba(237, 244, 247, 0.94) 100%
+        );
+    border-color: rgba(27, 48, 62, 0.24);
+}
+
+/* Primary buttons */
+:root[data-theme="light"] .primary-button {
+    color: var(--text) !important;
+    text-shadow: none;
+    border-color: color-mix(in srgb, var(--mode) 46%, rgba(27, 48, 62, 0.22));
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mode) 14%, #ffffff 86%) 0%,
+            color-mix(in srgb, var(--mode) 8%, #e9f1f5 92%) 100%
+        );
+}
+
+/* Primary / current mode cards */
+:root[data-theme="light"] .panel-accent,
+:root[data-theme="light"] .overview-primary-card,
+:root[data-theme="light"] .form-hero-card-primary,
+:root[data-theme="light"] .session-page-head {
+    border-color: color-mix(in srgb, var(--mode) 34%, rgba(27, 48, 62, 0.22));
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mode) 7%, rgba(255, 255, 255, 0.94) 93%) 0%,
+            rgba(241, 247, 250, 0.96) 100%
+        );
+    box-shadow:
+        0 8px 18px rgba(27, 48, 62, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+/* Fitness primary cards */
+:root[data-theme="light"] .execution-card-primary {
+    border-color: rgba(231, 154, 21, 0.30);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(231, 154, 21, 0.06) 0%,
+            rgba(241, 247, 250, 0.96) 100%
+        );
+}
+
+/* BIO/FITNESS bridge cards */
+:root[data-theme="light"] .mode-bridge-card-bio,
+:root[data-theme="light"] .overview-bridge-card-current,
+:root[data-theme="light"] .summary-tile-weight {
+    background: linear-gradient(180deg, rgba(24, 183, 214, 0.055) 0%, rgba(241, 247, 250, 0.96) 100%);
+    border-color: rgba(24, 183, 214, 0.26);
+}
+
+:root[data-theme="light"] .mode-bridge-card-fitness,
+:root[data-theme="light"] .overview-bridge-card-other,
+:root[data-theme="light"] .summary-tile-alcohol {
+    background: linear-gradient(180deg, rgba(231, 154, 21, 0.055) 0%, rgba(241, 247, 250, 0.96) 100%);
+    border-color: rgba(231, 154, 21, 0.26);
+}
+
+:root[data-theme="light"] .summary-tile-sleep {
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.055) 0%, rgba(241, 247, 250, 0.96) 100%);
+    border-color: rgba(34, 197, 94, 0.24);
+}
+
+:root[data-theme="light"] .summary-tile-trend {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.055) 0%, rgba(241, 247, 250, 0.96) 100%);
+    border-color: rgba(59, 130, 246, 0.24);
+}
+
+/* Generic cards after old support removal */
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .list-card,
+:root[data-theme="light"] .form-section,
+:root[data-theme="light"] .inline-form,
+:root[data-theme="light"] .stat-tile,
+:root[data-theme="light"] .mode-bridge-card,
+:root[data-theme="light"] .overview-bridge-card,
+:root[data-theme="light"] .execution-card,
+:root[data-theme="light"] .form-hero-card,
+:root[data-theme="light"] .session-collapsible,
+:root[data-theme="light"] .session-secondary-details,
+:root[data-theme="light"] .session-set-block,
+:root[data-theme="light"] .session-add-set-block,
+:root[data-theme="light"] .exercise-entry-card,
+:root[data-theme="light"] .entity-info-strip {
+    border-color: var(--line);
+    box-shadow:
+        0 8px 18px rgba(27, 48, 62, 0.09),
+        inset 0 1px 0 rgba(255, 255, 255, 0.56);
+}
+
+/* Status chips in light mode */
+:root[data-theme="light"] .status-chip-good {
+    border-color: rgba(22, 101, 52, 0.34);
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.14) 0%, rgba(240, 253, 244, 0.84) 100%);
+    color: #166534;
+}
+
+:root[data-theme="light"] .status-chip-warn {
+    border-color: rgba(146, 64, 14, 0.34);
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.16) 0%, rgba(255, 251, 235, 0.86) 100%);
+    color: #92400e;
+}
+
+:root[data-theme="light"] .status-chip-bad {
+    border-color: rgba(153, 27, 27, 0.32);
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.12) 0%, rgba(254, 242, 242, 0.86) 100%);
+    color: #991b1b;
 }
