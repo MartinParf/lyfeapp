@@ -3909,46 +3909,80 @@ button.primary-submit-full,
 }
 
 /* =========================================================
-   LIGHT THEME CONTRAST TUNING
-   Cards need stronger separation in light mode
+   LIGHT THEME CONTRAST V2
+   Stronger structure, clearer borders, less floating feeling
    ========================================================= */
 
    :root[data-theme="light"] {
-    --panel: #eef4f7;
-    --panel-2: #f7fafb;
-    --panel-3: #dbe8ee;
+    --bg: #d2dce2;
 
-    --line: rgba(35, 58, 72, 0.20);
-    --line-2: rgba(35, 58, 72, 0.34);
+    --panel: #edf4f7;
+    --panel-2: #f8fafb;
+    --panel-3: #d7e4ea;
 
-    --text: #101c25;
-    --text-soft: #354b58;
-    --text-dim: #607480;
+    --line: rgba(27, 48, 62, 0.24);
+    --line-2: rgba(27, 48, 62, 0.40);
 
-    --surface-elevated: rgba(255, 255, 255, 0.70);
-    --surface-elevated-2: rgba(255, 255, 255, 0.88);
+    --text: #0f1b24;
+    --text-soft: #324a58;
+    --text-dim: #566c79;
 
-    --shadow-soft: 0 10px 24px rgba(35, 58, 72, 0.16);
+    --page-bg:
+        radial-gradient(circle at top, rgba(80, 115, 135, 0.055), transparent 35%),
+        linear-gradient(180deg, #e1eaee 0%, #d2dce2 46%, #c1cfd7 100%);
+
+    --surface-elevated: rgba(255, 255, 255, 0.74);
+    --surface-elevated-2: rgba(255, 255, 255, 0.90);
+
+    --shadow-soft: 0 10px 24px rgba(27, 48, 62, 0.17);
 }
 
+/* Better readable body/helper text in light mode */
+:root[data-theme="light"] .muted,
+:root[data-theme="light"] .muted-compact,
+:root[data-theme="light"] p.muted {
+    color: var(--text-soft);
+}
+
+/* Stronger card separation */
 :root[data-theme="light"] .list-card,
 :root[data-theme="light"] .panel-soft,
 :root[data-theme="light"] .panel-accent,
 :root[data-theme="light"] .metric-card,
 :root[data-theme="light"] .analytics-card,
-:root[data-theme="light"] .session-list-card {
+:root[data-theme="light"] .session-list-card,
+:root[data-theme="light"] .form-hero-card,
+:root[data-theme="light"] .execution-card,
+:root[data-theme="light"] .entity-info-strip {
     border-color: var(--line);
-    box-shadow: 0 8px 20px rgba(35, 58, 72, 0.10);
+    box-shadow:
+        0 8px 18px rgba(27, 48, 62, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.58);
 }
 
-:root[data-theme="light"] .metric-card,
-:root[data-theme="light"] .analytics-card {
-    background:
-        linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.78) 0%,
-            rgba(238, 246, 249, 0.90) 100%
-        );
+/* Inputs/selects need stronger boundaries in light mode */
+:root[data-theme="light"] input,
+:root[data-theme="light"] select,
+:root[data-theme="light"] textarea {
+    border-color: rgba(27, 48, 62, 0.34);
+    background: rgba(248, 250, 251, 0.92);
+    color: var(--text);
+}
+
+:root[data-theme="light"] input:focus,
+:root[data-theme="light"] select:focus,
+:root[data-theme="light"] textarea:focus {
+    border-color: color-mix(in srgb, var(--mode) 52%, rgba(27, 48, 62, 0.34));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--mode) 16%, transparent);
+}
+
+/* Small labels should not disappear */
+:root[data-theme="light"] .section-kicker,
+:root[data-theme="light"] .meta-item-label,
+:root[data-theme="light"] .entity-kpi-label,
+:root[data-theme="light"] .session-duration-label,
+:root[data-theme="light"] .compact-label {
+    color: var(--text-dim);
 }
 
 /* =========================================================
@@ -3976,10 +4010,10 @@ button.primary-submit-full,
 /* Light: keep both close to normal cards, contrast is handled globally */
 :root[data-theme="light"] .session-list-card-planned {
     /* Zesvětlený rámeček (sníženo z 0.15 na 0.12) */
-    border-color: rgba(15, 23, 42, 0.12); 
+    border-color: rgba(15, 23, 42, 0.25); 
         
     /* Zesvětlené pozadí (sníženo z 0.04 na pouhá 0.02) */
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.02) 0%, var(--panel) 100%);
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, var(--panel) 100%);
 }
 
 :root[data-theme="light"] .session-list-card-completed {
@@ -4010,63 +4044,126 @@ button.primary-submit-full,
     color: #9aa7b5;
 }
 /* =========================================================
-   THEME POLISH — stronger BIO/FITNESS mode switch
+   BIO / FITNESS MAIN MODE SWITCH V2
+   Compact, stronger active color, clean tap/focus behavior
    ========================================================= */
 
-   .mode-switch,
-   .mode-toggle,
-   .mode-tabs,
-   .app-mode-switch {
-       border-color: var(--line-2);
-       background:
-           linear-gradient(
-               180deg,
-               color-mix(in srgb, var(--panel-3) 58%, var(--panel-2) 42%) 0%,
-               var(--panel-2) 100%
-           );
-       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-   }
-   
-   .mode-switch a,
-   .mode-toggle a,
-   .mode-tabs a,
-   .app-mode-switch a {
-       color: var(--text-soft);
-   }
-   
-   body.mode-bio .mode-switch a[href*="bio"],
-   body.mode-bio .mode-toggle a[href*="bio"],
-   body.mode-bio .mode-tabs a[href*="bio"],
-   body.mode-bio .app-mode-switch a[href*="bio"] {
-       color: #ffffff;
-       background:
-           linear-gradient(
-               180deg,
-               color-mix(in srgb, var(--bio) 28%, var(--panel-3) 72%) 0%,
-               color-mix(in srgb, var(--bio) 16%, var(--panel-2) 84%) 100%
-           );
-   }
-   
-   body.mode-fitness .mode-switch a[href*="fitness"],
-   body.mode-fitness .mode-toggle a[href*="fitness"],
-   body.mode-fitness .mode-tabs a[href*="fitness"],
-   body.mode-fitness .app-mode-switch a[href*="fitness"] {
-       color: #ffffff;
-       background:
-           linear-gradient(
-               180deg,
-               color-mix(in srgb, var(--fitness) 30%, var(--panel-3) 70%) 0%,
-               color-mix(in srgb, var(--fitness) 17%, var(--panel-2) 83%) 100%
-           );
-   }
-   
-   :root[data-theme="light"] body.mode-bio .mode-switch a[href*="bio"],
-   :root[data-theme="light"] body.mode-bio .mode-toggle a[href*="bio"],
-   :root[data-theme="light"] body.mode-bio .mode-tabs a[href*="bio"],
-   :root[data-theme="light"] body.mode-bio .app-mode-switch a[href*="bio"],
-   :root[data-theme="light"] body.mode-fitness .mode-switch a[href*="fitness"],
-   :root[data-theme="light"] body.mode-fitness .mode-toggle a[href*="fitness"],
-   :root[data-theme="light"] body.mode-fitness .mode-tabs a[href*="fitness"],
-   :root[data-theme="light"] body.mode-fitness .app-mode-switch a[href*="fitness"] {
-       color: var(--text) !important;
-   }
+   .mode-switch {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 2px;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--panel-3) 52%, var(--panel-2) 48%) 0%,
+            var(--panel-2) 100%
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 6px 16px rgba(0, 0, 0, 0.16);
+    overflow: hidden;
+}
+
+.mode-switch-indicator {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    bottom: 2px;
+    width: calc((100% - 4px) / 2);
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: 0;
+    transition: transform 160ms ease;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mode) 48%, var(--panel-3) 52%) 0%,
+            color-mix(in srgb, var(--mode) 32%, var(--panel-2) 68%) 100%
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+.mode-switch.fitness-active .mode-switch-indicator {
+    transform: translateX(100%);
+}
+
+.mode-switch.bio-active .mode-switch-indicator {
+    transform: translateX(0);
+}
+
+.mode-switch-link {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 34px;
+    border-radius: 999px;
+    color: var(--text-soft);
+    background: transparent !important;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mode-switch-link-active {
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+.mode-switch-link:focus,
+.mode-switch-link:active {
+    outline: none;
+    background: transparent !important;
+}
+
+.mode-switch-link:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--mode) 36%, transparent);
+    outline-offset: -3px;
+    border-radius: 999px;
+}
+
+/* Light mode */
+:root[data-theme="light"] .mode-switch {
+    border-color: rgba(27, 48, 62, 0.38);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.74) 0%,
+            rgba(209, 223, 230, 0.92) 100%
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.86),
+        0 6px 14px rgba(27, 48, 62, 0.13);
+}
+
+:root[data-theme="light"] .mode-switch-indicator {
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mode) 64%, #ffffff 66%) 0%,
+            color-mix(in srgb, var(--mode) 50%, #d4e2e9 78%) 100%
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.92),
+        0 4px 12px rgba(27, 48, 62, 0.15);
+}
+
+:root[data-theme="light"] .mode-switch-link {
+    color: #435866;
+    background: transparent !important;
+}
+
+:root[data-theme="light"] .mode-switch-link-active {
+    color: #0f1b24 !important;
+    background: transparent !important;
+}
