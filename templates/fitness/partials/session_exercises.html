@@ -1,26 +1,10 @@
 <div id="session-exercises" class="session-exercises-block">
     <div class="list-card panel-accent session-exercise-add-card">
-        <div class="section-bar">
+        <div class="section-bar session-exercise-add-head">
             <div class="section-bar-title">
                 <div class="section-kicker">Exercises</div>
                 <h2 style="margin-bottom: 0;">Add exercise</h2>
             </div>
-
-            <div class="action-group">
-                <form
-                    method="post"
-                    hx-post="{% url 'fitness:htmx-session-resequence' session.pk %}"
-                    hx-target="#session-exercises"
-                    hx-swap="outerHTML"
-                >
-                    {% csrf_token %}
-                    <button type="submit">Normalize order</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="muted" style="margin-bottom: 8px;">
-            Suggested first, then same focus, then the grouped exercise library.
         </div>
 
         <form
@@ -35,12 +19,11 @@
             <div class="form-row compact" style="margin-bottom: 0;">
                 <div>{{ session.add_exercise_form.exercise.label_tag }}</div>
                 <div>{{ session.add_exercise_form.exercise }}</div>
-                <div class="form-help">Use Suggested / Same focus / All groups in the dropdown.</div>
                 {{ session.add_exercise_form.exercise.errors }}
             </div>
 
             {% if session.add_exercise_form.notes %}
-                <details class="session-secondary-details">
+                <details class="session-secondary-details session-add-exercise-notes">
                     <summary>
                         <span class="session-section-heading">Optional notes</span>
                         <span class="muted-compact">Open</span>
@@ -57,7 +40,9 @@
             {% endif %}
 
             <div class="form-actions session-form-actions">
-                <button type="submit" class="primary-button session-primary-submit">Add exercise</button>
+                <button type="submit" class="primary-button primary-submit-full session-primary-submit">
+                    Add exercise
+                </button>
             </div>
         </form>
     </div>

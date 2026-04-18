@@ -88,7 +88,7 @@
                     >
                         <div class="session-calendar-day-top">
                             <span class="session-calendar-day-number">{{ day.date|date:"j" }}</span>
-                            {% if day.session_count %}
+                            {% if day.session_count > 1 %}
                                 <span class="session-calendar-day-count">{{ day.session_count }}</span>
                             {% endif %}
                         </div>

@@ -3455,3 +3455,71 @@ body.mode-fitness .session-calendar-day.has-completed {
            font-size: 15px;
        }
    }
+   /* =========================================================
+   F12.UX.SESSION FINAL PASS
+   Generic submit CTA + compact exercise add + note spacing
+   ========================================================= */
+
+.primary-submit-full,
+button.primary-submit-full,
+.form-actions .primary-submit-full {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.session-primary-submit {
+    width: 100%;
+    justify-content: center;
+}
+
+.session-exercise-add-card {
+    display: grid;
+    gap: 8px;
+}
+
+.session-exercise-add-head {
+    margin-bottom: 0;
+}
+
+.session-exercise-add-card .session-add-grid {
+    gap: 8px;
+}
+
+.session-exercise-add-card .form-row.compact {
+    gap: 5px;
+}
+
+.session-add-exercise-notes {
+    margin-top: 0;
+}
+
+.session-note-body {
+    padding: 10px 12px 12px 12px;
+    color: var(--text-soft);
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: normal;
+}
+
+.session-secondary-details > .session-note-body {
+    border-top: 1px solid var(--line);
+}
+
+.session-secondary-details > .session-set-content {
+    padding: 0 8px 8px 8px;
+}
+
+@media (max-width: 768px) {
+    .form-actions .primary-submit-full,
+    .primary-submit-full,
+    button.primary-submit-full {
+        width: 100%;
+        min-height: 42px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
