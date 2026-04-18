@@ -13,11 +13,11 @@
                     </div>
                 </div>
 
-                <div class="entity-chip-row">
-                    <span class="entity-chip {% if item.is_active %}entity-chip-success{% else %}entity-chip-muted{% endif %}">
-                        {% if item.is_active %}Active{% else %}Inactive{% endif %}
-                    </span>
-                </div>
+                {% if not item.is_active %}
+                    <div class="entity-chip-row">
+                        <span class="entity-chip entity-chip-muted">Inactive</span>
+                    </div>
+                {% endif %}
             </div>
 
             <div class="meta-grid two-col">

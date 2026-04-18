@@ -1,11 +1,7 @@
 <div id="session-header" class="list-card panel-soft session-header-shell">
     <div class="session-header-action-strip">
         <div class="session-icon-actions">
-            <details class="session-header-edit-toggle" {% if header_form.errors %}open{% endif %}>
-                <summary class="icon-button" title="Edit header" aria-label="Edit header">
-                    <span class="material-symbols-rounded">edit</span>
-                </summary>
-            </details>
+            
 
             <form method="post" action="{% url 'fitness:session-clone' session.pk %}">
                 {% csrf_token %}
