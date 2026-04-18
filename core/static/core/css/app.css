@@ -3464,11 +3464,12 @@ body.mode-fitness .session-calendar-day.has-completed {
 button.primary-submit-full,
 .form-actions .primary-submit-full {
     width: 100%;
-    min-height: 44px;
+    min-height: 36px;
     justify-content: center;
-    padding: 6px 12px;
+    padding: 4px 10px;
     font-size: 13px;
     font-weight: 800;
+    line-height: 1.1;
 }
 
 .session-primary-submit {
@@ -3518,8 +3519,8 @@ button.primary-submit-full,
     .primary-submit-full,
     button.primary-submit-full {
         width: 100%;
-        min-height: 42px;
-        padding: 6px 10px;
+        min-height: 34px;
+        padding: 4px 9px;
         font-size: 12px;
     }
 }
