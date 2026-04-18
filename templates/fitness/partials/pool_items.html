@@ -3,33 +3,20 @@
 
     {% for item in pool.items.all %}
         <div class="list-card panel-soft">
-            <div class="action-group" style="justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-                <div>
+            <div class="entity-card-top">
+                <div class="entity-card-main">
                     <div class="list-card-title" style="margin-bottom: 2px;">
                         #{{ item.sequence }} — {{ item.exercise.name }}
                     </div>
-                    <div class="muted" style="font-size: 12px;">
+                    <div class="muted-compact">
                         {{ item.exercise.get_primary_pattern_display|default:"-" }}
                     </div>
                 </div>
 
-                <div
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        min-height: 24px;
-                        padding: 2px 6px;
-                        border: 1px solid var(--line-2);
-                        background: var(--panel-3);
-                        color: var(--text);
-                        font-size: 11px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        border-radius: var(--radius);
-                    "
-                >
-                    {% if item.is_active %}Active{% else %}Inactive{% endif %}
+                <div class="entity-chip-row">
+                    <span class="entity-chip {% if item.is_active %}entity-chip-success{% else %}entity-chip-muted{% endif %}">
+                        {% if item.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
                 </div>
             </div>
 
@@ -40,29 +27,19 @@
                 </div>
 
                 <div>
-                    <div class="meta-item-label">Exercise</div>
-                    <div class="meta-item-value">{{ item.exercise.name }}</div>
-                </div>
-
-                <div>
                     <div class="meta-item-label">Pattern</div>
                     <div class="meta-item-value">{{ item.exercise.get_primary_pattern_display|default:"-" }}</div>
-                </div>
-
-                <div>
-                    <div class="meta-item-label">Active</div>
-                    <div class="meta-item-value">{{ item.is_active|yesno:"Yes,No" }}</div>
                 </div>
 
                 {% if item.notes %}
                     <div style="grid-column: 1 / -1;">
                         <div class="meta-item-label">Notes</div>
-                        <div class="muted">{{ item.notes }}</div>
+                        <div class="entity-note">{{ item.notes|linebreaksbr }}</div>
                     </div>
                 {% endif %}
             </div>
 
-            <div class="action-group">
+            <div class="icon-action-row">
                 <form
                     method="post"
                     hx-post="{% url 'fitness:htmx-pool-item-move' pool.pk item.pk 'up' %}"
@@ -71,7 +48,14 @@
                     class="preserve-scroll"
                 >
                     {% csrf_token %}
-                    <button type="submit">↑</button>
+                    <button
+                        type="submit"
+                        class="icon-button"
+                        aria-label="Move pool item up"
+                        title="Move up"
+                    >
+                        <span class="material-symbols-rounded">arrow_upward</span>
+                    </button>
                 </form>
 
                 <form
@@ -82,7 +66,14 @@
                     class="preserve-scroll"
                 >
                     {% csrf_token %}
-                    <button type="submit">↓</button>
+                    <button
+                        type="submit"
+                        class="icon-button"
+                        aria-label="Move pool item down"
+                        title="Move down"
+                    >
+                        <span class="material-symbols-rounded">arrow_downward</span>
+                    </button>
                 </form>
 
                 <form
@@ -94,14 +85,21 @@
                     onsubmit="return confirm('Remove this exercise from the pool?');"
                 >
                     {% csrf_token %}
-                    <button type="submit" class="danger">Remove</button>
+                    <button
+                        type="submit"
+                        class="icon-button icon-button-danger"
+                        aria-label="Remove exercise from pool"
+                        title="Remove"
+                    >
+                        <span class="material-symbols-rounded">delete</span>
+                    </button>
                 </form>
             </div>
         </div>
     {% empty %}
         <div class="list-card panel-soft">
-            <div class="list-card-title">This pool has no exercises yet</div>
-            <div class="muted">Add the first exercise to start building the pool flow.</div>
+            <div class="list-card-title">No exercises in this pool yet</div>
+            <div class="muted">Add exercises to make this pool useful for future sessions.</div>
         </div>
     {% endfor %}
 </div>

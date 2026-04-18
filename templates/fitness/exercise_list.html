@@ -79,8 +79,8 @@
 
 {% for exercise in exercises %}
     <div class="list-card panel-soft">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
-            <div>
+        <div class="entity-card-top">
+            <div class="entity-card-main">
                 <div class="list-card-title" style="margin-bottom: 2px;">{{ exercise.name }}</div>
                 <div class="muted-compact">
                     {% if exercise.created_by == request.user %}
@@ -91,43 +91,33 @@
                 </div>
             </div>
 
-            <div
-                style="
-                    display: inline-flex;
-                    align-items: center;
-                    min-height: 24px;
-                    padding: 2px 8px;
-                    border: 1px solid var(--line-2);
-                    background: var(--panel-3);
-                    color: var(--text);
-                    font-size: 11px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.04em;
-                    border-radius: var(--radius);
-                "
-            >
-                {{ exercise.get_primary_pattern_display|default:"-" }}
+            <div class="entity-chip-row">
+                <span class="entity-chip">
+                    {{ exercise.get_primary_pattern_display|default:"-" }}
+                </span>
             </div>
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
-            <div class="muted-compact">
-                Source:
-                <strong style="color: var(--text);">
-                    {% if exercise.created_by == request.user %}
-                        Custom
-                    {% else %}
-                        System
-                    {% endif %}
-                </strong>
-            </div>
+        <div class="muted-compact" style="margin-bottom: 8px;">
+            Source:
+            <strong style="color: var(--text);">
+                {% if exercise.created_by == request.user %}
+                    Custom
+                {% else %}
+                    System
+                {% endif %}
+            </strong>
         </div>
 
         {% if exercise.created_by == request.user %}
-            <div class="action-group">
-                <a href="{% url 'fitness:exercise-edit' exercise.pk %}" class="link-button">
-                    Edit
+            <div class="icon-action-row">
+                <a
+                    href="{% url 'fitness:exercise-edit' exercise.pk %}"
+                    class="icon-button"
+                    aria-label="Edit exercise"
+                    title="Edit"
+                >
+                    <span class="material-symbols-rounded">edit</span>
                 </a>
 
                 {% if exercise.is_active %}
@@ -137,10 +127,17 @@
                         onsubmit="return confirm('Deactivate this custom exercise?');"
                     >
                         {% csrf_token %}
-                        <button type="submit" class="danger">Deactivate</button>
+                        <button
+                            type="submit"
+                            class="icon-button icon-button-danger"
+                            aria-label="Deactivate exercise"
+                            title="Deactivate"
+                        >
+                            <span class="material-symbols-rounded">block</span>
+                        </button>
                     </form>
                 {% else %}
-                    <span class="muted">Inactive</span>
+                    <span class="entity-chip entity-chip-muted">Inactive</span>
                 {% endif %}
             </div>
         {% endif %}

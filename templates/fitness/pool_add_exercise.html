@@ -14,16 +14,15 @@
     </a>
 </div>
 
-<div class="list-card panel-accent">
-    <div class="meta-grid two-col">
-        <div>
-            <div class="meta-item-label">Pool</div>
-            <div class="meta-item-value">{{ pool.name }}</div>
-        </div>
-        <div>
-            <div class="meta-item-label">Focus</div>
-            <div class="meta-item-value">{{ pool.get_focus_display }}</div>
-        </div>
+<div class="entity-info-strip">
+    <div>
+        <div class="meta-item-label">Pool</div>
+        <div class="meta-item-value">{{ pool.name }}</div>
+    </div>
+
+    <div>
+        <div class="meta-item-label">Focus</div>
+        <div class="meta-item-value">{{ pool.get_focus_display }}</div>
     </div>
 </div>
 
@@ -45,8 +44,10 @@
         {% endfor %}
     </div>
 
-    <div class="form-actions">
-        <button type="submit" class="primary-button">Add exercise</button>
+    <div class="form-actions global-form-actions">
+        <button type="submit" class="primary-button primary-submit-full">
+            Add exercise
+        </button>
     </div>
 </form>
 {% endblock %}

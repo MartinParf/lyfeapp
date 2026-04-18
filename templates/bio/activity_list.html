@@ -117,12 +117,30 @@
             <div class="muted-compact" style="margin-bottom: 10px;">{{ activity.notes }}</div>
         {% endif %}
 
-        <div class="action-group">
-            <a href="{% url 'bio:activity-edit' activity.pk %}" class="link-button">Edit</a>
-
-            <form method="post" action="{% url 'bio:activity-delete' activity.pk %}" onsubmit="return confirm('Delete this activity?');">
+        <div class="icon-action-row">
+            <a
+                href="{% url 'bio:activity-edit' activity.pk %}"
+                class="icon-button"
+                aria-label="Edit activity"
+                title="Edit"
+            >
+                <span class="material-symbols-rounded">edit</span>
+            </a>
+        
+            <form
+                method="post"
+                action="{% url 'bio:activity-delete' activity.pk %}"
+                onsubmit="return confirm('Delete this activity?');"
+            >
                 {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
+                <button
+                    type="submit"
+                    class="icon-button icon-button-danger"
+                    aria-label="Delete activity"
+                    title="Delete"
+                >
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
             </form>
         </div>
     </div>

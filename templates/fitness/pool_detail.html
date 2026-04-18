@@ -9,7 +9,7 @@
 </p>
 
 <div class="execution-hero">
-    <div class="execution-hero-grid">
+    <div class="execution-hero-grid execution-hero-grid-single">
         <div class="execution-card execution-card-primary">
             <div class="execution-badge-row">
                 <div class="execution-badge">Pool</div>
@@ -31,64 +31,37 @@
                 </a>
             </div>
         </div>
-
-        <div class="execution-card">
-            <div class="execution-mini-grid">
-                <div class="execution-mini-tile">
-                    <div class="execution-mini-label">Focus</div>
-                    <div class="execution-mini-value">{{ pool.get_focus_display }}</div>
-                </div>
-
-                <div class="execution-mini-tile">
-                    <div class="execution-mini-label">Exercises</div>
-                    <div class="execution-mini-value">{{ pool.items.count }}</div>
-                </div>
-
-                <div class="execution-mini-tile">
-                    <div class="execution-mini-label">Active</div>
-                    <div class="execution-mini-value">{{ pool.is_active|yesno:"Yes,No" }}</div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
-<div class="list-card panel-soft">
-    <div class="section-bar">
-        <div class="section-bar-title">
-            <div class="section-kicker">Pool state</div>
-            <h3 class="list-card-title" style="margin-bottom: 0;">Pool Summary</h3>
-        </div>
-
-        <div class="action-group">
-            <form
-                method="post"
-                action="{% url 'fitness:pool-delete' pool.pk %}"
-                onsubmit="return confirm('Delete this pool?');"
-            >
-                {% csrf_token %}
-                <button type="submit" class="danger">Delete pool</button>
-            </form>
-        </div>
+<div class="entity-info-strip">
+    <div>
+        <div class="meta-item-label">Exercises</div>
+        <div class="meta-item-value">{{ pool.items.count }}</div>
     </div>
 
-    <div class="meta-grid two-col">
-        <div>
-            <div class="meta-item-label">Focus</div>
-            <div class="meta-item-value">{{ pool.get_focus_display }}</div>
+    {% if pool.description %}
+        <div class="entity-info-strip-copy">
+            {{ pool.description }}
         </div>
+    {% endif %}
 
-        <div>
-            <div class="meta-item-label">Active</div>
-            <div class="meta-item-value">{{ pool.is_active|yesno:"Yes,No" }}</div>
-        </div>
-
-        {% if pool.description %}
-            <div style="grid-column: 1 / -1;">
-                <div class="meta-item-label">Description</div>
-                <div class="muted">{{ pool.description }}</div>
-            </div>
-        {% endif %}
+    <div class="icon-action-row entity-info-strip-actions">
+        <form
+            method="post"
+            action="{% url 'fitness:pool-delete' pool.pk %}"
+            onsubmit="return confirm('Delete this pool?');"
+        >
+            {% csrf_token %}
+            <button
+                type="submit"
+                class="icon-button icon-button-danger"
+                aria-label="Delete pool"
+                title="Delete pool"
+            >
+                <span class="material-symbols-rounded">delete</span>
+            </button>
+        </form>
     </div>
 </div>
 

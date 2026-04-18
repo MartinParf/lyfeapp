@@ -3524,3 +3524,201 @@ button.primary-submit-full,
         font-size: 12px;
     }
 }
+/* =========================================================
+   F12.UX.GLOBAL.1A
+   Global CRUD actions, compact submit CTA, entity cards
+   ========================================================= */
+
+   .global-form-actions {
+    width: 100%;
+    display: flex;
+    margin-top: 4px;
+}
+
+.primary-submit-full,
+button.primary-submit-full,
+.form-actions .primary-submit-full,
+.global-form-actions .primary-submit-full {
+    width: 100%;
+    min-height: 36px;
+    justify-content: center;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.icon-action-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.icon-action-row form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.entity-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.entity-card-main {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.entity-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.entity-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 2px 8px;
+    border: 1px solid var(--line-2);
+    background: var(--panel-3);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: var(--radius);
+    white-space: nowrap;
+}
+
+.entity-chip-muted {
+    background: var(--panel-2);
+    color: var(--text-soft);
+}
+
+.entity-chip-success {
+    border-color: rgba(34, 197, 94, 0.38);
+    background: rgba(34, 197, 94, 0.10);
+    color: #86efac;
+}
+
+.entity-chip-danger {
+    border-color: rgba(239, 68, 68, 0.38);
+    background: rgba(239, 68, 68, 0.10);
+    color: #fca5a5;
+}
+
+.entity-kpi {
+    text-align: right;
+    min-width: 66px;
+}
+
+.entity-kpi-label {
+    margin-bottom: 1px;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+}
+
+.entity-kpi-value {
+    font-size: 16px;
+    line-height: 1;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.entity-kpi-unit {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: none;
+}
+
+.entity-note {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-elevated);
+    color: var(--text-soft);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+@media (max-width: 768px) {
+    .global-form-actions .primary-submit-full,
+    .form-actions .primary-submit-full,
+    .primary-submit-full,
+    button.primary-submit-full {
+        width: 100%;
+        min-height: 34px;
+        padding: 4px 9px;
+        font-size: 12px;
+    }
+
+    .entity-card-top {
+        gap: 8px;
+    }
+
+    .entity-chip {
+        min-height: 22px;
+        padding: 2px 7px;
+        font-size: 9px;
+    }
+
+    .entity-kpi-value {
+        font-size: 15px;
+    }
+}
+/* =========================================================
+   F12.UX.GLOBAL.1B
+   Remove helper-card feel, keep only compact context strips
+   ========================================================= */
+
+   .form-hero-grid-single,
+   .execution-hero-grid-single {
+       grid-template-columns: 1fr;
+   }
+   
+   .entity-info-strip {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 10px;
+       margin-bottom: 10px;
+       padding: 8px;
+       border: 1px solid var(--line);
+       border-radius: var(--radius);
+       background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
+   }
+   
+   .entity-info-strip-copy {
+       flex: 1 1 auto;
+       color: var(--text-soft);
+       font-size: 12px;
+       line-height: 1.35;
+   }
+   
+   .entity-info-strip-actions {
+       margin-left: auto;
+       flex: 0 0 auto;
+   }
+   
+   @media (max-width: 768px) {
+       .entity-info-strip {
+           align-items: flex-start;
+           gap: 8px;
+       }
+   
+       .entity-info-strip-copy {
+           font-size: 11px;
+       }
+   }

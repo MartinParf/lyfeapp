@@ -9,7 +9,7 @@
 </p>
 
 <div class="form-hero">
-    <div class="form-hero-grid">
+    <div class="form-hero-grid form-hero-grid-single">
         <div class="form-hero-card form-hero-card-primary">
             <div class="form-hero-badges">
                 <div class="form-hero-badge">FITNESS</div>
@@ -25,19 +25,6 @@
                 <a href="{% url 'fitness:pool-list' %}" class="link-button">
                     Back to pools
                 </a>
-            </div>
-        </div>
-
-        <div class="form-hero-card">
-            <div class="form-hero-mini-grid">
-                <div class="form-hero-mini-tile">
-                    <div class="form-hero-mini-label">Mode</div>
-                    <div class="form-hero-mini-value">Pool creation</div>
-                </div>
-                <div class="form-hero-mini-tile">
-                    <div class="form-hero-mini-label">Purpose</div>
-                    <div class="form-hero-mini-value">Reuse & planning</div>
-                </div>
             </div>
         </div>
     </div>
@@ -63,8 +50,10 @@
         {% endfor %}
     </div>
 
-    <div class="form-actions">
-        <button type="submit" class="primary-button">Create pool</button>
+    <div class="form-actions global-form-actions">
+        <button type="submit" class="primary-button primary-submit-full">
+            Create pool
+        </button>
     </div>
 </form>
 {% endblock %}

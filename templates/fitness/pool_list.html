@@ -56,60 +56,37 @@
 
 {% for pool in pools %}
     <div class="list-card panel-soft">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
-            <div>
+        <div class="entity-card-top">
+            <div class="entity-card-main">
                 <div class="list-card-title" style="margin-bottom: 2px;">{{ pool.name }}</div>
                 <div class="muted-compact">{{ pool.items.count }} exercises</div>
             </div>
 
-            <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px;">
-                <div
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        min-height: 24px;
-                        padding: 2px 8px;
-                        border: 1px solid var(--line-2);
-                        background: var(--panel-3);
-                        color: var(--text);
-                        font-size: 11px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        border-radius: var(--radius);
-                    "
-                >
-                    {{ pool.get_focus_display }}
-                </div>
-
-                <div
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        min-height: 24px;
-                        padding: 2px 8px;
-                        border: 1px solid var(--line-2);
-                        background: var(--panel-2);
-                        color: {% if pool.is_active %}var(--success){% else %}var(--text-soft){% endif %};
-                        font-size: 11px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        border-radius: var(--radius);
-                    "
-                >
+            <div class="entity-chip-row">
+                <span class="entity-chip">{{ pool.get_focus_display }}</span>
+                <span class="entity-chip {% if pool.is_active %}entity-chip-success{% else %}entity-chip-muted{% endif %}">
                     {% if pool.is_active %}Active{% else %}Inactive{% endif %}
-                </div>
+                </span>
             </div>
         </div>
 
-        <div class="action-group">
-            <a href="{% url 'fitness:pool-detail' pool.pk %}" class="link-button primary-button">
-                Open
+        <div class="icon-action-row">
+            <a
+                href="{% url 'fitness:pool-detail' pool.pk %}"
+                class="icon-button"
+                aria-label="Open pool"
+                title="Open"
+            >
+                <span class="material-symbols-rounded">arrow_forward</span>
             </a>
 
-            <a href="{% url 'fitness:pool-edit' pool.pk %}" class="link-button">
-                Edit
+            <a
+                href="{% url 'fitness:pool-edit' pool.pk %}"
+                class="icon-button"
+                aria-label="Edit pool"
+                title="Edit"
+            >
+                <span class="material-symbols-rounded">edit</span>
             </a>
 
             <form
@@ -118,7 +95,14 @@
                 onsubmit="return confirm('Delete this pool?');"
             >
                 {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
+                <button
+                    type="submit"
+                    class="icon-button icon-button-danger"
+                    aria-label="Delete pool"
+                    title="Delete"
+                >
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
             </form>
         </div>
     </div>

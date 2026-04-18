@@ -155,9 +155,14 @@
             <div class="muted-compact" style="margin-bottom: 10px;">{{ today_metric.notes }}</div>
         {% endif %}
 
-        <div class="action-group">
-            <a href="{% url 'bio:dailymetric-edit' today_metric.pk %}" class="link-button primary-button">
-                Edit today
+        <div class="icon-action-row">
+            <a
+                href="{% url 'bio:dailymetric-edit' today_metric.pk %}"
+                class="icon-button"
+                aria-label="Edit today"
+                title="Edit today"
+            >
+                <span class="material-symbols-rounded">edit</span>
             </a>
         </div>
     {% else %}
@@ -222,14 +227,30 @@
             <div class="muted-compact" style="margin-bottom: 10px;">{{ metric.notes }}</div>
         {% endif %}
 
-        <div class="action-group">
-            <a href="{% url 'bio:dailymetric-edit' metric.pk %}" class="link-button">
-                Edit
+        <div class="icon-action-row">
+            <a
+                href="{% url 'bio:dailymetric-edit' metric.pk %}"
+                class="icon-button"
+                aria-label="Edit daily metric"
+                title="Edit"
+            >
+                <span class="material-symbols-rounded">edit</span>
             </a>
-
-            <form method="post" action="{% url 'bio:dailymetric-delete' metric.pk %}" onsubmit="return confirm('Delete this daily metric?');">
+        
+            <form
+                method="post"
+                action="{% url 'bio:dailymetric-delete' metric.pk %}"
+                onsubmit="return confirm('Delete this daily metric?');"
+            >
                 {% csrf_token %}
-                <button type="submit" class="danger">Delete</button>
+                <button
+                    type="submit"
+                    class="icon-button icon-button-danger"
+                    aria-label="Delete daily metric"
+                    title="Delete"
+                >
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
             </form>
         </div>
     </div>

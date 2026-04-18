@@ -71,7 +71,7 @@
 </p>
 
 <div class="form-hero">
-    <div class="form-hero-grid">
+    <div class="form-hero-grid form-hero-grid-single">
         <div class="form-hero-card form-hero-card-primary">
             <div class="form-hero-badges">
                 <div class="form-hero-badge">BIO</div>
@@ -87,19 +87,6 @@
                 <a href="{% url 'bio:dailymetric-list' %}" class="link-button">
                     Back
                 </a>
-            </div>
-        </div>
-
-        <div class="form-hero-card">
-            <div class="form-hero-mini-grid">
-                <div class="form-hero-mini-tile">
-                    <div class="form-hero-mini-label">Input style</div>
-                    <div class="form-hero-mini-value">Slider-based</div>
-                </div>
-                <div class="form-hero-mini-tile">
-                    <div class="form-hero-mini-label">Use case</div>
-                    <div class="form-hero-mini-value">Fast daily loop</div>
-                </div>
             </div>
         </div>
     </div>
@@ -215,8 +202,10 @@
         </div>
     </div>
 
-    <div class="form-actions">
-        <button type="submit" class="primary-button">{{ submit_label }}</button>
+    <div class="form-actions global-form-actions">
+        <button type="submit" class="primary-button primary-submit-full">
+            {{ submit_label }}
+        </button>
     </div>
 </form>
 
