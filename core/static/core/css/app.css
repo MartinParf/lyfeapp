@@ -3789,8 +3789,8 @@ button.primary-submit-full,
     color: #15803d;
 }
 /* =========================================================
-   THEME LAB C2 — SOFT GRAPHITE PLUS
-   Softer, greyer, calmer dark theme
+   DARK THEME V1 — SOFT GRAPHITE
+   Final candidate after palette lab
    ========================================================= */
 
    :root[data-theme="dark"] {
@@ -3800,12 +3800,12 @@ button.primary-submit-full,
     --panel-2: #1d232b;
     --panel-3: #252d37;
 
-    --line: rgba(205, 212, 220, 0.10);
-    --line-2: rgba(205, 212, 220, 0.19);
+    --line: rgba(205, 212, 220, 0.11);
+    --line-2: rgba(205, 212, 220, 0.21);
 
     --text: #f2f4f7;
     --text-soft: #c5ccd5;
-    --text-dim: #8d96a3;
+    --text-dim: #96a0ad;
 
     --page-bg:
         radial-gradient(circle at top, rgba(180, 190, 200, 0.035), transparent 34%),
