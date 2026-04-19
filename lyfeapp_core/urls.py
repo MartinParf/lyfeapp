@@ -1,6 +1,21 @@
 from django.contrib import admin
+from django.template.response import TemplateResponse
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
+
+
+
+def service_worker(request):
+    response = TemplateResponse(
+        request,
+        "sw.js",
+        content_type="application/javascript",
+    )
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -13,11 +28,13 @@ urlpatterns = [
     ),
     path(
         "sw.js",
-        TemplateView.as_view(
-            template_name="sw.js",
-            content_type="application/javascript",
-        ),
+        service_worker,
         name="service-worker",
     ),
     path("", RedirectView.as_view(pattern_name="bio:overview", permanent=False)),
+    path(
+    "favicon.ico",
+        RedirectView.as_view(url="/static/core/icons/icon-192.svg", permanent=True),
+        name="favicon",
+    ),
 ]

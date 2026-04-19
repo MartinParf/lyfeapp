@@ -1,31 +1,77 @@
 {
-    "name": "LYFE",
-    "short_name": "LYFE",
-    "description": "BIO + FITNESS tracker for daily signals and training execution.",
-    "start_url": "/",
-    "scope": "/",
-    "display": "standalone",
-    "background_color": "#0a0f18",
-    "theme_color": "#0a0f18",
-    "orientation": "portrait",
-    "icons": [
-      {
-        "src": "/static/core/icons/icon-192.svg",
-        "sizes": "192x192",
-        "type": "image/svg+xml",
-        "purpose": "any"
-      },
-      {
-        "src": "/static/core/icons/icon-512.svg",
-        "sizes": "512x512",
-        "type": "image/svg+xml",
-        "purpose": "any"
-      },
-      {
-        "src": "/static/core/icons/icon-512.svg",
-        "sizes": "512x512",
-        "type": "image/svg+xml",
-        "purpose": "maskable"
-      }
-    ]
-  }
+  "id": "/",
+  "name": "LYFE",
+  "short_name": "LYFE",
+  "description": "BIO + FITNESS tracker for daily signals, analytics, and training execution.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "background_color": "#0f1216",
+  "theme_color": "#0f1216",
+  "orientation": "portrait",
+  "categories": ["health", "fitness", "productivity"],
+  "icons": [
+    {
+      "src": "/static/core/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/core/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/core/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "BIO Overview",
+      "short_name": "Overview",
+      "description": "Open daily BIO overview.",
+      "url": "/bio/?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/static/core/icons/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Daily Metrics",
+      "short_name": "Metrics",
+      "description": "Open daily metrics.",
+      "url": "/bio/daily-metrics/?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/static/core/icons/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Training Sessions",
+      "short_name": "Sessions",
+      "description": "Open workout sessions.",
+      "url": "/fitness/sessions/?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/static/core/icons/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

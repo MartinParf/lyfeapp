@@ -6,15 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LYFE{% endblock %}</title>
 
-    <meta name="theme-color" content="#08131f" id="theme-color-meta">
+    <meta name="theme-color" content="#0f1216" id="theme-color-meta">
     <meta name="color-scheme" content="dark light">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="LYFE">
 
     <link rel="manifest" href="{% static 'core/manifest.webmanifest' %}">
     <link rel="icon" href="{% static 'core/icons/icon-192.svg' %}" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="{% static 'core/icons/icon-192.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'core/icons/apple-touch-icon.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -36,6 +37,93 @@
 
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="{% static 'core/css/app.css' %}?v=theme-v2">
+    <style>
+        .pwa-update-banner {
+            position: fixed;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            z-index: 9999;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 8px;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--line-2);
+            border-radius: 16px;
+            background:
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--panel-2) 92%, transparent) 0%,
+                    color-mix(in srgb, var(--panel) 96%, transparent) 100%
+                );
+            box-shadow:
+                0 12px 30px rgba(0, 0, 0, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+    
+        .pwa-update-banner[hidden] {
+            display: none;
+        }
+    
+        .pwa-update-copy {
+            min-width: 0;
+            display: grid;
+            gap: 2px;
+        }
+    
+        .pwa-update-title {
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1.15;
+        }
+    
+        .pwa-update-text {
+            font-size: 11px;
+            color: var(--text-soft);
+            line-height: 1.25;
+        }
+    
+        .pwa-update-button {
+            min-height: 32px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+    
+        .pwa-update-dismiss {
+            color: var(--text-soft);
+            background:
+                linear-gradient(
+                    180deg,
+                    var(--panel-3) 0%,
+                    var(--panel-2) 100%
+                );
+        }
+    
+        :root[data-theme="light"] .pwa-update-banner {
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.90) 0%,
+                    rgba(237, 244, 247, 0.96) 100%
+                );
+            box-shadow:
+                0 10px 24px rgba(27, 48, 62, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.82);
+        }
+    
+        @media (max-width: 640px) {
+            .pwa-update-banner {
+                grid-template-columns: 1fr;
+            }
+    
+            .pwa-update-button {
+                width: 100%;
+            }
+        }
+    </style>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -176,16 +264,115 @@
         {% block content %}{% endblock %}
     </div>
 
+    <div id="pwa-update-banner" class="pwa-update-banner" hidden>
+        <div class="pwa-update-copy">
+            <div class="pwa-update-title">New version available</div>
+            <div class="pwa-update-text">Refresh to use the latest LYFE update.</div>
+        </div>
+    
+        <button id="pwa-update-refresh" type="button" class="primary-button pwa-update-button">
+            Refresh
+        </button>
+    
+        <button id="pwa-update-dismiss" type="button" class="pwa-update-button pwa-update-dismiss">
+            Later
+        </button>
+    </div>
+
     <script>
-        if ("serviceWorker" in navigator) {
+        (function () {
+            if (!("serviceWorker" in navigator)) {
+                return;
+            }
+    
+            let waitingWorker = null;
+            let refreshing = false;
+    
+            function getUpdateBannerElements() {
+                return {
+                    banner: document.getElementById("pwa-update-banner"),
+                    refreshButton: document.getElementById("pwa-update-refresh"),
+                    dismissButton: document.getElementById("pwa-update-dismiss"),
+                };
+            }
+    
+            function showUpdateBanner(worker) {
+                waitingWorker = worker;
+    
+                const elements = getUpdateBannerElements();
+                if (elements.banner) {
+                    elements.banner.hidden = false;
+                }
+            }
+    
+            function hideUpdateBanner() {
+                const elements = getUpdateBannerElements();
+                if (elements.banner) {
+                    elements.banner.hidden = true;
+                }
+            }
+    
+            function bindUpdateBannerActions() {
+                const elements = getUpdateBannerElements();
+    
+                if (elements.refreshButton) {
+                    elements.refreshButton.addEventListener("click", function () {
+                        if (waitingWorker) {
+                            waitingWorker.postMessage({ type: "SKIP_WAITING" });
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+                }
+    
+                if (elements.dismissButton) {
+                    elements.dismissButton.addEventListener("click", function () {
+                        hideUpdateBanner();
+                    });
+                }
+            }
+    
+            navigator.serviceWorker.addEventListener("controllerchange", function () {
+                if (refreshing) {
+                    return;
+                }
+    
+                refreshing = true;
+                window.location.reload();
+            });
+    
             window.addEventListener("load", function () {
+                bindUpdateBannerActions();
+    
                 navigator.serviceWorker
                     .register("{% url 'service-worker' %}", { scope: "/" })
+                    .then(function (registration) {
+                        if (registration.waiting && navigator.serviceWorker.controller) {
+                            showUpdateBanner(registration.waiting);
+                        }
+    
+                        registration.addEventListener("updatefound", function () {
+                            const newWorker = registration.installing;
+    
+                            if (!newWorker) {
+                                return;
+                            }
+    
+                            newWorker.addEventListener("statechange", function () {
+                                if (
+                                    newWorker.state === "installed" &&
+                                    navigator.serviceWorker.controller
+                                ) {
+                                    showUpdateBanner(newWorker);
+                                }
+                            });
+                        });
+                    })
                     .catch(function (error) {
                         console.error("Service worker registration failed:", error);
                     });
             });
-        }
+        })();
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -194,7 +381,7 @@
 
             function applyThemeUi(theme) {
                 if (themeColorMeta) {
-                    themeColorMeta.setAttribute("content", theme === "light" ? "#f3f7fb" : "#08111b");
+                    themeColorMeta.setAttribute("content", theme === "light" ? "#d2dce2" : "#0f1216");
                 }
                 if (themeToggleBtn) {
                     themeToggleBtn.setAttribute("aria-pressed", theme === "light" ? "true" : "false");
