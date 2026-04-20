@@ -3,6 +3,7 @@ from django.template.response import TemplateResponse
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 
+from core.views import health_check
 
 
 def service_worker(request):
@@ -21,6 +22,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("fitness/", include("fitness.urls", namespace="fitness")),
     path("bio/", include("bio.urls", namespace="bio")),
+    path("health/", health_check, name="health"),
     path(
         "offline/",
         TemplateView.as_view(template_name="offline.html"),
@@ -31,10 +33,10 @@ urlpatterns = [
         service_worker,
         name="service-worker",
     ),
-    path("", RedirectView.as_view(pattern_name="bio:overview", permanent=False)),
     path(
-    "favicon.ico",
+        "favicon.ico",
         RedirectView.as_view(url="/static/core/icons/icon-192.svg", permanent=True),
         name="favicon",
     ),
+    path("", RedirectView.as_view(pattern_name="bio:overview", permanent=False)),
 ]
