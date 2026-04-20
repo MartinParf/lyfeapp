@@ -1,0 +1,6 @@
+{% extends "admin/base_site.html" %}
+
+{% block userlinks %}
+    <a href="{% url 'health' %}" target="_blank" rel="noopener">Health</a> /
+    {{ block.super }}
+{% endblock %}
