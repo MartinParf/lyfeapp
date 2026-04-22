@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel-soft" style="margin-bottom: 16px;">
+    <div class="eyebrow">Internal operations</div>
+    <h1>LYFE Ops</h1>
+    <p class="muted">
+        Staff-only operational overview. No Docker controls, no secrets, status only.
+    </p>
+
+    <div class="action-row">
+        {% for link in ops_links %}
+            <a
+                class="primary-button"
+                href="{{ link.url }}"
+                {% if link.external %}target="_blank" rel="noopener"{% endif %}
+            >
+                {{ link.label }}
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="dashboard-grid">
+    <article class="panel-soft">
+        <div class="eyebrow">Health</div>
+        <h2>
+            {% if health.state == "ok" %}✅ OK{% else %}⚠️ Problem{% endif %}
+        </h2>
+        <p class="muted">Database: {{ health.database }}</p>
+        <p class="muted">Redis: {{ health.redis }}</p>
+    </article>
+
+    <article class="panel-soft">
+        <div class="eyebrow">Backup freshness</div>
+        <h2>
+            {% if backup.state == "ok" %}✅ OK
+            {% elif backup.state == "warn" %}⚠️ Aging
+            {% else %}❌ Check{% endif %}
+        </h2>
+        <p class="muted">Status: {{ backup.status }}</p>
+        <p class="muted">Created: {{ backup.created_at_utc|default:"unknown" }}</p>
+        <p class="muted">Age: {{ backup.age.label }}</p>
+
+        {% if backup.payload.database %}
+            <hr>
+            <p class="muted">DB size: {{ backup.payload.database.size_bytes }} bytes</p>
+            <p class="muted">Media size: {{ backup.payload.media.size_bytes }} bytes</p>
+        {% endif %}
+    </article>
+
+    <article class="panel-soft">
+        <div class="eyebrow">Docker hygiene</div>
+        <h2>
+            {% if docker_hygiene.state == "ok" %}✅ OK
+            {% elif docker_hygiene.state == "warn" %}⚠️ Aging
+            {% else %}❌ Check{% endif %}
+        </h2>
+        <p class="muted">Status: {{ docker_hygiene.status }}</p>
+        <p class="muted">Created: {{ docker_hygiene.created_at_utc|default:"unknown" }}</p>
+        <p class="muted">Age: {{ docker_hygiene.age.label }}</p>
+
+        {% if docker_hygiene.payload.cache_retention_hours %}
+            <hr>
+            <p class="muted">
+                Cache retention:
+                {{ docker_hygiene.payload.cache_retention_hours }} h
+            </p>
+        {% endif %}
+    </article>
+
+    <article class="panel-soft">
+        <div class="eyebrow">Analytics snapshots</div>
+        <h2>
+            {% if snapshots.state == "ok" %}✅ OK
+            {% elif snapshots.state == "warn" %}⚠️ Stale
+            {% else %}❌ Failed{% endif %}
+        </h2>
+
+        <p class="muted">Total: {{ snapshots.total }}</p>
+        <p class="muted">Failed: {{ snapshots.failed }}</p>
+        <p class="muted">Stale: {{ snapshots.stale }}</p>
+        <p class="muted">Latest success: {{ snapshots.latest_success_at|default:"unknown" }}</p>
+
+        {% if snapshots.by_status %}
+            <hr>
+            {% for row in snapshots.by_status %}
+                <p class="muted">{{ row.status }}: {{ row.count }}</p>
+            {% endfor %}
+        {% endif %}
+    </article>
+
+    <article class="panel-soft">
+        <div class="eyebrow">Versions</div>
+        <h2>App</h2>
+        <p class="muted">Service worker: {{ versions.service_worker }}</p>
+        <p class="muted">App version: {{ versions.app_version }}</p>
+    </article>
+</section>
+{% endblock %}
