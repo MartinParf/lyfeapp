@@ -27,3 +27,7 @@ media/
 # OS
 .DS_Store
 Thumbs.db
+
+docker-compose.local.yml
+runtime/
+scripts/

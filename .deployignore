@@ -12,3 +12,6 @@ venv/
 .venv/
 node_modules/
 .DS_Store
+docker-compose.local.yml
+scripts/
+runtime/
