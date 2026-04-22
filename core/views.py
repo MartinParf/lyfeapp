@@ -14,7 +14,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_safe
 from redis import Redis
 
 
@@ -55,7 +55,7 @@ def _check_redis_with_timeout() -> bool:
         executor.shutdown(wait=False, cancel_futures=True)
 
 
-@require_GET
+@require_safe
 @never_cache
 def health_check(request):
     database_ok = _check_database()
