@@ -16,8 +16,10 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
       DEPLOY_USER: ${{ vars.DEPLOY_USER }}
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
@@ -30,7 +32,7 @@ jobs:
       - name: Prepare SSH key
         shell: bash
         run: |
-          set -e
+          set -Eeuo pipefail
           mkdir -p ~/.ssh
           printf '%s' "${{ secrets.DEPLOY_SSH_KEY_B64 }}" | base64 -d | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
@@ -40,7 +42,7 @@ jobs:
       - name: Sync project to server
         shell: bash
         run: |
-          set -e
+          set -Eeuo pipefail
           rsync -az --delete \
             --exclude-from=.deployignore \
             -e "ssh -i ~/.ssh/id_ed25519 -p $DEPLOY_PORT -o IdentitiesOnly=yes" \
@@ -49,19 +51,63 @@ jobs:
       - name: Run deploy commands on server
         shell: bash
         run: |
-          set -e
-          ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'EOF'
-            set -e
+          set -Eeuo pipefail
+          ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_PATH='$DEPLOY_PATH' GIT_SHA='${{ github.sha }}' bash -se" << 'EOF'
+            set -Eeuo pipefail
             cd "$DEPLOY_PATH"
+
+            dump_debug() {
+              echo "==== docker compose ps ===="
+              docker compose ps || true
+              echo "==== web logs ===="
+              docker compose logs --tail=100 web || true
+              echo "==== worker logs ===="
+              docker compose logs --tail=100 worker || true
+              echo "==== db logs ===="
+              docker compose logs --tail=100 db || true
+              echo "==== redis logs ===="
+              docker compose logs --tail=100 redis || true
+            }
+
+            trap 'dump_debug' ERR
 
             docker compose up -d db redis
             docker compose build web
             docker compose run --rm --interactive=false -T web python manage.py check
+            docker compose run --rm --interactive=false -T web python manage.py check --deploy
             docker compose run --rm --interactive=false -T web python manage.py migrate --noinput
             docker compose run --rm --interactive=false -T web python manage.py collectstatic --noinput
             docker compose up -d web worker
 
-            sleep 5
+            HEALTH_URL="https://lyfeapp.cz/health/"
+            HEALTH_OK="false"
+
+            for attempt in $(seq 1 12); do
+              if HEALTH_OUTPUT="$(curl -fsS "$HEALTH_URL")"; then
+                echo "Health OK: $HEALTH_OUTPUT"
+                HEALTH_OK="true"
+                break
+              fi
+
+              echo "Health check attempt $attempt/12 failed, retrying in 5s..."
+              sleep 5
+            done
+
+            if [ "$HEALTH_OK" != "true" ]; then
+              echo "Health check failed after all retries."
+              exit 1
+            fi
+
+            mkdir -p runtime/ops
+            cat > runtime/ops/last_deploy.json <<JSON
+            {
+              "status": "ok",
+              "created_at_utc": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+              "git_sha": "$GIT_SHA"
+            }
+            JSON
+            chmod 600 runtime/ops/last_deploy.json || true
+
             docker compose ps
             docker compose logs --tail=50 web
             docker compose logs --tail=50 worker
