@@ -91,6 +91,43 @@
     </article>
 
     <article class="panel-soft">
+        <div class="eyebrow">Deploy</div>
+        <h2>
+            {% if deploy.state == "ok" %}✅ OK
+            {% elif deploy.state == "warn" %}⚠️ Aging
+            {% else %}❌ Check{% endif %}
+        </h2>
+        <p class="muted">Status: {{ deploy.status }}</p>
+        <p class="muted">Created: {{ deploy.created_at_utc|default:"unknown" }}</p>
+        <p class="muted">Age: {{ deploy.age.label }}</p>
+        <p class="muted">Git SHA: {{ deploy.payload.git_sha|default:"unknown" }}</p>
+        <p class="muted">
+            Previous SHA:
+            {{ previous_deploy.payload.git_sha|default:"unknown" }}
+        </p>
+    </article>
+    
+    <article class="panel-soft">
+        <div class="eyebrow">Rollback baseline</div>
+        <h2>
+            {% if release_backup.state == "ok" %}✅ Snapshot
+            {% elif release_backup.state == "warn" %}⚠️ Aging
+            {% else %}❌ Check{% endif %}
+        </h2>
+        <p class="muted">Created: {{ release_backup.created_at_utc|default:"unknown" }}</p>
+        <p class="muted">Age: {{ release_backup.age.label }}</p>
+        <p class="muted">
+            Source SHA:
+            {{ release_backup.payload.source_git_sha|default:"unknown" }}
+        </p>
+        <p class="muted" style="word-break: break-all;">
+            Archive:
+            {{ release_backup.payload.archive_path|default:"unknown" }}
+        </p>
+    </article>
+
+
+    <article class="panel-soft">
         <div class="eyebrow">Versions</div>
         <h2>App</h2>
         <p class="muted">Service worker: {{ versions.service_worker }}</p>

@@ -16,7 +16,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -38,6 +38,83 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null
           ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Create rollback snapshot on server
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'EOF'
+            set -Eeuo pipefail
+            cd "$DEPLOY_PATH"
+
+            mkdir -p runtime/ops
+            mkdir -p /var/backups/lyfeapp/releases
+
+            CURRENT_SHA="unknown"
+
+            if [ -f runtime/ops/last_deploy.json ]; then
+              cp runtime/ops/last_deploy.json runtime/ops/previous_deploy.json || true
+              chmod 600 runtime/ops/previous_deploy.json || true
+
+              CURRENT_SHA="$(python3 - <<'PY'
+import json
+from pathlib import Path
+
+path = Path("runtime/ops/last_deploy.json")
+
+try:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    print(payload.get("git_sha") or "unknown")
+except Exception:
+    print("unknown")
+PY
+)"
+            fi
+
+            RELEASE_TS="$(date -u +%Y%m%d_%H%M%S)"
+            RELEASE_ARCHIVE="/var/backups/lyfeapp/releases/lyfeapp_release_${RELEASE_TS}_${CURRENT_SHA}.tar.gz"
+
+            tar \
+              --exclude='./.git' \
+              --exclude='./.venv' \
+              --exclude='./.env' \
+              --exclude='./.env.*' \
+              --exclude='./media' \
+              --exclude='./staticfiles' \
+              --exclude='./runtime' \
+              --exclude='./scripts' \
+              --exclude='./__pycache__' \
+              --exclude='./.pytest_cache' \
+              --exclude='./.mypy_cache' \
+              --exclude='./node_modules' \
+              -czf "$RELEASE_ARCHIVE" \
+              .
+
+            chmod 600 "$RELEASE_ARCHIVE"
+
+            python3 - "$CURRENT_SHA" "$RELEASE_ARCHIVE" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+payload = {
+    "status": "ok",
+    "created_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "source_git_sha": sys.argv[1],
+    "archive_path": sys.argv[2],
+}
+
+Path("runtime/ops/last_release_backup.json").write_text(
+    json.dumps(payload, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+
+            chmod 600 runtime/ops/last_release_backup.json || true
+
+            ls -1t /var/backups/lyfeapp/releases/lyfeapp_release_*.tar.gz 2>/dev/null | tail -n +11 | xargs -r rm -f
+          EOF
 
       - name: Sync project to server
         shell: bash
@@ -99,13 +176,25 @@ jobs:
             fi
 
             mkdir -p runtime/ops
-            cat > runtime/ops/last_deploy.json <<JSON
-            {
-              "status": "ok",
-              "created_at_utc": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
-              "git_sha": "$GIT_SHA"
-            }
-            JSON
+
+            python3 - "$GIT_SHA" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+payload = {
+    "status": "ok",
+    "created_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "git_sha": sys.argv[1],
+}
+
+Path("runtime/ops/last_deploy.json").write_text(
+    json.dumps(payload, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+
             chmod 600 runtime/ops/last_deploy.json || true
 
             docker compose ps

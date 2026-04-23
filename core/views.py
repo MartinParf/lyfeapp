@@ -248,6 +248,9 @@ def ops_dashboard(request):
         "last_docker_hygiene.json",
         warn_after_hours=24 * 8,
     )
+    deploy = _read_ops_json("last_deploy.json", warn_after_hours=24 * 14)
+    previous_deploy = _read_ops_json("previous_deploy.json", warn_after_hours=24 * 30)
+    release_backup = _read_ops_json("last_release_backup.json", warn_after_hours=24 * 30)
     snapshots = _build_snapshot_summary()
 
     context = {
@@ -261,10 +264,14 @@ def ops_dashboard(request):
         "snapshots": snapshots,
         "versions": {
             "service_worker": _read_service_worker_version(),
-            "app_version": os.environ.get("APP_VERSION")
+            "app_version": deploy["payload"].get("git_sha")
+            or os.environ.get("APP_VERSION")
             or os.environ.get("GIT_SHA")
             or "unknown",
         },
+        "deploy": deploy,
+        "previous_deploy": previous_deploy,
+        "release_backup": release_backup,
         "ops_links": [
             {
                 "label": "Health JSON",
