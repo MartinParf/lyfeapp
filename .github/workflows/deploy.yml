@@ -44,64 +44,52 @@ jobs:
         run: |
           set -Eeuo pipefail
           ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -se" <<'EOF'
-          set -Eeuo pipefail
-          cd "$DEPLOY_PATH"
+            set -Eeuo pipefail
+            cd "$DEPLOY_PATH"
 
-          mkdir -p runtime/ops
-          mkdir -p /var/backups/lyfeapp/releases
+            mkdir -p runtime/ops
+            mkdir -p /var/backups/lyfeapp/releases
 
-          CURRENT_SHA="unknown"
+            CURRENT_SHA="unknown"
 
-          if [ -f runtime/ops/last_deploy.json ]; then
-            cp runtime/ops/last_deploy.json runtime/ops/previous_deploy.json || true
-            chmod 600 runtime/ops/previous_deploy.json || true
+            if [ -f runtime/ops/last_deploy.json ]; then
+              cp runtime/ops/last_deploy.json runtime/ops/previous_deploy.json || true
+              chmod 600 runtime/ops/previous_deploy.json || true
 
-            CURRENT_SHA="$(python3 -c 'import json, pathlib
-p = pathlib.Path("runtime/ops/last_deploy.json")
-try:
-    data = json.loads(p.read_text(encoding="utf-8"))
-    print(data.get("git_sha") or "unknown")
-except Exception:
-    print("unknown")')"
-          fi
+              CURRENT_SHA="$(python3 -c 'import json, pathlib; p=pathlib.Path("runtime/ops/last_deploy.json"); print((json.loads(p.read_text(encoding="utf-8")).get("git_sha") if p.exists() else "unknown"))' 2>/dev/null || echo unknown)"
+            fi
 
-          RELEASE_TS="$(date -u +%Y%m%d_%H%M%S)"
-          RELEASE_ARCHIVE="/var/backups/lyfeapp/releases/lyfeapp_release_${RELEASE_TS}_${CURRENT_SHA}.tar.gz"
+            RELEASE_TS="$(date -u +%Y%m%d_%H%M%S)"
+            RELEASE_ARCHIVE="/var/backups/lyfeapp/releases/lyfeapp_release_${RELEASE_TS}_${CURRENT_SHA}.tar.gz"
 
-          tar \
-            --exclude='./.git' \
-            --exclude='./.venv' \
-            --exclude='./.env' \
-            --exclude='./.env.*' \
-            --exclude='./media' \
-            --exclude='./staticfiles' \
-            --exclude='./runtime' \
-            --exclude='./scripts' \
-            --exclude='./__pycache__' \
-            --exclude='./.pytest_cache' \
-            --exclude='./.mypy_cache' \
-            --exclude='./node_modules' \
-            -czf "$RELEASE_ARCHIVE" \
-            .
+            tar \
+              --exclude='./.git' \
+              --exclude='./.venv' \
+              --exclude='./.env' \
+              --exclude='./.env.*' \
+              --exclude='./media' \
+              --exclude='./staticfiles' \
+              --exclude='./runtime' \
+              --exclude='./scripts' \
+              --exclude='./__pycache__' \
+              --exclude='./.pytest_cache' \
+              --exclude='./.mypy_cache' \
+              --exclude='./node_modules' \
+              -czf "$RELEASE_ARCHIVE" \
+              .
 
-          chmod 600 "$RELEASE_ARCHIVE"
+            chmod 600 "$RELEASE_ARCHIVE"
 
-          python3 -c 'import json, pathlib, sys
-from datetime import datetime, timezone
-payload = {
-    "status": "ok",
-    "created_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-    "source_git_sha": sys.argv[1],
-    "archive_path": sys.argv[2],
-}
-pathlib.Path("runtime/ops/last_release_backup.json").write_text(
-    json.dumps(payload, indent=2) + "\n",
-    encoding="utf-8",
-)' "$CURRENT_SHA" "$RELEASE_ARCHIVE"
+            CREATED_AT="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            printf '{\n  "status": "ok",\n  "created_at_utc": "%s",\n  "source_git_sha": "%s",\n  "archive_path": "%s"\n}\n' \
+              "$CREATED_AT" \
+              "$CURRENT_SHA" \
+              "$RELEASE_ARCHIVE" \
+              > runtime/ops/last_release_backup.json
 
-          chmod 600 runtime/ops/last_release_backup.json || true
+            chmod 600 runtime/ops/last_release_backup.json || true
 
-          ls -1t /var/backups/lyfeapp/releases/lyfeapp_release_*.tar.gz 2>/dev/null | tail -n +11 | xargs -r rm -f
+            ls -1t /var/backups/lyfeapp/releases/lyfeapp_release_*.tar.gz 2>/dev/null | tail -n +11 | xargs -r rm -f
           EOF
 
       - name: Sync project to server
@@ -118,68 +106,62 @@ pathlib.Path("runtime/ops/last_release_backup.json").write_text(
         run: |
           set -Eeuo pipefail
           ssh -i ~/.ssh/id_ed25519 -p "$DEPLOY_PORT" -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_PATH='$DEPLOY_PATH' GIT_SHA='${{ github.sha }}' bash -se" <<'EOF'
-          set -Eeuo pipefail
-          cd "$DEPLOY_PATH"
+            set -Eeuo pipefail
+            cd "$DEPLOY_PATH"
 
-          dump_debug() {
-            echo "==== docker compose ps ===="
-            docker compose ps || true
-            echo "==== web logs ===="
-            docker compose logs --tail=100 web || true
-            echo "==== worker logs ===="
-            docker compose logs --tail=100 worker || true
-            echo "==== db logs ===="
-            docker compose logs --tail=100 db || true
-            echo "==== redis logs ===="
-            docker compose logs --tail=100 redis || true
-          }
+            dump_debug() {
+              echo "==== docker compose ps ===="
+              docker compose ps || true
+              echo "==== web logs ===="
+              docker compose logs --tail=100 web || true
+              echo "==== worker logs ===="
+              docker compose logs --tail=100 worker || true
+              echo "==== db logs ===="
+              docker compose logs --tail=100 db || true
+              echo "==== redis logs ===="
+              docker compose logs --tail=100 redis || true
+            }
 
-          trap 'dump_debug' ERR
+            trap 'dump_debug' ERR
 
-          docker compose up -d db redis
-          docker compose build web
-          docker compose run --rm --interactive=false -T web python manage.py check
-          docker compose run --rm --interactive=false -T web python manage.py check --deploy
-          docker compose run --rm --interactive=false -T web python manage.py migrate --noinput
-          docker compose run --rm --interactive=false -T web python manage.py collectstatic --noinput
-          docker compose up -d web worker
+            docker compose up -d db redis
+            docker compose build web
+            docker compose run --rm --interactive=false -T web python manage.py check
+            docker compose run --rm --interactive=false -T web python manage.py check --deploy
+            docker compose run --rm --interactive=false -T web python manage.py migrate --noinput
+            docker compose run --rm --interactive=false -T web python manage.py collectstatic --noinput
+            docker compose up -d web worker
 
-          HEALTH_URL="https://lyfeapp.cz/health/"
-          HEALTH_OK="false"
+            HEALTH_URL="https://lyfeapp.cz/health/"
+            HEALTH_OK="false"
 
-          for attempt in $(seq 1 12); do
-            if HEALTH_OUTPUT="$(curl -fsS "$HEALTH_URL")"; then
-              echo "Health OK: $HEALTH_OUTPUT"
-              HEALTH_OK="true"
-              break
+            for attempt in $(seq 1 12); do
+              if HEALTH_OUTPUT="$(curl -fsS "$HEALTH_URL")"; then
+                echo "Health OK: $HEALTH_OUTPUT"
+                HEALTH_OK="true"
+                break
+              fi
+
+              echo "Health check attempt $attempt/12 failed, retrying in 5s..."
+              sleep 5
+            done
+
+            if [ "$HEALTH_OK" != "true" ]; then
+              echo "Health check failed after all retries."
+              exit 1
             fi
 
-            echo "Health check attempt $attempt/12 failed, retrying in 5s..."
-            sleep 5
-          done
+            mkdir -p runtime/ops
+            CREATED_AT="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
-          if [ "$HEALTH_OK" != "true" ]; then
-            echo "Health check failed after all retries."
-            exit 1
-          fi
+            printf '{\n  "status": "ok",\n  "created_at_utc": "%s",\n  "git_sha": "%s"\n}\n' \
+              "$CREATED_AT" \
+              "$GIT_SHA" \
+              > runtime/ops/last_deploy.json
 
-          mkdir -p runtime/ops
+            chmod 600 runtime/ops/last_deploy.json || true
 
-          python3 -c 'import json, pathlib, sys
-from datetime import datetime, timezone
-payload = {
-    "status": "ok",
-    "created_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-    "git_sha": sys.argv[1],
-}
-pathlib.Path("runtime/ops/last_deploy.json").write_text(
-    json.dumps(payload, indent=2) + "\n",
-    encoding="utf-8",
-)' "$GIT_SHA"
-
-          chmod 600 runtime/ops/last_deploy.json || true
-
-          docker compose ps
-          docker compose logs --tail=50 web
-          docker compose logs --tail=50 worker
+            docker compose ps
+            docker compose logs --tail=50 web
+            docker compose logs --tail=50 worker
           EOF
