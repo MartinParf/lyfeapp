@@ -48,7 +48,9 @@ jobs:
             cd "$DEPLOY_PATH"
 
             mkdir -p runtime/ops
-            mkdir -p /var/backups/lyfeapp/releases
+
+            test -d /var/backups/lyfeapp/releases
+            test -w /var/backups/lyfeapp/releases
 
             CURRENT_SHA="unknown"
 
