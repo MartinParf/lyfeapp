@@ -124,6 +124,26 @@
         </p>
     </article>
 
+    <article class="panel-soft">
+        <div class="eyebrow">Last rollback</div>
+        <h2>
+            {% if last_rollback.state == "ok" %}✅ OK
+            {% elif last_rollback.state == "warn" %}⚠️ Aging
+            {% else %}❌ Check{% endif %}
+        </h2>
+        <p class="muted">Status: {{ last_rollback.status }}</p>
+        <p class="muted">Executed at: {{ last_rollback.created_at_utc|default:"unknown" }}</p>
+        <p class="muted">Age: {{ last_rollback.age.label }}</p>
+        <p class="muted">Rollback archive: {{ last_rollback_meta.rollback_archive_name }}</p>
+        <p class="muted">Pre-rollback archive: {{ last_rollback_meta.pre_rollback_archive_name }}</p>
+        <p class="muted" style="word-break: break-all;">
+            Rollback archive path: {{ last_rollback.payload.rollback_archive|default:"unknown" }}
+        </p>
+        <p class="muted" style="word-break: break-all;">
+            Pre-rollback archive path: {{ last_rollback.payload.pre_rollback_archive|default:"unknown" }}
+        </p>
+    </article>
+
 
     <article class="panel-soft">
         <div class="eyebrow">Versions</div>

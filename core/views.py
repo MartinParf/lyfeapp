@@ -275,11 +275,17 @@ def ops_dashboard(request):
     deploy = _read_ops_json("last_deploy.json", warn_after_hours=24 * 14)
     previous_deploy = _read_ops_json("previous_deploy.json", warn_after_hours=24 * 30)
     release_backup = _read_ops_json("last_release_backup.json", warn_after_hours=24 * 30)
+    last_rollback = _read_ops_json("last_rollback.json", warn_after_hours=24 * 30)
     snapshots = _build_snapshot_summary()
 
     deploy_git_sha = deploy["payload"].get("git_sha")
     previous_git_sha = previous_deploy["payload"].get("git_sha")
     release_source_git_sha = release_backup["payload"].get("source_git_sha")
+
+    last_rollback_meta = {
+        "rollback_archive_name": _basename(last_rollback["payload"].get("rollback_archive")),
+        "pre_rollback_archive_name": _basename(last_rollback["payload"].get("pre_rollback_archive")),
+    }
 
     deploy_release_label = _release_label(
         deploy.get("created_at_utc"),
@@ -311,6 +317,8 @@ def ops_dashboard(request):
         "deploy": deploy,
         "previous_deploy": previous_deploy,
         "release_backup": release_backup,
+        "last_rollback": last_rollback,
+        "last_rollback_meta": last_rollback_meta,
         "deploy_meta": {
             "git_sha_short": _short_sha(deploy_git_sha),
             "previous_git_sha_short": _short_sha(previous_git_sha),
