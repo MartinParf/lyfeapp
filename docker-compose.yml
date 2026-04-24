@@ -89,6 +89,7 @@ services:
       SENTRY_RELEASE: ${SENTRY_RELEASE:-}
     networks:
       - lyfeapp_internal
+      - egress_network
     depends_on:
       db:
         condition: service_healthy
@@ -108,3 +109,5 @@ networks:
     internal: true
   web_network:
     external: true
+  egress_network:
+    name: lyfeapp_egress
