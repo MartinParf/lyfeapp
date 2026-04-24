@@ -174,6 +174,30 @@ def _read_ops_json(filename, warn_after_hours):
         "payload": payload,
     }
 
+def _short_sha(value):
+    value = (value or "").strip()
+    return value[:7] if value else "unknown"
+
+
+def _release_label(created_at_utc, git_sha):
+    short = _short_sha(git_sha)
+
+    if short == "unknown":
+        return "unknown"
+
+    parsed = _parse_datetime(created_at_utc)
+
+    if parsed is None:
+        return short
+
+    return f"{parsed.astimezone(datetime_timezone.utc):%Y.%m.%d}-{short}"
+
+
+def _basename(value):
+    value = (value or "").strip()
+    return Path(value).name if value else "unknown"
+
+
 
 def _read_service_worker_version():
     sw_path = Path(settings.BASE_DIR) / "templates" / "sw.js"
@@ -253,6 +277,22 @@ def ops_dashboard(request):
     release_backup = _read_ops_json("last_release_backup.json", warn_after_hours=24 * 30)
     snapshots = _build_snapshot_summary()
 
+    deploy_git_sha = deploy["payload"].get("git_sha")
+    previous_git_sha = previous_deploy["payload"].get("git_sha")
+    release_source_git_sha = release_backup["payload"].get("source_git_sha")
+
+    deploy_release_label = _release_label(
+        deploy.get("created_at_utc"),
+        deploy_git_sha,
+    )
+
+    app_version = (
+        deploy_git_sha
+        or os.environ.get("APP_VERSION")
+        or os.environ.get("GIT_SHA")
+        or "unknown"
+    )
+
     context = {
         "health": {
             "state": health_state,
@@ -264,14 +304,22 @@ def ops_dashboard(request):
         "snapshots": snapshots,
         "versions": {
             "service_worker": _read_service_worker_version(),
-            "app_version": deploy["payload"].get("git_sha")
-            or os.environ.get("APP_VERSION")
-            or os.environ.get("GIT_SHA")
-            or "unknown",
+            "app_version": app_version,
+            "app_version_short": _short_sha(app_version),
+            "release_label": deploy_release_label,
         },
         "deploy": deploy,
         "previous_deploy": previous_deploy,
         "release_backup": release_backup,
+        "deploy_meta": {
+            "git_sha_short": _short_sha(deploy_git_sha),
+            "previous_git_sha_short": _short_sha(previous_git_sha),
+            "release_label": deploy_release_label,
+        },
+        "release_backup_meta": {
+            "source_git_sha_short": _short_sha(release_source_git_sha),
+            "archive_name": _basename(release_backup["payload"].get("archive_path")),
+        },
         "ops_links": [
             {
                 "label": "Health JSON",
