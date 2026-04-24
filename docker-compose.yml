@@ -56,6 +56,9 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       PYTHONUNBUFFERED: "1"
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-}
     networks:
       - lyfeapp_internal
       - web_network
@@ -81,6 +84,9 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       PYTHONUNBUFFERED: "1"
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-}
     networks:
       - lyfeapp_internal
     depends_on:

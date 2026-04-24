@@ -49,8 +49,8 @@ jobs:
 
             mkdir -p runtime/ops
 
-            test -d /var/backups/lyfeapp/releases
-            test -w /var/backups/lyfeapp/releases
+            test -d /var/backups/lyfeapp/releases || { echo "Missing /var/backups/lyfeapp/releases"; exit 1; }
+            test -w /var/backups/lyfeapp/releases || { echo "Directory not writable: /var/backups/lyfeapp/releases"; ls -ld /var/backups/lyfeapp /var/backups/lyfeapp/releases; exit 1; }
 
             CURRENT_SHA="unknown"
 

@@ -1,8 +1,10 @@
 from pathlib import Path
+import json
 import os
-
+import sentry_sdk
 import dj_database_url
 from dotenv import load_dotenv
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,6 +32,37 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     default="http://127.0.0.1:8000,http://localhost:8000",
 )
+
+def _read_last_deploy_sha() -> str | None:
+    path = BASE_DIR / "runtime" / "ops" / "last_deploy.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return payload.get("git_sha")
+    except Exception:
+        return None
+
+
+SENTRY_ENVIRONMENT = os.getenv(
+    "SENTRY_ENVIRONMENT",
+    "local" if DEBUG else "production",
+)
+
+SENTRY_RELEASE = (
+    os.getenv("SENTRY_RELEASE")
+    or _read_last_deploy_sha()
+    or ("lyfeapp-local" if DEBUG else None)
+)
+
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        environment=SENTRY_ENVIRONMENT,
+        release=SENTRY_RELEASE,
+        send_default_pii=False,
+        in_app_include=["bio", "fitness", "core", "lyfeapp_core"],
+    )
+
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
