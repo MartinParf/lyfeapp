@@ -1,49 +1,23 @@
 # File Tree: lyfeapp
 
-**Generated:** 4/28/2026, 6:25:13 PM
+**Generated:** 3/26/2026, 7:28:50 PM
 **Root Path:** `/home/parf/DEV/lyfeapp`
 
 ```
-├── 📁 .github
-│   └── 📁 workflows
-│       └── ⚙️ deploy.yml
 ├── 📁 bio
 │   ├── 📁 migrations
 │   │   ├── 🐍 0001_initial.py
-│   │   ├── 🐍 0002_replace_alcohol_consumed_with_alcohol_units.py
-│   │   ├── 🐍 0003_analyticssnapshot.py
-│   │   ├── 🐍 0004_analyticssnapshot_last_enqueued_at_and_more.py
-│   │   ├── 🐍 0005_profile_avatar_profile_bio_profile_date_of_birth_and_more.py
 │   │   └── 🐍 __init__.py
-│   ├── 📁 services
-│   │   ├── 🐍 analytics.py
-│   │   ├── 🐍 dataframes.py
-│   │   └── 🐍 reports.py
 │   ├── 🐍 __init__.py
 │   ├── 🐍 admin.py
 │   ├── 🐍 apps.py
-│   ├── 🐍 forms.py
 │   ├── 🐍 models.py
 │   ├── 🐍 signals.py
-│   ├── 🐍 tasks.py
 │   ├── 🐍 tests.py
-│   ├── 🐍 urls.py
 │   └── 🐍 views.py
 ├── 📁 core
 │   ├── 📁 migrations
 │   │   └── 🐍 __init__.py
-│   ├── 📁 static
-│   │   └── 📁 core
-│   │       ├── 📁 css
-│   │       │   └── 🎨 app.css
-│   │       ├── 📁 icons
-│   │       │   ├── 🖼️ apple-touch-icon.png
-│   │       │   ├── 🖼️ icon-192.png
-│   │       │   ├── 🖼️ icon-192.svg
-│   │       │   ├── 🖼️ icon-512.png
-│   │       │   ├── 🖼️ icon-512.svg
-│   │       │   └── 🖼️ icon-maskable-512.png
-│   │       └── 📄 manifest.webmanifest
 │   ├── 🐍 __init__.py
 │   ├── 🐍 admin.py
 │   ├── 🐍 apps.py
@@ -61,8 +35,6 @@
 │   │   ├── 🐍 0001_initial.py
 │   │   ├── 🐍 0002_remove_exercise_uniq_exercise_created_by_slug.py
 │   │   └── 🐍 __init__.py
-│   ├── 📁 services
-│   │   └── 🐍 analytics_bridge.py
 │   ├── 🐍 __init__.py
 │   ├── 🐍 admin.py
 │   ├── 🐍 apps.py
@@ -78,27 +50,11 @@
 │   ├── 🐍 urls.py
 │   └── 🐍 wsgi.py
 ├── 📁 templates
-│   ├── 📁 admin
-│   │   └── 🌐 base_site.html
-│   ├── 📁 bio
-│   │   ├── 📁 partials
-│   │   │   └── 🌐 subnav.html
-│   │   ├── 🌐 activity_form.html
-│   │   ├── 🌐 activity_list.html
-│   │   ├── 🌐 analytics.html
-│   │   ├── 🌐 dailymetric_form.html
-│   │   ├── 🌐 dailymetric_list.html
-│   │   └── 🌐 overview.html
-│   ├── 📁 core
-│   │   └── 🌐 ops_dashboard.html
 │   ├── 📁 fitness
 │   │   ├── 📁 partials
-│   │   │   ├── 🌐 pool_items.html
 │   │   │   ├── 🌐 session_exercise_card.html
 │   │   │   ├── 🌐 session_exercises.html
-│   │   │   ├── 🌐 session_header.html
-│   │   │   └── 🌐 session_list_card.html
-│   │   ├── 🌐 exercise_edit_form.html
+│   │   │   └── 🌐 session_header.html
 │   │   ├── 🌐 exercise_form.html
 │   │   ├── 🌐 exercise_list.html
 │   │   ├── 🌐 pool_add_exercise.html
@@ -111,17 +67,15 @@
 │   │   ├── 🌐 session_form.html
 │   │   ├── 🌐 session_list.html
 │   │   └── 🌐 set_form.html
-│   ├── 🌐 base.html
-│   ├── 🌐 offline.html
-│   └── 📄 sw.js
-├── ⚙️ .deployignore
+│   └── 🌐 base.html
 ├── ⚙️ .gitignore
 ├── 🐳 Dockerfile
 ├── 📝 README.md
 ├── ⚙️ docker-compose.yml
+├── 📄 gunicorn.ctl
 ├── 🐍 manage.py
 ├── 📄 requirements.txt
-└── 📝 structure2.md
+└── 📝 structure.md
 ```
 
 ---

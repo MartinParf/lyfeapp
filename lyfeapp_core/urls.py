@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.template.response import TemplateResponse
 from django.urls import include, path
@@ -41,3 +43,6 @@ urlpatterns = [
     ),
     path("", RedirectView.as_view(pattern_name="bio:overview", permanent=False)),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

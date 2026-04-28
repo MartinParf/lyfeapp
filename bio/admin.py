@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import (
     Activity,
@@ -10,9 +11,81 @@ from .models import (
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "full_name", "target_calories_base", "created_at", "updated_at")
-    search_fields = ("user__username", "full_name")
+    list_display = (
+        "user",
+        "resolved_display_name_admin",
+        "goal_mode",
+        "email_verified_at",
+        "onboarding_completed_at",
+        "created_at",
+        "updated_at",
+    )
+    search_fields = (
+        "user__username",
+        "user__email",
+        "display_name",
+        "full_name",
+        "bio",
+    )
+    list_filter = (
+        "goal_mode",
+        "email_verified_at",
+        "onboarding_completed_at",
+        "updated_at",
+    )
     ordering = ("user__username",)
+    readonly_fields = (
+        "avatar_preview",
+        "created_at",
+        "updated_at",
+    )
+
+    fieldsets = (
+        ("Identity", {
+            "fields": (
+                "user",
+                "display_name",
+                "full_name",
+                "bio",
+                "avatar",
+                "avatar_preview",
+            )
+        }),
+        ("Goals / profile", {
+            "fields": (
+                "goal_mode",
+                "date_of_birth",
+                "height_cm",
+                "target_weight_kg",
+                "target_calories_base",
+            )
+        }),
+        ("Account state", {
+            "fields": (
+                "email_verified_at",
+                "onboarding_completed_at",
+            )
+        }),
+        ("Timestamps", {
+            "fields": (
+                "created_at",
+                "updated_at",
+            )
+        }),
+    )
+
+    @admin.display(description="Display name")
+    def resolved_display_name_admin(self, obj):
+        return obj.resolved_display_name
+
+    @admin.display(description="Avatar preview")
+    def avatar_preview(self, obj):
+        if not obj.avatar:
+            return "—"
+        return format_html(
+            '<img src="{}" style="width:72px;height:72px;object-fit:cover;border-radius:12px;" />',
+            obj.avatar.url,
+        )
 
 
 @admin.register(DailyMetric)

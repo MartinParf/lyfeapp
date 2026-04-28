@@ -1,8 +1,17 @@
-from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
 from datetime import timedelta
+from decimal import Decimal
+from uuid import uuid4
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import (
+    FileExtensionValidator,
+    MaxValueValidator,
+    MinValueValidator,
+)
+from django.db import models
 from django.utils import timezone
+from django_resized import ResizedImageField
 
 
 
@@ -54,6 +63,26 @@ class ActivityType(models.TextChoices):
     SWIMMING = "SWIMMING", "Swimming"
     OTHER = "OTHER", "Other"
 
+def avatar_upload_to(instance, filename):
+    return f"avatars/user_{instance.user_id}/{uuid4().hex}.webp"
+
+
+def validate_avatar_file_size(file):
+    max_bytes = 2 * 1024 * 1024  # 2 MB
+    if file.size > max_bytes:
+        raise ValidationError("Avatar must be 2 MB or smaller.")
+
+
+def validate_not_future_date(value):
+    if value and value > timezone.localdate():
+        raise ValidationError("Date of birth cannot be in the future.")
+
+
+class GoalMode(models.TextChoices):
+    MAINTAIN = "maintain", "Maintain"
+    LOSE_WEIGHT = "lose_weight", "Lose weight"
+    GAIN_WEIGHT = "gain_weight", "Gain weight"
+
 
 class Profile(TimeStampedModel):
     user = models.OneToOneField(
@@ -61,14 +90,110 @@ class Profile(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="profile",
     )
+
+    # Legacy / existing fields
     full_name = models.CharField(max_length=255, blank=True)
     target_calories_base = models.PositiveIntegerField(null=True, blank=True)
 
+    # New identity / profile foundation
+    display_name = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Primary app-facing nickname / display name.",
+    )
+    bio = models.CharField(
+        max_length=280,
+        blank=True,
+        default="",
+        help_text="Short profile bio.",
+    )
+    avatar = ResizedImageField(
+        size=[512, 512],
+        crop=["middle", "center"],
+        quality=85,
+        force_format="WEBP",
+        upload_to=avatar_upload_to,
+        blank=True,
+        null=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "webp"]),
+            validate_avatar_file_size,
+        ],
+        help_text="Allowed: jpg, jpeg, png, webp. Max size 2 MB. Stored as 512x512 WEBP.",
+    )
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True,
+        validators=[validate_not_future_date],
+    )
+    height_cm = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(80), MaxValueValidator(260)],
+        help_text="Optional height in centimeters.",
+    )
+    target_weight_kg = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        blank=True,
+        null=True,
+        validators=[
+            MinValueValidator(Decimal("25.0")),
+            MaxValueValidator(Decimal("400.0")),
+        ],
+        help_text="Optional long-term target weight.",
+    )
+    goal_mode = models.CharField(
+        max_length=20,
+        choices=GoalMode.choices,
+        default=GoalMode.MAINTAIN,
+        help_text="Primary user goal for onboarding and analytics.",
+    )
+    email_verified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+    onboarding_completed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
     class Meta:
         ordering = ["user_id"]
+        indexes = [
+            models.Index(fields=["updated_at"], name="idx_profile_updated_at"),
+            models.Index(fields=["goal_mode"], name="idx_profile_goal_mode"),
+            models.Index(
+                fields=["onboarding_completed_at"],
+                name="idx_profile_onboarding_done",
+            ),
+        ]
 
     def __str__(self) -> str:
-        return f"Profile<{self.user_id}>"
+        return f"Profile<{self.user_id} {self.resolved_display_name}>"
+
+    @property
+    def resolved_display_name(self) -> str:
+        if self.display_name:
+            return self.display_name
+        if self.full_name:
+            return self.full_name
+        if getattr(self.user, "username", ""):
+            return self.user.username
+        if getattr(self.user, "email", ""):
+            return self.user.email.split("@")[0]
+        return f"user-{self.user_id}"
+
+    def clean(self):
+        super().clean()
+
+        self.display_name = (self.display_name or "").strip()
+        self.bio = (self.bio or "").strip()
+        self.full_name = (self.full_name or "").strip()
+
+        if self.display_name and len(self.display_name) < 2:
+            raise ValidationError({"display_name": "Display name must be at least 2 characters long."})
 
 
 class DailyMetric(TimeStampedModel):
