@@ -5,7 +5,12 @@ from django.template.response import TemplateResponse
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 
-from core.views import health_check, ops_dashboard
+from core.views import (
+    EmailVerificationConfirmView,
+    EmailVerificationSendView,
+    health_check,
+    ops_dashboard,
+)
 
 
 def service_worker(request):
@@ -22,6 +27,16 @@ def service_worker(request):
 
 urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
+    path(
+        "accounts/email-verification/",
+        EmailVerificationSendView.as_view(),
+        name="email-verification-send",
+    ),
+    path(
+        "accounts/email-verification/confirm/<path:token>/",
+        EmailVerificationConfirmView.as_view(),
+        name="email-verification-confirm",
+    ),
     path("admin/", admin.site.urls),
     path("fitness/", include("fitness.urls", namespace="fitness")),
     path("bio/", include("bio.urls", namespace="bio")),

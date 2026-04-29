@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LYFE — Verification failed</title>
+</head>
+<body>
+  <h1>Verification failed</h1>
+
+  {% if reason == "expired" %}
+    <p>This verification link has expired.</p>
+  {% elif reason == "mismatch" %}
+    <p>This verification link is no longer valid for the current email.</p>
+  {% else %}
+    <p>This verification link is invalid.</p>
+  {% endif %}
+</body>
+</html>

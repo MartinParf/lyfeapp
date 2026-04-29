@@ -5,17 +5,28 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from datetime import timezone as datetime_timezone
 from pathlib import Path
 
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
 from django.db.models import Count, Max
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.core import signing
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_safe
 from redis import Redis
+from django.template.response import TemplateResponse
+
+from bio.models import Profile
+from .email_verification import (
+    load_email_verification_token,
+    send_email_verification_email,
+)
 
 
 REDIS_HEALTH_TIMEOUT_SECONDS = 0.75
@@ -353,3 +364,95 @@ def ops_dashboard(request):
     }
 
     return render(request, "core/ops_dashboard.html", context)
+
+class EmailVerificationSendView(LoginRequiredMixin, View):
+    http_method_names = ["get", "post"]
+
+    def get(self, request):
+        return TemplateResponse(
+            request,
+            "registration/email_verification_send.html",
+            {
+                "email": request.user.email,
+                "already_verified": bool(
+                    getattr(request.user, "profile", None)
+                    and request.user.profile.email_verified_at
+                ),
+            },
+        )
+
+    def post(self, request):
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+
+        if not request.user.email:
+            return TemplateResponse(
+                request,
+                "registration/email_verification_send.html",
+                {
+                    "email": "",
+                    "already_verified": bool(profile.email_verified_at),
+                    "error": "Your account does not have an email address yet.",
+                },
+                status=400,
+            )
+
+        verification_url = send_email_verification_email(request, request.user)
+
+        return TemplateResponse(
+            request,
+            "registration/email_verification_sent.html",
+            {
+                "email": request.user.email,
+                "verification_url": verification_url,
+                "already_verified": bool(profile.email_verified_at),
+            },
+        )
+
+
+class EmailVerificationConfirmView(View):
+    http_method_names = ["get"]
+
+    def get(self, request, token):
+        try:
+            payload = load_email_verification_token(token)
+        except signing.SignatureExpired:
+            return TemplateResponse(
+                request,
+                "registration/email_verification_invalid.html",
+                {"reason": "expired"},
+                status=400,
+            )
+        except signing.BadSignature:
+            return TemplateResponse(
+                request,
+                "registration/email_verification_invalid.html",
+                {"reason": "invalid"},
+                status=400,
+            )
+
+        User = get_user_model()
+        user = User.objects.filter(pk=payload.get("user_id")).first()
+
+        if not user or not user.email or user.email != payload.get("email"):
+            return TemplateResponse(
+                request,
+                "registration/email_verification_invalid.html",
+                {"reason": "mismatch"},
+                status=400,
+            )
+
+        profile, _ = Profile.objects.get_or_create(user=user)
+
+        already_verified = bool(profile.email_verified_at)
+        if not already_verified:
+            profile.email_verified_at = timezone.now()
+            profile.save()
+
+        return TemplateResponse(
+            request,
+            "registration/email_verification_complete.html",
+            {
+                "email": user.email,
+                "already_verified": already_verified,
+            },
+        )

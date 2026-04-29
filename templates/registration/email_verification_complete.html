@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LYFE — Email verified</title>
+</head>
+<body>
+  <h1>Email verified</h1>
+
+  {% if already_verified %}
+    <p>This email was already verified earlier.</p>
+  {% else %}
+    <p>Your email address has been verified successfully.</p>
+  {% endif %}
+
+  <p>Email: {{ email }}</p>
+</body>
+</html>

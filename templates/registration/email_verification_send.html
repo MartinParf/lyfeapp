@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LYFE — Verify email</title>
+</head>
+<body>
+  <h1>Verify email</h1>
+
+  {% if already_verified %}
+    <p>Your email is already verified.</p>
+  {% endif %}
+
+  {% if error %}
+    <p>{{ error }}</p>
+  {% endif %}
+
+  <p>User: {{ request.user.username }} (ID {{ request.user.id }})</p>
+  <p>Current email: {{ email|default:"not set" }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Send verification email</button>
+  </form>
+</body>
+</html>
