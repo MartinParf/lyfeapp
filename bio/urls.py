@@ -14,12 +14,14 @@ from .views import (
     BioAnalyticsView,
     BioAnalyticsExportJsonView,
     BioAnalyticsExportCsvView,
+    ProfileMeApiView,
 )
 
 app_name = "bio"
 
 urlpatterns = [
     path("", BioOverviewView.as_view(), name="overview"),
+    path("api/me/profile/", ProfileMeApiView.as_view(), name="profile-me-api"),
     path("daily-metrics/", DailyMetricListView.as_view(), name="dailymetric-list"),
     path("daily-metrics/create/", DailyMetricCreateView.as_view(), name="dailymetric-create"),
     path("daily-metrics/today/", DailyMetricTodayView.as_view(), name="dailymetric-today"),

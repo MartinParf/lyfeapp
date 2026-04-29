@@ -1,31 +1,40 @@
 import csv
-from datetime import timedelta
+import json
+from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Avg
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
-from django.http import HttpResponse, JsonResponse
 
 from .forms import ActivityForm, DailyMetricForm
-from .models import Activity, AnalyticsSnapshotType, DailyMetric
+from .models import (
+    Activity,
+    AnalyticsSnapshotType,
+    DailyMetric,
+    GoalMode,
+    Profile,
+)
 from .services.analytics import (
     get_bio_analytics_snapshot,
     get_cached_bio_analytics,
     get_snapshot_max_age_hours,
     queue_snapshot_refresh,
 )
+from .services.reports import build_bio_analytics_report, build_bio_daily_csv_rows
 from .tasks import (
     ensure_user_snapshots_exist,
     recompute_analytics_snapshot,
     recompute_overview_snapshot,
     recompute_recent_snapshots_for_user,
 )
-from .services.reports import build_bio_analytics_report, build_bio_daily_csv_rows
 
 
 def _queue_snapshot_refresh_if_needed(*, user, snapshot_type: str, period_days: int) -> None:
@@ -90,6 +99,167 @@ def _get_snapshot_or_fallback(*, user, snapshot_type: str, period_days: int) -> 
         snapshot_type=snapshot_type,
     )
 
+def _profile_avatar_url(request, profile: Profile) -> str | None:
+    if not profile.avatar:
+        return None
+    return request.build_absolute_uri(profile.avatar.url)
+
+
+def _serialize_profile(request, profile: Profile) -> dict:
+    return {
+        "user_id": profile.user_id,
+        "email": profile.user.email,
+        "display_name": profile.display_name,
+        "resolved_display_name": profile.resolved_display_name,
+        "bio": profile.bio,
+        "avatar_url": _profile_avatar_url(request, profile),
+        "date_of_birth": profile.date_of_birth.isoformat() if profile.date_of_birth else None,
+        "height_cm": profile.height_cm,
+        "target_weight_kg": str(profile.target_weight_kg) if profile.target_weight_kg is not None else None,
+        "goal_mode": profile.goal_mode,
+        "goal_mode_label": profile.get_goal_mode_display(),
+        "email_verified_at": profile.email_verified_at.isoformat() if profile.email_verified_at else None,
+        "onboarding_completed_at": (
+            profile.onboarding_completed_at.isoformat()
+            if profile.onboarding_completed_at
+            else None
+        ),
+        "created_at": profile.created_at.isoformat(),
+        "updated_at": profile.updated_at.isoformat(),
+    }
+
+
+def _json_error(message: str, *, status: int = 400, details: dict | None = None) -> JsonResponse:
+    payload = {"ok": False, "error": message}
+    if details:
+        payload["details"] = details
+    return JsonResponse(payload, status=status)
+
+
+class ProfileMeApiView(LoginRequiredMixin, View):
+    http_method_names = ["get", "patch"]
+
+    def get_profile(self, request) -> Profile:
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        return profile
+
+    def get(self, request):
+        profile = self.get_profile(request)
+        return JsonResponse({
+            "ok": True,
+            "profile": _serialize_profile(request, profile),
+        })
+
+    def patch(self, request):
+        profile = self.get_profile(request)
+
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            return _json_error("Invalid JSON body.")
+
+        if not isinstance(payload, dict):
+            return _json_error("JSON body must be an object.")
+
+        errors: dict[str, str] = {}
+        changed_fields: list[str] = []
+
+        if "display_name" in payload:
+            value = str(payload.get("display_name") or "").strip()
+            if len(value) < 2:
+                errors["display_name"] = "Display name must be at least 2 characters long."
+            else:
+                profile.display_name = value[:50]
+                changed_fields.append("display_name")
+
+        if "bio" in payload:
+            value = str(payload.get("bio") or "").strip()
+            profile.bio = value[:280]
+            changed_fields.append("bio")
+
+        if "date_of_birth" in payload:
+            raw = payload.get("date_of_birth")
+            if raw in (None, ""):
+                profile.date_of_birth = None
+                changed_fields.append("date_of_birth")
+            else:
+                try:
+                    parsed = date.fromisoformat(str(raw))
+                    if parsed > timezone.localdate():
+                        errors["date_of_birth"] = "Date of birth cannot be in the future."
+                    else:
+                        profile.date_of_birth = parsed
+                        changed_fields.append("date_of_birth")
+                except ValueError:
+                    errors["date_of_birth"] = "Use ISO format YYYY-MM-DD."
+
+        if "height_cm" in payload:
+            raw = payload.get("height_cm")
+            if raw in (None, ""):
+                profile.height_cm = None
+                changed_fields.append("height_cm")
+            else:
+                try:
+                    value = int(raw)
+                    if value < 80 or value > 260:
+                        errors["height_cm"] = "Height must be between 80 and 260 cm."
+                    else:
+                        profile.height_cm = value
+                        changed_fields.append("height_cm")
+                except (TypeError, ValueError):
+                    errors["height_cm"] = "Height must be an integer."
+
+        if "target_weight_kg" in payload:
+            raw = payload.get("target_weight_kg")
+            if raw in (None, ""):
+                profile.target_weight_kg = None
+                changed_fields.append("target_weight_kg")
+            else:
+                try:
+                    value = Decimal(str(raw))
+                    if value < Decimal("25.0") or value > Decimal("400.0"):
+                        errors["target_weight_kg"] = "Target weight must be between 25.0 and 400.0 kg."
+                    else:
+                        profile.target_weight_kg = value
+                        changed_fields.append("target_weight_kg")
+                except (InvalidOperation, TypeError, ValueError):
+                    errors["target_weight_kg"] = "Target weight must be a decimal number."
+
+        if "goal_mode" in payload:
+            value = str(payload.get("goal_mode") or "").strip()
+            allowed = {choice for choice, _label in GoalMode.choices}
+            if value not in allowed:
+                errors["goal_mode"] = f"Invalid goal_mode. Allowed: {', '.join(sorted(allowed))}."
+            else:
+                profile.goal_mode = value
+                changed_fields.append("goal_mode")
+
+        if errors:
+            return _json_error("Profile update validation failed.", details=errors)
+
+        if not changed_fields:
+            return JsonResponse({
+                "ok": True,
+                "profile": _serialize_profile(request, profile),
+                "message": "No changes submitted.",
+            })
+
+        try:
+            profile.full_clean()
+        except ValidationError as exc:
+            if hasattr(exc, "message_dict"):
+                return _json_error(
+                    "Profile update validation failed.",
+                    details={k: "; ".join(v) for k, v in exc.message_dict.items()},
+                )
+            return _json_error("Profile update validation failed.")
+
+        profile.save(update_fields=sorted(set(changed_fields + ["updated_at"])))
+
+        return JsonResponse({
+            "ok": True,
+            "profile": _serialize_profile(request, profile),
+        })
 
 class DailyMetricListView(LoginRequiredMixin, ListView):
     model = DailyMetric

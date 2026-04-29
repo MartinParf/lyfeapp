@@ -21,6 +21,7 @@ def service_worker(request):
 
 
 urlpatterns = [
+    path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
     path("fitness/", include("fitness.urls", namespace="fitness")),
     path("bio/", include("bio.urls", namespace="bio")),
