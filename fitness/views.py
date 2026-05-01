@@ -9,6 +9,7 @@ from decimal import Decimal
 import calendar
 from datetime import datetime
 from django.utils import timezone
+from fitness.services.sync import touch_session_for_sync
 
 from .forms import (
     ExerciseForm,
@@ -542,6 +543,7 @@ class WorkoutSessionAddExerciseView(LoginRequiredMixin, View):
             session_exercise.session = session
             session_exercise.sequence = next_sequence
             session_exercise.save()
+            touch_session_for_sync(session)
             return redirect("fitness:session-detail", pk=session.pk)
 
         return render(request, self.template_name, {"session": session, "form": form})
@@ -587,6 +589,7 @@ class WorkoutSetCreateView(LoginRequiredMixin, View):
             workout_set = form.save(commit=False)
             workout_set.session_exercise = session_exercise
             workout_set.save()
+            touch_session_for_sync(session) 
             return redirect("fitness:session-detail", pk=session_exercise.session_id)
 
         return render(
@@ -611,6 +614,7 @@ class HtmxWorkoutSessionAddExerciseView(LoginRequiredMixin, View):
             session_exercise.session = session
             session_exercise.sequence = next_sequence
             session_exercise.save()
+            touch_session_for_sync(session)
 
         session = get_object_or_404(get_session_queryset(request.user), pk=pk)
         return render_session_exercises_partial(request, session)
@@ -635,6 +639,7 @@ class HtmxWorkoutSessionDeleteExerciseView(LoginRequiredMixin, View):
                 item.sequence = idx
                 item.save(update_fields=["sequence"])
 
+        touch_session_for_sync(session)
         session = get_object_or_404(get_session_queryset(request.user), pk=pk)
         return render_session_exercises_partial(request, session)
 
@@ -666,6 +671,7 @@ class HtmxWorkoutSetCreateView(LoginRequiredMixin, View):
             workout_set.session_exercise = session_exercise
             workout_set.set_order = next_order
             workout_set.save()
+            touch_session_for_sync(session)
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         
@@ -693,6 +699,7 @@ class HtmxWorkoutSetDeleteView(LoginRequiredMixin, View):
                 item.set_order = idx
                 item.save(update_fields=["set_order"])
 
+        touch_session_for_sync(session)
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         return render_session_exercises_partial(request, session)
 
@@ -738,6 +745,7 @@ class HtmxWorkoutSetMoveView(LoginRequiredMixin, View):
             current.set_order = original_swap_order
             current.save(update_fields=["set_order"])
 
+        touch_session_for_sync(session)
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         return render_session_exercises_partial(request, session)
 
@@ -759,6 +767,7 @@ class HtmxWorkoutSetResequenceView(LoginRequiredMixin, View):
                 item.set_order = idx
                 item.save(update_fields=["set_order"])
 
+        touch_session_for_sync(session)
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         return render_session_exercises_partial(request, session)
 
@@ -781,6 +790,7 @@ class HtmxWorkoutSetUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
+            touch_session_for_sync(session)
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         return render_session_exercises_partial(request, session)
@@ -815,6 +825,7 @@ class HtmxWorkoutSetRepeatView(LoginRequiredMixin, View):
                 rpe=last_set.rpe,
                 notes=last_set.notes,
             )
+            touch_session_for_sync(session)
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         
@@ -867,6 +878,7 @@ class HtmxWorkoutSetApplySuggestionView(LoginRequiredMixin, View):
                 rpe=last_set.rpe,
                 notes="",
             )
+            touch_session_for_sync(session)
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
         ensure_session_structure_mutable(session)
@@ -1001,6 +1013,7 @@ class HtmxWorkoutSessionMoveExerciseView(LoginRequiredMixin, View):
             current.sequence = original_swap_sequence
             current.save(update_fields=["sequence"])
 
+        touch_session_for_sync(session)
         session = get_object_or_404(get_session_queryset(request.user), pk=pk)
         return render_session_exercises_partial(request, session)
 
@@ -1016,6 +1029,8 @@ class HtmxWorkoutSessionResequenceView(LoginRequiredMixin, View):
             if item.sequence != idx:
                 item.sequence = idx
                 item.save(update_fields=["sequence"])
+        
+        touch_session_for_sync(session)
 
         session = get_object_or_404(get_session_queryset(request.user), pk=pk)
         return render_session_exercises_partial(request, session)
@@ -1028,6 +1043,7 @@ class HtmxWorkoutSessionUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
+            touch_session_for_sync(session)
 
         session = get_object_or_404(get_session_queryset(request.user), pk=pk)
         return render_session_header_partial(request, session)

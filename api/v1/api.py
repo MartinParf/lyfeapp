@@ -11,6 +11,7 @@ from api.v1.routers.bootstrap import router as bootstrap_router
 from api.v1.routers.activities import router as activities_router
 from api.v1.routers.workout_sessions import router as workout_sessions_router
 from api.v1.routers.daily_metrics import router as daily_metrics_router
+from api.v1.routers.sync import router as sync_router
 
 
 def _error_payload(*, code: str, message: str, details=None):
@@ -46,6 +47,7 @@ api_v1.add_router("/bootstrap/", bootstrap_router)
 api_v1.add_router("/activities/", activities_router)
 api_v1.add_router("/workout-sessions/", workout_sessions_router)
 api_v1.add_router("/daily-metrics/", daily_metrics_router)
+api_v1.add_router("/sync/", sync_router)
 
 
 @api_v1.exception_handler(ApiError)
