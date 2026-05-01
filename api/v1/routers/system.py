@@ -1,5 +1,6 @@
 from django.utils import timezone
 from ninja import Router, Schema
+from api.v1.schemas.common import ApiErrorResponseSchema
 
 
 router = Router(tags=["system"])
@@ -15,7 +16,15 @@ class SystemPingResponseSchema(Schema):
     data: SystemPingDataSchema
 
 
-@router.get("/ping/", response=SystemPingResponseSchema, auth=None)
+@router.get(
+    "/ping/",
+    response={
+        200: SystemPingResponseSchema,
+    },
+    auth=None,
+    summary="System ping",
+    description="Simple unauthenticated health-style API ping for client connectivity checks.",
+)
 def system_ping(request):
     return {
         "ok": True,

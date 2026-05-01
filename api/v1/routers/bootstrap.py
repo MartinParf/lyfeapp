@@ -6,6 +6,7 @@ from api.v1.security import api_jwt_bearer
 from bio.models import Profile
 from fitness.models import Exercise, ExercisePool
 from api.v1.serializers.profile import serialize_profile
+from api.v1.schemas.common import ApiErrorResponseSchema
 
 
 router = Router(tags=["bootstrap"])
@@ -18,7 +19,17 @@ def _get_profile(user):
     return profile
 
 
-@router.get("/", response=BootstrapResponseSchema, auth=api_jwt_bearer)
+@router.get(
+    "/",
+    response={
+        200: BootstrapResponseSchema,
+        401: ApiErrorResponseSchema,
+        403: ApiErrorResponseSchema,
+    },
+    auth=api_jwt_bearer,
+    summary="Bootstrap mobile app",
+    description="Return startup payload for authenticated mobile client: profile, server metadata, config, feature flags, exercise catalog, and pool summaries.",
+)
 def bootstrap(request):
     profile = _get_profile(request.user)
 

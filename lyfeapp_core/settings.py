@@ -185,6 +185,22 @@ if not DEBUG:
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_CACHE_DB = int(os.getenv("REDIS_CACHE_DB", "2"))
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CACHE_DB}",
+        "TIMEOUT": 300,
+        "KEY_PREFIX": "lyfeapp",
+    }
+}
+
+API_AUTH_WINDOW_SECONDS = int(os.getenv("API_AUTH_WINDOW_SECONDS", "900"))  # 15 min
+API_LOGIN_IP_LIMIT = int(os.getenv("API_LOGIN_IP_LIMIT", "20"))
+API_LOGIN_IDENTITY_IP_LIMIT = int(os.getenv("API_LOGIN_IDENTITY_IP_LIMIT", "8"))
+API_REFRESH_IP_LIMIT = int(os.getenv("API_REFRESH_IP_LIMIT", "30"))
+API_LOGOUT_IP_LIMIT = int(os.getenv("API_LOGOUT_IP_LIMIT", "20"))
 
 HUEY = {
     "huey_class": "huey.RedisHuey",

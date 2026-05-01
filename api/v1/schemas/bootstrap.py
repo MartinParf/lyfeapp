@@ -1,40 +1,39 @@
-from ninja import Schema
-
+from ninja import Schema, Field
 from api.v1.schemas.profile import ProfileMeSchema
 
 
 class BootstrapServerSchema(Schema):
-    api_version: str
-    server_time: str
+    api_version: str = Field(..., description="API version identifier.")
+    server_time: str = Field(..., description="Current server time in ISO format.")
 
 
 class BootstrapConfigSchema(Schema):
-    bootstrap_version: str
-    profile_api_enabled: bool
-    fitness_api_enabled: bool
+    bootstrap_version: str = Field(..., description="Bootstrap payload version marker.")
+    profile_api_enabled: bool = Field(..., description="Whether profile API is enabled.")
+    fitness_api_enabled: bool = Field(..., description="Whether fitness API is enabled.")
 
 
 class BootstrapFeatureFlagsSchema(Schema):
-    profile_edit_enabled: bool
-    fitness_sessions_enabled: bool
-    analytics_enabled: bool
+    profile_edit_enabled: bool = Field(..., description="Whether profile editing is enabled.")
+    fitness_sessions_enabled: bool = Field(..., description="Whether fitness sessions flow is enabled.")
+    analytics_enabled: bool = Field(..., description="Whether analytics API is enabled.")
 
 
 class BootstrapExerciseSchema(Schema):
-    id: int
-    name: str
-    slug: str
-    primary_pattern: str | None
-    is_custom: bool
-    is_active: bool
+    id: int = Field(..., description="Exercise ID.")
+    name: str = Field(..., description="Exercise name.")
+    slug: str = Field(..., description="Stable slug for exercise.")
+    primary_pattern: str | None = Field(None, description="Primary training pattern classification.")
+    is_custom: bool = Field(..., description="Whether the exercise is user-defined.")
+    is_active: bool = Field(..., description="Whether the exercise is active.")
 
 
 class BootstrapPoolSummarySchema(Schema):
-    id: int
-    name: str
-    focus: str
-    description: str
-    exercise_count: int
+    id: int = Field(..., description="Exercise pool ID.")
+    name: str = Field(..., description="Exercise pool name.")
+    focus: str = Field(..., description="Pool focus classification.")
+    description: str = Field(..., description="Pool description.")
+    exercise_count: int = Field(..., description="Number of exercises in the pool.")
 
 
 class BootstrapFitnessSchema(Schema):

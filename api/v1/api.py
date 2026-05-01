@@ -26,6 +26,11 @@ def _error_payload(*, code: str, message: str, details=None):
 api_v1 = NinjaAPI(
     title="LYFE Mobile API",
     version="1.0.0",
+    description=(
+        "Versioned mobile API for the LYFE application. "
+        "This surface is intended for Android/native clients and "
+        "uses JWT Bearer authentication for protected endpoints."
+    ),
     urls_namespace="api_v1",
     docs_url="/docs",
     openapi_url="/openapi.json",

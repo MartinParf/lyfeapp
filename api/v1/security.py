@@ -8,6 +8,26 @@ from api.exceptions import ApiError
 
 
 class ApiJWTBearer(HttpBearer):
+    def __call__(self, request):
+        header = request.headers.get("Authorization", "").strip()
+
+        if not header:
+            raise ApiError(
+                code="authentication_required",
+                message="Authentication credentials were not provided.",
+                status=401,
+            )
+
+        parts = header.split()
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            raise ApiError(
+                code="invalid_authorization_header",
+                message="Authorization header must be in the format: Bearer <token>.",
+                status=401,
+            )
+
+        return self.authenticate(request, parts[1])
+
     def authenticate(self, request, token: str):
         jwt_auth = JWTAuthentication()
 

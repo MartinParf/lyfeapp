@@ -13,6 +13,7 @@ from api.v1.schemas.profile import (
 from api.v1.security import api_jwt_bearer
 from bio.models import GoalMode, Profile
 from api.v1.serializers.profile import serialize_profile
+from api.v1.schemas.common import ApiErrorResponseSchema
 
 
 router = Router(tags=["profile"])
@@ -23,7 +24,17 @@ def _get_profile(user):
     return profile
 
 
-@router.get("/me/", response=ProfileMeResponseSchema, auth=api_jwt_bearer)
+@router.get(
+    "/me/",
+    response={
+        200: ProfileMeResponseSchema,
+        401: ApiErrorResponseSchema,
+        403: ApiErrorResponseSchema,
+    },
+    auth=api_jwt_bearer,
+    summary="Get current profile",
+    description="Return the profile payload for the currently authenticated user.",
+)
 def profile_me(request):
     profile = _get_profile(request.user)
     return {
@@ -32,7 +43,18 @@ def profile_me(request):
     }
 
 
-@router.patch("/me/", response=ProfileMeResponseSchema, auth=api_jwt_bearer)
+@router.patch(
+    "/me/",
+    response={
+        200: ProfileMeResponseSchema,
+        400: ApiErrorResponseSchema,
+        401: ApiErrorResponseSchema,
+        403: ApiErrorResponseSchema,
+    },
+    auth=api_jwt_bearer,
+    summary="Update current profile",
+    description="Partially update editable profile fields for the currently authenticated user.",
+)
 def profile_me_patch(request, payload: ProfileMePatchInputSchema):
     profile = _get_profile(request.user)
 
