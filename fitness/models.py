@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.text import slugify
+from django.utils import timezone
 
 
 class TimeStampedModel(models.Model):
@@ -11,6 +12,42 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+class VersionedModel(TimeStampedModel):
+    version = models.PositiveIntegerField(
+        default=1,
+        editable=False,
+        help_text="Monotonic server-side version for sync/conflict detection.",
+    )
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            self.version = max(1, int(self.version or 1)) + 1
+
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None:
+                update_fields = set(update_fields)
+                update_fields.add("version")
+                kwargs["update_fields"] = list(update_fields)
+
+        return super().save(*args, **kwargs)
+
+
+class SyncTrackedModel(VersionedModel):
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Soft-delete marker for sync-aware top-level objects.",
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def is_deleted(self) -> bool:
+        return self.deleted_at is not None
 
 class ExercisePattern(models.TextChoices):
     PUSH = "PUSH", "Push"
@@ -152,11 +189,17 @@ class ExercisePoolItem(TimeStampedModel):
         return f"{self.pool_id}:{self.sequence}:{self.exercise_id}"
 
 
-class WorkoutSession(TimeStampedModel):
+class WorkoutSession(SyncTrackedModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="workout_sessions",
+    )
+    client_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Client-generated idempotency key for mobile/offline create.",
     )
     focus = models.CharField(max_length=20, choices=PoolFocus.choices, default=PoolFocus.CUSTOM)
     source_pool = models.ForeignKey(
@@ -179,11 +222,20 @@ class WorkoutSession(TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "client_uuid"],
+                condition=models.Q(client_uuid__isnull=False),
+                name="uniq_wsession_user_client_uuid",
+            ),
+        ]
         indexes = [
             models.Index(fields=["user", "status"], name="idx_session_user_status"),
             models.Index(fields=["user", "focus"], name="idx_session_user_focus"),
             models.Index(fields=["user", "scheduled_date"], name="idx_session_user_sched_date"),
             models.Index(fields=["user", "started_at"], name="idx_session_user_started_at"),
+            models.Index(fields=["user", "updated_at"], name="idx_session_user_updated"),
+            models.Index(fields=["user", "deleted_at"], name="idx_session_user_deleted"),
         ]
 
     def __str__(self) -> str:
@@ -234,7 +286,7 @@ class WorkoutSession(TimeStampedModel):
         return f"{remaining}m"
 
 
-class WorkoutSessionExercise(TimeStampedModel):
+class WorkoutSessionExercise(VersionedModel):
     session = models.ForeignKey(
         WorkoutSession,
         on_delete=models.CASCADE,
@@ -244,6 +296,12 @@ class WorkoutSessionExercise(TimeStampedModel):
         Exercise,
         on_delete=models.CASCADE,
         related_name="session_entries",
+    )
+    client_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Client-generated idempotency key for mobile/offline create.",
     )
     sequence = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     source_pool_item = models.ForeignKey(
@@ -263,21 +321,33 @@ class WorkoutSessionExercise(TimeStampedModel):
                 fields=["session", "sequence"],
                 name="uniq_session_exercise_session_sequence",
             ),
+            models.UniqueConstraint(
+                fields=["session", "client_uuid"],
+                condition=models.Q(client_uuid__isnull=False),
+                name="uniq_session_exercise_client_uuid",
+            ),
         ]
         indexes = [
             models.Index(fields=["session", "sequence"], name="idx_session_exercise_sequence"),
             models.Index(fields=["exercise"], name="idx_session_exercise_exercise"),
+            models.Index(fields=["session", "updated_at"], name="idx_session_exercise_updated"),
         ]
 
     def __str__(self) -> str:
         return f"SessionExercise<{self.session_id}:{self.sequence}:{self.exercise_id}>"
 
 
-class WorkoutSet(TimeStampedModel):
+class WorkoutSet(VersionedModel):
     session_exercise = models.ForeignKey(
         WorkoutSessionExercise,
         on_delete=models.CASCADE,
         related_name="sets",
+    )
+    client_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Client-generated idempotency key for mobile/offline create.",
     )
     set_order = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     set_type = models.CharField(
@@ -298,11 +368,20 @@ class WorkoutSet(TimeStampedModel):
                 fields=["session_exercise", "set_order"],
                 name="uniq_workout_set_session_exercise_order",
             ),
+            models.UniqueConstraint(
+                fields=["session_exercise", "client_uuid"],
+                condition=models.Q(client_uuid__isnull=False),
+                name="uniq_workout_set_client_uuid",
+            ),
         ]
         indexes = [
             models.Index(
                 fields=["session_exercise", "set_order"],
                 name="idx_wset_se_order",
+            ),
+            models.Index(
+                fields=["session_exercise", "updated_at"],
+                name="idx_wset_se_updated",
             ),
         ]
 

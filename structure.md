@@ -1,12 +1,33 @@
 # File Tree: lyfeapp
 
-**Generated:** 4/28/2026, 6:25:13 PM
+**Generated:** 5/1/2026, 6:36:57 PM
 **Root Path:** `/home/parf/DEV/lyfeapp`
 
 ```
 ├── 📁 .github
 │   └── 📁 workflows
 │       └── ⚙️ deploy.yml
+├── 📁 api
+│   ├── 📁 v1
+│   │   ├── 📁 routers
+│   │   │   ├── 🐍 __init__.py
+│   │   │   ├── 🐍 auth.py
+│   │   │   ├── 🐍 bootstrap.py
+│   │   │   ├── 🐍 profile.py
+│   │   │   └── 🐍 system.py
+│   │   ├── 📁 schemas
+│   │   │   ├── 🐍 auth.py
+│   │   │   ├── 🐍 bootstrap.py
+│   │   │   ├── 🐍 common.py
+│   │   │   └── 🐍 profile.py
+│   │   ├── 📁 serializers
+│   │   │   └── 🐍 profile.py
+│   │   ├── 🐍 __init__.py
+│   │   ├── 🐍 api.py
+│   │   ├── 🐍 rate_limit.py
+│   │   └── 🐍 security.py
+│   ├── 🐍 __init__.py
+│   └── 🐍 exceptions.py
 ├── 📁 bio
 │   ├── 📁 migrations
 │   │   ├── 🐍 0001_initial.py
@@ -44,9 +65,15 @@
 │   │       │   ├── 🖼️ icon-512.svg
 │   │       │   └── 🖼️ icon-maskable-512.png
 │   │       └── 📄 manifest.webmanifest
+│   ├── 📁 tests
+│   │   ├── 🐍 __init__.py
+│   │   ├── 🐍 test_api_auth.py
+│   │   ├── 🐍 test_api_bootstrap.py
+│   │   └── 🐍 test_api_profile.py
 │   ├── 🐍 __init__.py
 │   ├── 🐍 admin.py
 │   ├── 🐍 apps.py
+│   ├── 🐍 email_verification.py
 │   ├── 🐍 huey.py
 │   ├── 🐍 models.py
 │   ├── 🐍 tests.py
@@ -111,6 +138,20 @@
 │   │   ├── 🌐 session_form.html
 │   │   ├── 🌐 session_list.html
 │   │   └── 🌐 set_form.html
+│   ├── 📁 registration
+│   │   ├── 🌐 email_verification_complete.html
+│   │   ├── 📄 email_verification_email.txt
+│   │   ├── 🌐 email_verification_invalid.html
+│   │   ├── 🌐 email_verification_send.html
+│   │   ├── 🌐 email_verification_sent.html
+│   │   ├── 📄 email_verification_subject.txt
+│   │   ├── 🌐 login.html
+│   │   ├── 🌐 password_reset_complete.html
+│   │   ├── 🌐 password_reset_confirm.html
+│   │   ├── 🌐 password_reset_done.html
+│   │   ├── 📄 password_reset_email.txt
+│   │   ├── 🌐 password_reset_form.html
+│   │   └── 📄 password_reset_subject.txt
 │   ├── 🌐 base.html
 │   ├── 🌐 offline.html
 │   └── 📄 sw.js
@@ -120,8 +161,7 @@
 ├── 📝 README.md
 ├── ⚙️ docker-compose.yml
 ├── 🐍 manage.py
-├── 📄 requirements.txt
-└── 📝 structure2.md
+└── 📄 requirements.txt
 ```
 
 ---

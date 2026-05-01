@@ -22,6 +22,42 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+class VersionedModel(TimeStampedModel):
+    version = models.PositiveIntegerField(
+        default=1,
+        editable=False,
+        help_text="Monotonic server-side version for sync/conflict detection.",
+    )
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            self.version = max(1, int(self.version or 1)) + 1
+
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None:
+                update_fields = set(update_fields)
+                update_fields.add("version")
+                kwargs["update_fields"] = list(update_fields)
+
+        return super().save(*args, **kwargs)
+
+
+class SyncTrackedModel(VersionedModel):
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Soft-delete marker for sync-aware top-level objects.",
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def is_deleted(self) -> bool:
+        return self.deleted_at is not None
 
 class DietMode(models.TextChoices):
     STANDARD = "STANDARD", "Standard"
@@ -196,7 +232,7 @@ class Profile(TimeStampedModel):
             raise ValidationError({"display_name": "Display name must be at least 2 characters long."})
 
 
-class DailyMetric(TimeStampedModel):
+class DailyMetric(VersionedModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -238,17 +274,24 @@ class DailyMetric(TimeStampedModel):
         indexes = [
             models.Index(fields=["user", "date"], name="idx_daily_metric_user_date"),
             models.Index(fields=["date"], name="idx_daily_metric_date"),
+            models.Index(fields=["user", "updated_at"], name="idx_daily_metric_user_updated"),
         ]
 
     def __str__(self) -> str:
         return f"DailyMetric<{self.user_id} {self.date}>"
 
 
-class Activity(TimeStampedModel):
+class Activity(SyncTrackedModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="activities",
+    )
+    client_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Client-generated idempotency key for mobile/offline create.",
     )
     date = models.DateField()
     activity_type = models.CharField(max_length=20, choices=ActivityType.choices)
@@ -259,12 +302,21 @@ class Activity(TimeStampedModel):
 
     class Meta:
         ordering = ["-date", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "client_uuid"],
+                condition=models.Q(client_uuid__isnull=False),
+                name="uniq_activity_user_client_uuid",
+            ),
+        ]
         indexes = [
             models.Index(fields=["user", "date"], name="idx_activity_user_date"),
             models.Index(
                 fields=["user", "activity_type", "date"],
                 name="idx_activity_user_type_date",
             ),
+            models.Index(fields=["user", "updated_at"], name="idx_activity_user_updated"),
+            models.Index(fields=["user", "deleted_at"], name="idx_activity_user_deleted"),
         ]
 
     def __str__(self) -> str:
