@@ -227,7 +227,8 @@ def _read_service_worker_version():
 
 def _build_snapshot_summary():
     try:
-        from bio.models import AnalyticsSnapshot
+        from bio.models import AnalyticsSnapshot, AnalyticsSnapshotStatus
+        from bio.services.analytics import get_snapshot_max_age_hours
     except Exception:
         return {
             "available": False,
@@ -236,25 +237,39 @@ def _build_snapshot_summary():
             "by_status": [],
             "failed": 0,
             "stale": 0,
+            "queued": 0,
+            "fresh": 0,
             "latest_success_at": None,
         }
+
+    snapshots = list(AnalyticsSnapshot.objects.all())
 
     by_status = list(
         AnalyticsSnapshot.objects.values("status")
         .annotate(count=Count("id"))
         .order_by("status")
     )
+    counts_by_status = {row["status"]: row["count"] for row in by_status}
 
-    failed = AnalyticsSnapshot.objects.filter(status="FAILED").count()
-    stale = AnalyticsSnapshot.objects.filter(status="STALE").count()
-    total = AnalyticsSnapshot.objects.count()
-    latest_success_at = AnalyticsSnapshot.objects.aggregate(
-        latest=Max("last_success_at")
-    )["latest"]
+    total = len(snapshots)
+    failed = counts_by_status.get(AnalyticsSnapshotStatus.ERROR, 0)
+    queued = counts_by_status.get(AnalyticsSnapshotStatus.QUEUED, 0)
+    fresh = counts_by_status.get(AnalyticsSnapshotStatus.FRESH, 0)
+
+    stale = sum(
+        1
+        for snapshot in snapshots
+        if snapshot.is_stale(
+            max_age_hours=get_snapshot_max_age_hours(snapshot.snapshot_type)
+        )
+    )
+
+    latest_success_values = [s.last_success_at for s in snapshots if s.last_success_at]
+    latest_success_at = max(latest_success_values) if latest_success_values else None
 
     if failed:
         state = "error"
-    elif stale:
+    elif stale or queued:
         state = "warn"
     else:
         state = "ok"
@@ -266,6 +281,8 @@ def _build_snapshot_summary():
         "by_status": by_status,
         "failed": failed,
         "stale": stale,
+        "queued": queued,
+        "fresh": fresh,
         "latest_success_at": latest_success_at,
     }
 

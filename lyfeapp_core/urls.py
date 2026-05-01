@@ -12,6 +12,8 @@ from core.views import (
     ops_dashboard,
 )
 
+from api.v1.api import api_v1
+
 
 def service_worker(request):
     response = TemplateResponse(
@@ -37,6 +39,7 @@ urlpatterns = [
         EmailVerificationConfirmView.as_view(),
         name="email-verification-confirm",
     ),
+    path("api/v1/", api_v1.urls),
     path("admin/", admin.site.urls),
     path("fitness/", include("fitness.urls", namespace="fitness")),
     path("bio/", include("bio.urls", namespace="bio")),

@@ -81,6 +81,8 @@
         <p class="muted">Failed: {{ snapshots.failed }}</p>
         <p class="muted">Stale: {{ snapshots.stale }}</p>
         <p class="muted">Latest success: {{ snapshots.latest_success_at|default:"unknown" }}</p>
+        <p class="muted">Queued: {{ snapshots.queued }}</p>
+        <p class="muted">Fresh: {{ snapshots.fresh }}</p>
 
         {% if snapshots.by_status %}
             <hr>
