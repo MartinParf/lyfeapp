@@ -27,6 +27,10 @@ from .models import (
     WorkoutSessionStatus,
     WorkoutSet,
 )
+from fitness.services.session_lifecycle import (
+    ensure_session_deletable,
+    ensure_session_structure_mutable,
+)
 
 
 def get_session_queryset(user):
@@ -526,6 +530,7 @@ class WorkoutSessionAddExerciseView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         session = self.get_session(request, pk)
+        ensure_session_structure_mutable(session)
         form = WorkoutSessionExerciseForm(request.POST, session=session)
 
         if form.is_valid():
@@ -544,6 +549,7 @@ class WorkoutSessionAddExerciseView(LoginRequiredMixin, View):
 class WorkoutSessionDeleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
         session = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+        ensure_session_deletable(session)
         session.delete()
         return redirect("fitness:session-list")
 
@@ -569,6 +575,12 @@ class WorkoutSetCreateView(LoginRequiredMixin, View):
 
     def post(self, request, session_pk, session_exercise_pk):
         session_exercise = self.get_session_exercise(request, session_pk, session_exercise_pk)
+        
+        # --- FIX: Define session at first, then guard ---
+        session = session_exercise.session
+        ensure_session_structure_mutable(session)
+        # ----------------------------------------------------
+        
         form = WorkoutSetForm(request.POST, session_exercise=session_exercise)
 
         if form.is_valid():
@@ -587,6 +599,7 @@ class WorkoutSetCreateView(LoginRequiredMixin, View):
 class HtmxWorkoutSessionAddExerciseView(LoginRequiredMixin, View):
     def post(self, request, pk):
         session = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+        ensure_session_structure_mutable(session)
         form = WorkoutSessionExerciseForm(request.POST, session=session)
 
         if form.is_valid():
@@ -606,6 +619,7 @@ class HtmxWorkoutSessionAddExerciseView(LoginRequiredMixin, View):
 class HtmxWorkoutSessionDeleteExerciseView(LoginRequiredMixin, View):
     def post(self, request, pk, session_exercise_pk):
         session = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+        ensure_session_structure_mutable(session)
 
         session_exercise = get_object_or_404(
             WorkoutSessionExercise,
@@ -633,6 +647,10 @@ class HtmxWorkoutSetCreateView(LoginRequiredMixin, View):
             session__pk=session_pk,
             session__user=request.user,
         )
+        # --- FIX: Guard is on top ---  
+        session = session_exercise.session
+        ensure_session_structure_mutable(session)
+        
         form = WorkoutSetForm(
             request.POST,
             session_exercise=session_exercise,
@@ -650,12 +668,16 @@ class HtmxWorkoutSetCreateView(LoginRequiredMixin, View):
             workout_set.save()
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
+        
         return render_session_exercises_partial(request, session)
+
+        
 
 
 class HtmxWorkoutSetDeleteView(LoginRequiredMixin, View):
     def post(self, request, session_pk, workout_set_pk):
         session = get_object_or_404(WorkoutSession, pk=session_pk, user=request.user)
+        ensure_session_structure_mutable(session)
         workout_set = get_object_or_404(
             WorkoutSet.objects.select_related("session_exercise"),
             pk=workout_set_pk,
@@ -678,6 +700,7 @@ class HtmxWorkoutSetMoveView(LoginRequiredMixin, View):
     @transaction.atomic
     def post(self, request, session_pk, workout_set_pk, direction):
         session = get_object_or_404(WorkoutSession, pk=session_pk, user=request.user)
+        ensure_session_structure_mutable(session)
 
         current = get_object_or_404(
             WorkoutSet.objects.select_related("session_exercise"),
@@ -722,6 +745,7 @@ class HtmxWorkoutSetMoveView(LoginRequiredMixin, View):
 class HtmxWorkoutSetResequenceView(LoginRequiredMixin, View):
     def post(self, request, session_pk, session_exercise_pk):
         session = get_object_or_404(WorkoutSession, pk=session_pk, user=request.user)
+        ensure_session_structure_mutable(session)
 
         session_exercise = get_object_or_404(
             WorkoutSessionExercise,
@@ -741,6 +765,7 @@ class HtmxWorkoutSetResequenceView(LoginRequiredMixin, View):
 class HtmxWorkoutSetUpdateView(LoginRequiredMixin, View):
     def post(self, request, session_pk, workout_set_pk):
         session = get_object_or_404(WorkoutSession, pk=session_pk, user=request.user)
+        ensure_session_structure_mutable(session)
 
         workout_set = get_object_or_404(
             WorkoutSet.objects.select_related("session_exercise"),
@@ -768,6 +793,9 @@ class HtmxWorkoutSetRepeatView(LoginRequiredMixin, View):
             session__pk=session_pk,
             session__user=request.user,
         )
+        # --- FIX: Guard is on top ---
+        session = session_exercise.session
+        ensure_session_structure_mutable(session)
 
         last_set = session_exercise.sets.order_by("-set_order").first()
 
@@ -789,7 +817,10 @@ class HtmxWorkoutSetRepeatView(LoginRequiredMixin, View):
             )
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
+        
         return render_session_exercises_partial(request, session)
+
+        
 
 class HtmxWorkoutSetApplySuggestionView(LoginRequiredMixin, View):
     def post(self, request, session_pk, session_exercise_pk):
@@ -801,6 +832,7 @@ class HtmxWorkoutSetApplySuggestionView(LoginRequiredMixin, View):
         )
 
         session = session_exercise.session
+        ensure_session_structure_mutable(session)
 
         previous_entry = (
             WorkoutSessionExercise.objects.select_related("session", "exercise")
@@ -837,6 +869,7 @@ class HtmxWorkoutSetApplySuggestionView(LoginRequiredMixin, View):
             )
 
         session = get_object_or_404(get_session_queryset(request.user), pk=session_pk)
+        ensure_session_structure_mutable(session)
         return render_session_exercises_partial(request, session)
 
 class HtmxPoolItemMoveView(LoginRequiredMixin, View):
@@ -929,6 +962,7 @@ class HtmxWorkoutSessionMoveExerciseView(LoginRequiredMixin, View):
     @transaction.atomic
     def post(self, request, pk, session_exercise_pk, direction):
         session = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+        ensure_session_structure_mutable(session)
 
         current = get_object_or_404(
             WorkoutSessionExercise,
@@ -974,6 +1008,7 @@ class HtmxWorkoutSessionMoveExerciseView(LoginRequiredMixin, View):
 class HtmxWorkoutSessionResequenceView(LoginRequiredMixin, View):
     def post(self, request, pk):
         session = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+        ensure_session_structure_mutable(session)
 
         items = session.session_exercises.order_by("sequence", "id")
 
@@ -988,6 +1023,7 @@ class HtmxWorkoutSessionResequenceView(LoginRequiredMixin, View):
 class HtmxWorkoutSessionUpdateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         session = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+        ensure_session_structure_mutable(session)
         form = WorkoutSessionForm(request.POST, instance=session, user=request.user)
 
         if form.is_valid():

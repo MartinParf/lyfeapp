@@ -1,8 +1,10 @@
+from decimal import Decimal
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 class TimeStampedModel(models.Model):
@@ -284,6 +286,75 @@ class WorkoutSession(SyncTrackedModel):
         if hours:
             return f"{hours}h"
         return f"{remaining}m"
+    
+    @property
+    def can_edit_structure(self) -> bool:
+        return self.status in {
+            WorkoutSessionStatus.PLANNED,
+            WorkoutSessionStatus.IN_PROGRESS,
+        }
+
+    @property
+    def can_delete_session(self) -> bool:
+        return self.status == WorkoutSessionStatus.PLANNED
+
+    @property
+    def can_start(self) -> bool:
+        return self.status == WorkoutSessionStatus.PLANNED
+
+    @property
+    def can_complete(self) -> bool:
+        return self.status == WorkoutSessionStatus.IN_PROGRESS
+
+    @property
+    def can_cancel(self) -> bool:
+        return self.status in {
+            WorkoutSessionStatus.PLANNED,
+            WorkoutSessionStatus.IN_PROGRESS,
+        }
+
+    def clean(self):
+        super().clean()
+
+        if self.ended_at and not self.started_at:
+            raise ValidationError(
+                {"ended_at": "ended_at cannot be set without started_at."}
+            )
+
+        if self.started_at and self.ended_at and self.ended_at <= self.started_at:
+            raise ValidationError(
+                {"ended_at": "ended_at must be later than started_at."}
+            )
+
+        if self.status == WorkoutSessionStatus.IN_PROGRESS:
+            if not self.started_at:
+                raise ValidationError(
+                    {"started_at": "In-progress session requires started_at."}
+                )
+            if self.ended_at:
+                raise ValidationError(
+                    {"ended_at": "In-progress session cannot have ended_at yet."}
+                )
+
+        if self.status == WorkoutSessionStatus.COMPLETED:
+            if not self.started_at:
+                raise ValidationError(
+                    {"started_at": "Completed session requires started_at."}
+                )
+            if not self.ended_at:
+                raise ValidationError(
+                    {"ended_at": "Completed session requires ended_at."}
+                )
+
+        if self.status == WorkoutSessionStatus.PLANNED and self.ended_at:
+            raise ValidationError(
+                {"ended_at": "Planned session cannot have ended_at."}
+            )
+
+        if self.status == WorkoutSessionStatus.CANCELLED and self.ended_at:
+            raise ValidationError(
+                {"ended_at": "Cancelled session should not have ended_at."}
+            )
 
 
 class WorkoutSessionExercise(VersionedModel):
@@ -358,7 +429,16 @@ class WorkoutSet(VersionedModel):
     )
     weight_kg = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     reps = models.PositiveSmallIntegerField(null=True, blank=True)
-    rpe = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    rpe = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(Decimal("1.0")),
+            MaxValueValidator(Decimal("10.0")),
+        ],
+    )
     notes = models.TextField(blank=True)
 
     class Meta:
@@ -387,3 +467,36 @@ class WorkoutSet(VersionedModel):
 
     def __str__(self) -> str:
         return f"WorkoutSet<{self.session_exercise_id}:{self.set_order}>"
+
+    @property
+    def has_primary_performance_data(self) -> bool:
+        return self.weight_kg is not None or self.reps is not None
+
+    @property
+    def has_context_data(self) -> bool:
+        return (
+            self.rpe is not None
+            or bool(self.set_type)
+            or bool((self.notes or "").strip())
+        )
+
+    @property
+    def is_progression_relevant(self) -> bool:
+        return self.has_primary_performance_data
+
+    def clean(self):
+        super().clean()
+
+        if not self.has_primary_performance_data:
+            raise ValidationError(
+                {
+                    "__all__": "Set must include at least weight_kg or reps."
+                }
+            )
+
+        if self.set_type == WorkoutSetType.AMRAP and self.reps is None:
+            raise ValidationError(
+                {
+                    "reps": "AMRAP set requires reps."
+                }
+            )
